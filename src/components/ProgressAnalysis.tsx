@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import companyIcon from '../assets/company_icon.png';
 import {
   Dumbbell, LayoutDashboard, Activity, LineChart, CalendarDays,
   User, Bell, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy,
@@ -31,10 +32,10 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
 
       {/* Sidebar (Desktop) */}
-            {/* Overlay */}
+      {/* Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40" 
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -43,9 +44,7 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
       <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-              <Dumbbell className="w-5 h-5" />
-            </div>
+            <img src={companyIcon} alt="Progressive Trainer" className="size-8 rounded-lg object-contain bg-primary p-1 filter invert brightness-0" />
             <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
           <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
@@ -79,7 +78,7 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
           </a>
         </nav>
 
-        </aside>
+      </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
@@ -91,9 +90,9 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
               <Menu className="w-6 h-6" />
             </button>
             <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Progress Analysis</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Advanced metrics and performance trends</p>
-          </div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Progress Analysis</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Advanced metrics and performance trends</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
@@ -130,17 +129,17 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
             {/* --- MOBILE TABS --- */}
             <div className="md:hidden overflow-x-auto no-scrollbar -mx-4 px-4">
               <div className="flex gap-6 border-b border-slate-200 dark:border-primary/10">
-                <button 
+                <button
                   onClick={() => setActiveTab('overview')}
                   className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'overview' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
                   <p className={`text-sm tracking-wide ${activeTab === 'overview' ? 'font-bold' : 'font-medium'}`}>Overview</p>
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('volume')}
                   className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'volume' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
                   <p className={`text-sm tracking-wide ${activeTab === 'volume' ? 'font-bold' : 'font-medium'}`}>Volume</p>
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('strength')}
                   className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'strength' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
                   <p className={`text-sm tracking-wide ${activeTab === 'strength' ? 'font-bold' : 'font-medium'}`}>Strength</p>
@@ -155,13 +154,13 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
                 <p className="text-slate-400 text-lg">Advanced metrics and performance trends for the current mesocycle.</p>
               </div>
               <div className="flex bg-slate-200 dark:bg-surface-dark p-1 rounded-xl shrink-0">
-                <button 
+                <button
                   onClick={() => setActiveTab('overview')}
                   className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Overview</button>
-                <button 
+                <button
                   onClick={() => setActiveTab('volume')}
                   className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'volume' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Volume</button>
-                <button 
+                <button
                   onClick={() => setActiveTab('strength')}
                   className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'strength' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Strength</button>
               </div>
@@ -174,7 +173,7 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
                   <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Total Volume Load</p>
                   <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingUp className="w-3 h-3" /> 
+                    <TrendingUp className="w-3 h-3" />
                     <span className="font-bold text-[10px] lg:text-xs">+12.5%</span>
                   </div>
                 </div>
@@ -191,7 +190,7 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
                   <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max Squat <span className="hidden lg:inline">(1RM)</span></p>
                   <div className="flex items-center gap-1 shrink-0 text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingDown className="w-3 h-3" /> 
+                    <TrendingDown className="w-3 h-3" />
                     <span className="font-bold text-[10px] lg:text-xs">-2.1%</span>
                   </div>
                 </div>
@@ -208,7 +207,7 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
                   <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Avg Intensity</p>
                   <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingUp className="w-3 h-3" /> 
+                    <TrendingUp className="w-3 h-3" />
                     <span className="font-bold text-[10px] lg:text-xs">+4.3%</span>
                   </div>
                 </div>

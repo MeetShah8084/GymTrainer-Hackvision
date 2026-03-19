@@ -1,4 +1,5 @@
 import React from 'react';
+import companyIcon from '../assets/company_icon.png';
 import { 
   Dumbbell, 
   LayoutDashboard, 
@@ -40,9 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
       <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-              <Dumbbell className="w-5 h-5" />
-            </div>
+            <img src={companyIcon} alt="Progressive Trainer" className="size-8 rounded-lg object-contain bg-primary p-1 filter invert brightness-0" />
             <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
           <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>

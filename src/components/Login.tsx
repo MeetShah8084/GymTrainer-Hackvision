@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import companyIcon from '../assets/company_icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Zap, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LoginProps {
@@ -115,11 +116,8 @@ export default function Login({ navigateTo }: LoginProps) {
           style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
 
         {/* Logo */}
-        <div className="absolute top-12 left-12 flex items-center gap-3 z-10">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #F97316, #FF7A18)' }}>
-            <Zap size={20} color="white" />
-          </div>
+        <div className="absolute top-12 left-12 flex items-center gap-3 z-10 text-[#F8F8F8]">
+          <img src={companyIcon} alt="Logo" className="w-10 h-10 rounded-xl object-contain filter invert brightness-0" />
           <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 22, letterSpacing: 1 }}>
             PROGRESSIVE TRAINER
           </span>
@@ -161,10 +159,7 @@ export default function Login({ navigateTo }: LoginProps) {
           
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-10 lg:hidden text-[#F8F8F8]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #F97316, #FF7A18)' }}>
-              <Zap size={20} color="white" />
-            </div>
+            <img src={companyIcon} alt="Logo" className="w-10 h-10 rounded-xl object-contain filter invert brightness-0" />
             <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 22, letterSpacing: 0.5 }}>PROGRESSIVE TRAINER</span>
           </div>
 
