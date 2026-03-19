@@ -71,3 +71,7 @@ export default defineConfig([
   },
 ])
 ```
+
+
+Icons used:
+- Company icon: <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons">Trainer icons created by Leremy - Flaticon</a>

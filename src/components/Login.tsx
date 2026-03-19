@@ -151,16 +151,21 @@ export default function Login({ navigateTo }: LoginProps) {
       </div>
 
       {/* Right panel - Dynamic Flow */}
-      <div className="flex-1 flex items-center justify-center p-6 relative">
-        <div className="w-full max-w-md relative">
+      <div className="flex-1 flex flex-col items-center justify-start lg:justify-center p-6 pt-16 lg:p-12 relative bg-[#1A110B] lg:bg-transparent overflow-hidden">
+        
+        {/* Mobile decorative background (matches provided image) */}
+        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 lg:hidden w-80 h-80 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
+
+        <div className="w-full max-w-md relative z-10 w-full mt-8 lg:mt-0">
           
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+          <div className="flex items-center gap-2 mb-10 lg:hidden text-[#F8F8F8]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, #F97316, #FF7A18)' }}>
-              <Zap size={18} color="white" />
+              <Zap size={20} color="white" />
             </div>
-            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 20 }}>PROGRESSIVE TRAINER</span>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 22, letterSpacing: 0.5 }}>PROGRESSIVE TRAINER</span>
           </div>
 
           <AnimatePresence mode="wait">
