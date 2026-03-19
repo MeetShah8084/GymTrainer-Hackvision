@@ -3,9 +3,7 @@ import companyIcon from '../assets/company_icon.png';
 import { 
   Dumbbell, 
   LayoutDashboard, 
-  Activity, 
   LineChart, 
-  CalendarDays, 
   User, 
   Bell, 
   Settings, 
@@ -39,38 +37,34 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
 
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={companyIcon} alt="Progressive Trainer" className="size-8 rounded-lg object-contain bg-primary p-1 filter invert brightness-0" />
-            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
+        <div className="p-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="shrink-0 size-8 bg-primary rounded-lg flex items-center justify-center p-1">
+              <img src={companyIcon} alt="Progressive Trainer" className="w-full h-full object-contain filter invert brightness-0" />
+            </div>
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">ProgressiveTrainer</h2>
           </div>
-          <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+          <button className="shrink-0 text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
             <X className="w-6 h-6" />
           </button>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => navigateTo('dashboard')}>
-            <LayoutDashboard className="w-5 h-5" />
+        <nav className="flex-1 px-4 space-y-2 mt-4 font-['Poppins']">
+          <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => navigateTo('dashboard')}>
             <span>Dashboard</span>
           </a>
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('workouts')}>
-            <Activity className="w-5 h-5" />
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('workouts')}>
             <span>Workouts</span>
           </a>
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('analysis')}>
-            <LineChart className="w-5 h-5" />
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('analysis')}>
             <span>Statistics</span>
           </a>
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('records')}>
-            <Trophy className="w-5 h-5" />
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('records')}>
             <span>Personal Records</span>
           </a>
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
-            <CalendarDays className="w-5 h-5" />
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
             <span>Schedule</span>
           </a>
-          <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
-            <User className="w-5 h-5" />
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
             <span>Profile</span>
           </a>
         </nav>
