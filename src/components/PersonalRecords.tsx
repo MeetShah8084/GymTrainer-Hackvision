@@ -23,6 +23,13 @@ interface PersonalRecordsProps {
 
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records') => {
+    setIsSidebarOpen(false);
+    setTimeout(() => {
+      navigateTo(page);
+    }, 300);
+  };
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
       
@@ -49,16 +56,16 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
           </button>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4 font-['Poppins']">
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('dashboard')}>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('dashboard')}>
             <span>Dashboard</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('workouts')}>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('workouts')}>
             <span>Workouts</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('analysis')}>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('analysis')}>
             <span>Statistics</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => navigateTo('records')}>
+          <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => handleNavigation('records')}>
             <span>Personal Records</span>
           </a>
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
