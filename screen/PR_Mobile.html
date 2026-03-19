@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#1a120e",
+                        "surface-dark": "#2a1d17",
+                        "accent-dark": "#3d2a21",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-20">
+<!-- Header -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-20">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Elite Records</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
+<span class="material-symbols-outlined">workspace_premium</span>
+</button>
+</div>
+</div>
+<!-- Profile Section -->
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col gap-4 items-center bg-surface-dark/40 dark:bg-accent-dark/20 p-6 rounded-xl border border-primary/10">
+<div class="flex gap-4 flex-col items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-28 w-28 border-2 border-primary" data-alt="Professional athlete profile portrait in gym" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB90eWpG4VA3uOuxAYNGXMjXCxl6oSxWt0W4CITTcgRHzPnIkv3U4_KLPJl-AZGx_qXZY0gaRJ-29cUvFYhunRZNP4_7GVM0-sohV-jUyiDpekZwou7VrOPJzbMAMOawUITKdWqE1vJMmBsyGc00yWLEHD8hI1O3HptLc5BGJb8oarsLrcxJsX6CD1_7aqAC5-rhZpdt_yRog0lZvwFQO_ZcV0hKl4BSa9lSv9oPBrXe2Oe8HnnyN3_8vWmfm4NdTCeDyWOp00N7KoU");'></div>
+<div class="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full flex items-center justify-center border-2 border-background-dark">
+<span class="material-symbols-outlined text-xs">verified</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-extrabold leading-tight tracking-tight">Marcus Thorne</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-primary text-xs font-bold uppercase tracking-widest px-2 py-0.5 bg-primary/10 rounded-full">Pro Division</span>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Since 2021</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 w-full max-w-[480px]">
+<button class="flex items-center justify-center rounded-xl h-11 bg-primary text-white text-sm font-bold tracking-tight">
+<span class="truncate">Update PRs</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-11 bg-accent-dark/50 text-slate-100 text-sm font-bold tracking-tight border border-primary/20">
+<span class="truncate">Share Profile</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="px-4">
+<div class="flex border-b border-primary/10 justify-between">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-bold uppercase tracking-wider">My Progress</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 dark:text-slate-400 pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-bold uppercase tracking-wider">Leaderboards</p>
+</a>
+</div>
+</div>
+<!-- Stats Overview -->
+<div class="flex flex-wrap gap-3 p-4">
+<div class="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-5 bg-surface-dark border border-primary/5 shadow-xl">
+<p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Wilks Score</p>
+<p class="text-slate-100 text-2xl font-extrabold tracking-tight">442.8</p>
+<div class="flex items-center gap-1 text-[#0bda87]">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+12.4</span>
+</div>
+</div>
+<div class="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-5 bg-surface-dark border border-primary/5 shadow-xl">
+<p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Total Lift</p>
+<p class="text-slate-100 text-2xl font-extrabold tracking-tight">1,645<span class="text-xs font-normal ml-1">lbs</span></p>
+<div class="flex items-center gap-1 text-[#0bda87]">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+55.0</span>
+</div>
+</div>
+</div>
+<!-- PR List / Leaderboard Hybrid -->
+<div class="px-4 py-2">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-extrabold tracking-tight">The Big Three</h3>
+<span class="text-primary text-xs font-bold uppercase tracking-widest">Verified Marks</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Squat Card -->
+<div class="flex items-center gap-4 rounded-xl p-4 bg-accent-dark/30 border border-primary/10">
+<div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-3xl">fitness_center</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-slate-100 text-sm font-bold uppercase tracking-wider">Squat</p>
+<p class="text-slate-100 text-xl font-extrabold">585 lbs</p>
+<p class="text-primary text-xs font-medium">Rank #12 Global</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-primary">workspace_premium</span>
+<p class="text-slate-400 text-[10px] mt-1">OCT 24, 2023</p>
+</div>
+</div>
+<!-- Bench Card -->
+<div class="flex items-center gap-4 rounded-xl p-4 bg-accent-dark/30 border border-primary/10">
+<div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-3xl">horizontal_rule</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-slate-100 text-sm font-bold uppercase tracking-wider">Bench Press</p>
+<p class="text-slate-100 text-xl font-extrabold">405 lbs</p>
+<p class="text-primary text-xs font-medium">Rank #42 Global</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-primary">workspace_premium</span>
+<p class="text-slate-400 text-[10px] mt-1">NOV 12, 2023</p>
+</div>
+</div>
+<!-- Deadlift Card -->
+<div class="flex items-center gap-4 rounded-xl p-4 bg-accent-dark/30 border border-primary/10">
+<div class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-3xl">vertical_align_top</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-slate-100 text-sm font-bold uppercase tracking-wider">Deadlift</p>
+<p class="text-slate-100 text-xl font-extrabold">655 lbs</p>
+<p class="text-primary text-xs font-medium">Rank #8 Global</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-primary">workspace_premium</span>
+<p class="text-slate-400 text-[10px] mt-1">JAN 05, 2024</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Chart Area (Placeholder) -->
+<div class="px-4 py-6">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-extrabold tracking-tight mb-4">Strength Progression</h3>
+<div class="h-40 w-full rounded-xl bg-surface-dark border border-primary/5 flex items-end justify-between p-4 gap-2">
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[40%]"></div>
+<div class="flex-1 bg-primary/30 rounded-t-lg h-[55%]"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg h-[45%]"></div>
+<div class="flex-1 bg-primary/60 rounded-t-lg h-[75%]"></div>
+<div class="flex-1 bg-primary/80 rounded-t-lg h-[65%]"></div>
+<div class="flex-1 bg-primary rounded-t-lg h-[90%]"></div>
+<div class="flex-1 bg-primary rounded-t-lg h-[100%]"></div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-50 flex gap-2 border-t border-primary/10 bg-background-light dark:bg-background-dark px-4 pb-4 pt-2 shadow-2xl">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Workout</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">emoji_events</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Records</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">groups</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Social</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">insights</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Insights</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Account</p>
+</a>
+</div>
+</div>
+</body></html>

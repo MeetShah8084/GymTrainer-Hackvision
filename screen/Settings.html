@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Progressive Trainer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#160d08",
+                        "surface-dark": "#221610",
+                        "border-dark": "#3d2a20",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between border-b border-slate-200 dark:border-border-dark bg-background-light dark:bg-background-dark px-6 md:px-20 py-4 sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="text-primary size-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">exercise</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight">Progressive Trainer</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded-xl size-10 bg-slate-200 dark:bg-surface-dark hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-border-dark mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+<span class="material-symbols-outlined text-primary text-xl">person</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center">
+<div class="w-full max-w-[960px] px-6 py-8 flex flex-col gap-8">
+<!-- Sidebar + Content Layout (Mobile Friendly) -->
+<div class="flex flex-col md:flex-row gap-8">
+<!-- Navigation Sidebar -->
+<aside class="w-full md:w-64 shrink-0 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-medium">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="font-medium">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors" href="#">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-medium">Privacy &amp; Security</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-medium">Subscription</span>
+</a>
+<div class="mt-8 pt-4 border-t border-slate-200 dark:border-border-dark">
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-medium">Sign Out</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col gap-8">
+<!-- Profile Section -->
+<section class="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-border-dark">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold">Profile Information</h3>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                        Edit <span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-6 mb-8">
+<div class="relative">
+<div class="size-24 rounded-full bg-center bg-cover border-4 border-primary/20 shadow-inner" data-alt="Athletic man profile portrait close up" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')">
+</div>
+<button class="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<div class="text-center sm:text-left">
+<h4 class="text-lg font-bold">Alex Rivers</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Member since October 2023</p>
+<div class="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                            PRO TRAINER
+                                        </div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Email Address</label>
+<div class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-border-dark">
+<span class="material-symbols-outlined text-slate-400">mail</span>
+<span class="text-sm">alex.rivers@progressive.fit</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Phone Number</label>
+<div class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-border-dark">
+<span class="material-symbols-outlined text-slate-400">call</span>
+<span class="text-sm">+1 (555) 902-1234</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification Toggles -->
+<section class="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-border-dark">
+<h3 class="text-xl font-bold mb-6">Notification Settings</h3>
+<div class="flex flex-col gap-4">
+<!-- Toggle Item -->
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<p class="font-medium">Workout Reminders</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Daily alerts to keep you on track with your goals</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-background-dark peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-[1px] bg-slate-100 dark:bg-border-dark"></div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<p class="font-medium">Achievement Awards</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Celebrate new personal bests and streaks</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-background-dark peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-[1px] bg-slate-100 dark:bg-border-dark"></div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<p class="font-medium">Newsletter &amp; Tips</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Weekly training insights and nutrition guides</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-background-dark peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Account Actions -->
+<div class="flex flex-col sm:flex-row gap-4 justify-end">
+<button class="px-8 py-3 rounded-xl border border-slate-200 dark:border-border-dark font-bold hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+                                    Discard Changes
+                                </button>
+<button class="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all">
+                                    Save Settings
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation for Mobile -->
+<nav class="md:hidden sticky bottom-0 z-50 bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-border-dark px-6 py-3 flex justify-between items-center">
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-[10px] font-bold uppercase">Workout</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-bold uppercase">Stats</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</button>
+</nav>
+</div>
+</div>
+</body></html>

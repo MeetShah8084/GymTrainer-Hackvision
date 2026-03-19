@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Progressive Trainer | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#1a120e",
+                        "surface-dark": "#2a1e17",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .custom-gradient {
+            background: linear-gradient(135deg, rgba(236, 91, 19, 0.1) 0%, rgba(26, 18, 14, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">fitness_center</span>
+</div>
+<h2 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Progressive</h2>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-semibold" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">exercise</span>
+<span>Workouts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Statistics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span>Schedule</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Profile</span>
+</a>
+</nav>
+<div class="p-4 border-t border-primary/10">
+<div class="bg-primary/10 rounded-xl p-4">
+<p class="text-xs font-bold text-primary uppercase tracking-wider mb-1">Premium Tier</p>
+<p class="text-sm dark:text-slate-300">Next billing: Oct 12</p>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto custom-gradient">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div>
+<h1 class="text-2xl font-black text-slate-900 dark:text-white">Good Morning, Alex</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400">Ready for your push day today?</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-primary" data-alt="Profile picture of a fit male athlete" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')"></div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Consistency</p>
+<span class="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+2.4%</span>
+</div>
+<p class="text-3xl font-black text-slate-900 dark:text-white">94%</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-4">
+<div class="bg-primary h-full rounded-full" style="width: 94%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Workouts</p>
+<span class="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+12</span>
+</div>
+<p class="text-3xl font-black text-slate-900 dark:text-white">128</p>
+<p class="text-xs text-slate-400 mt-2 uppercase tracking-widest">Total Sessions</p>
+</div>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Volume</p>
+<span class="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+5.2%</span>
+</div>
+<p class="text-3xl font-black text-slate-900 dark:text-white">450k <span class="text-lg font-medium text-slate-400">kg</span></p>
+<p class="text-xs text-slate-400 mt-2 uppercase tracking-widest">Monthly Lifted</p>
+</div>
+<div class="bg-primary p-6 rounded-xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-white/80 text-sm font-medium">Daily Streak</p>
+<p class="text-3xl font-black">15 Days</p>
+<button class="mt-4 px-4 py-2 bg-white text-primary rounded-lg text-sm font-bold shadow-md hover:bg-slate-50 transition-colors">
+                                View History
+                            </button>
+</div>
+<span class="material-symbols-outlined absolute -right-4 -bottom-4 text-white/10 text-9xl group-hover:scale-110 transition-transform">local_fire_department</span>
+</div>
+</div>
+<!-- Action Section -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary">
+<div>
+<h3 class="text-xl font-bold dark:text-white">Current Session: Push B (Heavy)</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • 4/6 Exercises completed</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
+<span class="material-symbols-outlined">restart_alt</span>
+                            Relog
+                        </button>
+<button class="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">check_circle</span>
+                            Workout Complete
+                        </button>
+</div>
+</div>
+<!-- Muscle Group Grid -->
+<div>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-black dark:text-white">Target Muscle Groups</h2>
+<a class="text-primary font-bold text-sm hover:underline" href="#">View Progress Details</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+<!-- Chest -->
+<div class="group cursor-pointer">
+<div class="relative h-64 w-full rounded-2xl overflow-hidden mb-3">
+<img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Strong athlete training chest muscles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzGrQlmZiiGly8uNyGA6-XBGKTI_gS5sXWVT-CLq28p_mWuRATrROrpBMiAJAwyeHxECJkKc8L6PBlPJWJJ-pCn2kABXAj6f23o8kr8HNYJ1Umaw1crMOvhCA3pDCXG5cDFJmaeEczV0iQYm5q_1PJrcDb91oXkXrTj-v0zrjMfw9sAqRREmqnhCrqlIOLD8LFA7jugkOExHjbsaE2iMmVImKss2sn2fpFTJim5Kq58FlAmR2F5pJvmBgaeu1zS2vsElHtqVmZN_h9"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-black text-xl">CHEST</p>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-primary"></div>
+<p class="text-white/60 text-xs">8 Exercises Available</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Back -->
+<div class="group cursor-pointer">
+<div class="relative h-64 w-full rounded-2xl overflow-hidden mb-3">
+<img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Muscular back during pull ups workout" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh7Mo4Sy-rjWyVdu8WADiL9FoFVUbq2nGX0xT7W1OCXXSQ6L1At4RVZhT6CP30-djO745HYFI_MH85F00keEo4HFasLZwTOBGesdkXjkBA_qVHWNLaEQsZjehmbLWjLcMyRuF6PQZEZvfIhY-pfM17wQRQGVcWC1fqZoAeOR5_zTLJAd3SJz7UsZLJw4LscESBtT-k4HcSIulRQ-CsooxarxXoEpqANELlBQMOSu2KnTNtE3x7F4NfRw7su72MtD_a1kMO5T1HVJDq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-black text-xl">BACK</p>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-primary"></div>
+<p class="text-white/60 text-xs">12 Exercises Available</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Legs -->
+<div class="group cursor-pointer">
+<div class="relative h-64 w-full rounded-2xl overflow-hidden mb-3">
+<img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Leg training squats gym" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx2nKoTp9hIulqcJzftHscAPbTvJbtUWbR1d2huWsNSd8udVImqzEbU35zWy6u_01ZrVZPyc3Pq2eZWH0NT5-tcGNrBaBSbMWMf8jNfqRzOhm2-95jUAN9OeEvqt5FjZECkyzOmllQeE282Ws5S5MB-EPuXTp0HU2rVl9HSN20tvNECw19jP98eSne0VaWGCeFfUcR0lvwSP6Quj5LBzfSOZnm56eH0-w0IuDFXuv8NAEDMXgrJ4ZiJGQUYOiMTHt8qOgB4aFLKhFx"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-black text-xl">LEGS</p>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-primary"></div>
+<p class="text-white/60 text-xs">15 Exercises Available</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Arms -->
+<div class="group cursor-pointer">
+<div class="relative h-64 w-full rounded-2xl overflow-hidden mb-3">
+<img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Bicep curl arm workout close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-black text-xl">ARMS</p>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-primary"></div>
+<p class="text-white/60 text-xs">10 Exercises Available</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Abs -->
+<div class="group cursor-pointer">
+<div class="relative h-64 w-full rounded-2xl overflow-hidden mb-3">
+<img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Abs and core training routine" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-black text-xl">ABS</p>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-primary"></div>
+<p class="text-white/60 text-xs">6 Exercises Available</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 space-y-6">
+<h2 class="text-2xl font-black dark:text-white">Recent PRs</h2>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined font-bold">trending_up</span>
+</div>
+<div>
+<p class="font-bold dark:text-white">Deadlift</p>
+<p class="text-sm text-slate-500">New 1RM: 180kg</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">+15kg</p>
+<p class="text-xs text-slate-400">2 days ago</p>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined font-bold">trending_up</span>
+</div>
+<div>
+<p class="font-bold dark:text-white">Bench Press</p>
+<p class="text-sm text-slate-500">New 5RM: 100kg</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">+5kg</p>
+<p class="text-xs text-slate-400">Yesterday</p>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<h2 class="text-2xl font-black dark:text-white">Nutrition</h2>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-primary/5 shadow-sm space-y-6">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-3xl font-black text-slate-900 dark:text-white">2,450</p>
+<p class="text-sm text-slate-500 uppercase tracking-widest font-bold">Calories In</p>
+</div>
+<div class="size-16 border-4 border-primary border-t-transparent rounded-full flex items-center justify-center">
+<p class="text-xs font-bold text-primary">85%</p>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider">
+<span class="text-slate-500">Protein</span>
+<span class="dark:text-white">180g / 200g</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
+<div class="bg-primary h-full rounded-full" style="width: 90%"></div>
+</div>
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider pt-2">
+<span class="text-slate-500">Carbs</span>
+<span class="dark:text-white">210g / 300g</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
+<div class="bg-orange-300 h-full rounded-full" style="width: 70%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

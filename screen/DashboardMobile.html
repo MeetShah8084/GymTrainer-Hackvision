@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 justify-between sticky top-0 z-10 border-b border-slate-200 dark:border-primary/10">
+<div class="flex size-10 shrink-0 items-center overflow-hidden rounded-full border-2 border-primary">
+<img alt="User Profile Avatar" class="h-full w-full object-cover" data-alt="Professional athlete profile picture closeup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVrzpsn6_U1odECZkvw4RS520J75eoPMqvh9YQ0JbkGmUJcjso9-P6XoCX8c3Z09xexCRYGXmwGJ8JqZQJtZmNcdG-3j74bfXinTwW9OMizO4NAgHyVwigVwOfsCzlSBl3SNSa50DM9Of5-J8XpJ8rORai6IkrZUllEe9kkDIeaJ8R3R_KcVLZFHoGZzFibHIDxx4x1eMSTtOm_kHt_tHtVb7NESWjUNT1XuA5Fhn9-zzkUw3ZbKTG1M5JI0TAG6kreGxSlJcSlpHt"/>
+</div>
+<div class="flex flex-col ml-3 flex-1">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Welcome back</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">Alex Rivers</h2>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<!-- Hero Stats -->
+<div class="p-4">
+<div class="relative overflow-hidden rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/20">
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-white/80 text-sm font-medium">Daily Consistency</p>
+<h3 class="text-4xl font-bold mt-1">94%</h3>
+</div>
+<div class="bg-white/20 backdrop-blur-md rounded-lg p-2">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+</div>
+<div class="mt-6 flex gap-4">
+<div class="flex-1 border-r border-white/20">
+<p class="text-white/70 text-xs">Current Streak</p>
+<p class="text-xl font-bold">12 Days</p>
+</div>
+<div class="flex-1">
+<p class="text-white/70 text-xs">Total Workouts</p>
+<p class="text-xl font-bold">148</p>
+</div>
+</div>
+</div>
+<!-- Abstract Design Elements -->
+<div class="absolute -right-8 -top-8 size-32 rounded-full bg-white/10 blur-2xl"></div>
+<div class="absolute -left-8 -bottom-8 size-32 rounded-full bg-black/10 blur-2xl"></div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="grid grid-cols-2 gap-3 px-4 py-2">
+<button class="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+<span>Complete</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">history</span>
+<span>Relog</span>
+</button>
+</div>
+<!-- Muscle Groups -->
+<div class="flex items-center justify-between px-4 pb-3 pt-6">
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Target Muscle Groups</h2>
+<button class="text-primary text-sm font-semibold">View All</button>
+</div>
+<div class="grid grid-cols-2 gap-4 p-4">
+<div class="group relative aspect-[4/5] overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+<img alt="Chest Muscle Group" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Close up of well-defined chest muscles in gym lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu6Lj2fY3fqN71OaiPIZYaOpZecYfXz2JBXEMGrxyDGHfSLxFeSZU_8rU4xZADR2YFlq4Lhmmbb5tQrcNjTCIsHvmSSGVXauDAcxn-lSVkeD6pdb3kA6w_xkk5ZZG5Yn8hFkWhlyxbwpTsqbU6XbxWpdmoyaYNzLj_bnfiaJfXn3gcXCCWFOA-31_CgLWPviz1aA61RKEYixps6Bher1LPesNnOGPKSB0aCkYFM7jeuEQLX_1IOjeNa08xnYwkpbOcUZCNhyOMNRW2"/>
+<div class="absolute bottom-4 left-4 z-20">
+<p class="text-white text-lg font-bold">Chest</p>
+<p class="text-primary text-xs font-medium uppercase tracking-tighter">4 Exercises</p>
+</div>
+</div>
+<div class="group relative aspect-[4/5] overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+<img alt="Back Muscle Group" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Athletic back muscles highlighting definition during pullup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASheednCqD93i1WjRZsAGzQW3iH3I9pHpfxIUFeDgvSzoGDLV7Tj4m8N6MhBSbfcFdQP-HoqdgMhyalJ9pOXvjgLXPi93qyTlqxTd9L8-_uO7sO9c3p_Eu7Ho2IR2PXSWKKGUhNyHHTQTPXBKkBNNgKRTdjuKCSBiQlgmh4sXPanFUQi8DNL-g5E2Ukc3ahsZADvIyBLHXpRXMRS_yYq_y5kGjfRzoUXgvqvIYrGFIU3qiUI5oAeNSqx6HNmMI5AfZb4tMysxl7ASh"/>
+<div class="absolute bottom-4 left-4 z-20">
+<p class="text-white text-lg font-bold">Back</p>
+<p class="text-primary text-xs font-medium uppercase tracking-tighter">6 Exercises</p>
+</div>
+</div>
+<div class="group relative aspect-[4/5] overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+<img alt="Legs Muscle Group" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Powerful legs performing heavy weighted squats" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIvIPxrF6GhjW0Dl0sE0y-RfSljKIuZvSBJhzW_WX6HhJ7u3sy9LwmFkdBJxXVcug2oLB06E5AOguSF8Nv6AMnzUO8RTwVGCGT1twfuOZVRRvXMTgzMdTpamkFyDJlc67KgFVVbG_mZZZ6u_mw4-36f5gBrKNXjQIVunW_oMtZVIcsJBGQ_9vMHPm6LBw13_ot68tdkVlHWXwZhOBkelPhiK3ls3dHKa0P8uSptXQ1vEZzc5aLRj6-cQHOtNQ1YUpDarBqR5NswtzA"/>
+<div class="absolute bottom-4 left-4 z-20">
+<p class="text-white text-lg font-bold">Legs</p>
+<p class="text-primary text-xs font-medium uppercase tracking-tighter">5 Exercises</p>
+</div>
+</div>
+<div class="group relative aspect-[4/5] overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+<img alt="Shoulders Muscle Group" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Strong shoulders doing overhead dumbbell presses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJYzWhW8ECMocVSn2VCAtuoxjv12y2_dbh9cH2cAbvBsqMuINPwQ3nC4vC8e5D48yF8WdHUYl0O0GdSGatBYKssDZQpPLJmd6P08CKZZ-Yq4yjFztsAdCD5o2aOoZbY-5pYcJNwXzmwfFBOB6TCsAroK8t0edkoqO0b0YeywTMnYsAEx9bI1CtTvFYqr_JXeOIs-Xcl5Ge2n38oRjl-42WasozFZDRW2WJRvK6RJ1QU0zxTulg5TW7_plEt4XELJ-rrbvwfXzQoB-K"/>
+<div class="absolute bottom-4 left-4 z-20">
+<p class="text-white text-lg font-bold">Shoulders</p>
+<p class="text-primary text-xs font-medium uppercase tracking-tighter">3 Exercises</p>
+</div>
+</div>
+</div>
+<!-- Weekly Summary -->
+<div class="px-4 py-4">
+<div class="rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-primary/5 p-4">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-100 font-bold">Weekly Performance</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">You are 8% ahead of last week</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-2">
+<div class="flex items-center justify-between">
+<a class="flex flex-1 flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl font-bold">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Dash</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">fitness_center</span>
+<span class="text-[10px] font-medium uppercase tracking-widest">Workouts</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">monitoring</span>
+<span class="text-[10px] font-medium uppercase tracking-widest">Stats</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium uppercase tracking-widest">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

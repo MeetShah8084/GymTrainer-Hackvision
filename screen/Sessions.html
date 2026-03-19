@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workout Sessions - Progressive Trainer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#1a120e", // Slightly deeper than the default for luxury feel
+                        "surface-dark": "#2a1d17",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between border-b border-primary/10 bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-xl bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">exercise</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Progressive Trainer</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<nav class="hidden md:flex gap-6 mr-8">
+<a class="text-sm font-semibold text-primary" href="#">Dashboard</a>
+<a class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors" href="#">Workouts</a>
+<a class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors" href="#">Progress</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex size-10 items-center justify-center rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined">calendar_today</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<div class="h-10 w-[1px] bg-slate-200 dark:bg-primary/20 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none">Alex Rivera</p>
+<p class="text-xs font-medium text-primary mt-1">Pro Member</p>
+</div>
+<div class="size-10 rounded-full border-2 border-primary bg-cover bg-center" data-alt="User profile avatar of Alex Rivera" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA547rItbgbU2_Zu7VW_yzZWY74p0sPFf48dxew0JCe78HOSLsL-gL3HA5MwLr0huyChttZKbMZfARN2_YRoOEao3yTeWMCOxMd7vGtQ3q1zE_XoGOeS70uW1wEgQesOorbXwrQMbG4LpfXz-lFH7wEkEwn66NGZ9FBavmSQehwqE6pzE9BND6fyLAAJuK-uRMj9OFeYkNZrC376bcoStnqabkUiLt_02RhZIQK9Z1XXrACEI6jtks62t0J6iJvitmrbBcsIuzaA21I');"></div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col max-w-6xl mx-auto w-full p-6 md:p-10 gap-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="space-y-1">
+<h1 class="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-100">Workout Sessions</h1>
+<p class="text-slate-500 dark:text-primary/70 font-medium">Activity from the last 24 hours</p>
+</div>
+<button class="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:shadow-[0_0_20px_rgba(236,91,19,0.4)] transition-all">
+<span class="material-symbols-outlined">add</span>
+                        New Session
+                    </button>
+</div>
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="flex flex-col gap-2 rounded-2xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-5xl">weight</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider">Total Volume</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-black text-slate-900 dark:text-slate-100">12,450</p>
+<p class="text-slate-500 dark:text-slate-400 font-bold">kg</p>
+</div>
+<div class="flex items-center gap-1 text-emerald-500 font-bold text-sm">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12% vs yesterday</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-2xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-5xl">local_fire_department</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider">Calories</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-black text-slate-900 dark:text-slate-100">420</p>
+<p class="text-slate-500 dark:text-slate-400 font-bold">kcal</p>
+</div>
+<div class="flex items-center gap-1 text-emerald-500 font-bold text-sm">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+5% intensity</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-2xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-5xl">timer</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider">Duration</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-black text-slate-900 dark:text-slate-100">65</p>
+<p class="text-slate-500 dark:text-slate-400 font-bold">min</p>
+</div>
+<div class="flex items-center gap-1 text-primary font-bold text-sm">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Target: 60 min</span>
+</div>
+</div>
+</div>
+<!-- Exercise List Section -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-2">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Exercises Completed</h2>
+<div class="flex gap-2">
+<span class="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">4 Total</span>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Exercise Card 1 -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-primary/10 overflow-hidden shadow-sm">
+<div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-xl bg-slate-100 dark:bg-background-dark flex items-center justify-center text-primary border border-primary/10">
+<span class="material-symbols-outlined text-3xl">fitness_center</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Barbell Bench Press</h3>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Chest &amp; Triceps Focus</p>
+</div>
+</div>
+<div class="flex items-center gap-8 md:gap-12 flex-wrap">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Sets</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">4</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Reps</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">10, 8, 8, 6</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Weight</span>
+<span class="text-xl font-black text-primary">85 kg</span>
+</div>
+<div class="flex gap-2 ml-auto">
+<button class="size-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-background-dark text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="size-10 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Exercise Card 2 -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-primary/10 overflow-hidden shadow-sm">
+<div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-xl bg-slate-100 dark:bg-background-dark flex items-center justify-center text-primary border border-primary/10">
+<span class="material-symbols-outlined text-3xl">sports_gymnastics</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Dumbbell Lateral Raise</h3>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Side Deltoids</p>
+</div>
+</div>
+<div class="flex items-center gap-8 md:gap-12 flex-wrap">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Sets</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">3</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Reps</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">15, 15, 12</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Weight</span>
+<span class="text-xl font-black text-primary">12 kg</span>
+</div>
+<div class="flex gap-2 ml-auto">
+<button class="size-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-background-dark text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="size-10 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Exercise Card 3 (Action Confirmation Concept) -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl border-2 border-red-500/30 overflow-hidden shadow-xl ring-2 ring-red-500/10">
+<div class="bg-red-500/5 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-xl bg-red-500/20 flex items-center justify-center text-red-500">
+<span class="material-symbols-outlined text-3xl">warning</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Delete Incline Flyes?</h3>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">This will permanently remove the set data.</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-background-dark transition-colors">
+                                        Cancel
+                                    </button>
+<button class="px-6 py-2 rounded-lg font-bold bg-red-500 text-white shadow-lg shadow-red-500/25">
+                                        Delete Forever
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Exercise Card 4 -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-primary/10 overflow-hidden shadow-sm opacity-60 grayscale-[0.5]">
+<div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-xl bg-slate-100 dark:bg-background-dark flex items-center justify-center text-primary border border-primary/10">
+<span class="material-symbols-outlined text-3xl">repeat</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Cable Tricep Pushdown</h3>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Isolation Exercise</p>
+</div>
+</div>
+<div class="flex items-center gap-8 md:gap-12 flex-wrap">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Sets</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">3</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Reps</span>
+<span class="text-xl font-black text-slate-900 dark:text-slate-100">12, 12, 12</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Weight</span>
+<span class="text-xl font-black text-primary">25 kg</span>
+</div>
+<div class="flex gap-2 ml-auto">
+<button class="size-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-background-dark text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="size-10 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress Chart Placeholder (Conceptual) -->
+<div class="mt-4 p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 relative overflow-hidden">
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="space-y-2 text-center md:text-left">
+<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Performance Trend</h3>
+<p class="text-slate-500 dark:text-slate-400">You've hit 95% of your volume goal for today.</p>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="size-16 rounded-full border-4 border-primary border-t-transparent flex items-center justify-center mb-2">
+<span class="text-sm font-black text-primary">95%</span>
+</div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Daily Target</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="size-16 rounded-full border-4 border-slate-300 dark:border-surface-dark border-t-primary flex items-center justify-center mb-2">
+<span class="text-sm font-black text-slate-900 dark:text-slate-100">8d</span>
+</div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Streak</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Footer -->
+<footer class="mt-auto p-6 border-t border-slate-200 dark:border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-sm">
+<div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">© 2024 Progressive Trainer. Keep pushing your limits.</p>
+<div class="flex gap-4">
+<a class="text-xs font-bold text-slate-400 hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="text-xs font-bold text-slate-400 hover:text-primary transition-colors" href="#">Terms</a>
+<a class="text-xs font-bold text-slate-400 hover:text-primary transition-colors" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

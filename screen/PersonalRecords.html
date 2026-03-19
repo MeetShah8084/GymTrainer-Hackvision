@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#160d08",
+                        "surface-dark": "#221610",
+                        "border-dark": "#3d2a1f",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .glass-panel {
+            background: rgba(34, 22, 16, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(236, 91, 19, 0.1);
+        }
+        .pr-gradient {
+            background: linear-gradient(135deg, rgba(236, 91, 19, 0.2) 0%, rgba(22, 13, 8, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Navigation -->
+<header class="flex items-center justify-between border-b border-border-dark px-6 py-4 lg:px-20 bg-surface-dark/50 sticky top-0 z-50 backdrop-blur-md">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8">
+<span class="material-symbols-outlined text-4xl font-bold">exercise</span>
+</div>
+<h2 class="text-slate-100 text-xl font-black leading-tight tracking-tight uppercase">Progressive Trainer</h2>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-400 hover:text-primary transition-colors font-medium" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-primary transition-colors font-medium" href="#">Workouts</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Leaderboard</a>
+<a class="text-slate-400 hover:text-primary transition-colors font-medium" href="#">Nutrition</a>
+</nav>
+<div class="flex gap-2 ml-4">
+<button class="flex items-center justify-center rounded-xl size-10 bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20">
+<span class="material-symbols-outlined">military_tech</span>
+</button>
+<button class="flex items-center justify-center rounded-xl size-10 bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/50" data-alt="Profile photo of an athletic male athlete" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCECHIeXWmzuDS303_0JqiiEkCPDENkfygKDk_dk13mFplYxUfDh5ScrrMBc9IXBZ4lZW8KfwL8ZIZEOHHK3VTkAnReecPFna1stIywFaGpsjenjrQPvH1y7V3VqvFWDX-7l82pLCPonToRaFZsF2-_dlLwM-_KHRugP675sdBx75Ah-KSih1c7Ulb-u8X46w0OHJkaQHpFGYdUINmMphffROSm6ueSqc-2QoyFpsYXglqe1tn7QWdQAEHv1fJTVlEdFYQP7HrwwPHr");'></div>
+</div>
+</header>
+<main class="flex flex-col max-w-[1200px] mx-auto w-full px-4 lg:px-10 py-8">
+<!-- Hero Section -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Elite League</span>
+</div>
+<h1 class="text-slate-100 text-5xl font-black leading-tight tracking-tighter">PERSONAL RECORDS</h1>
+<p class="text-slate-400 text-lg max-w-lg">Pushing the boundaries of human potential. Your journey to the elite tier starts with tracking every pound.</p>
+</div>
+<div class="flex gap-3 bg-surface-dark p-1 rounded-xl border border-border-dark">
+<button class="px-6 py-2 rounded-lg bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20">Global</button>
+<button class="px-6 py-2 rounded-lg text-slate-400 font-bold text-sm hover:text-slate-100 transition-colors">Friends</button>
+<button class="px-6 py-2 rounded-lg text-slate-400 font-bold text-sm hover:text-slate-100 transition-colors">Personal</button>
+</div>
+</div>
+<!-- Featured Record Card -->
+<div class="mb-12 group cursor-pointer">
+<div class="relative overflow-hidden rounded-2xl bg-surface-dark border border-border-dark pr-gradient p-8 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-primary/40">
+<div class="relative w-full md:w-1/3 aspect-square lg:aspect-video rounded-xl overflow-hidden shadow-2xl">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Intense athlete preparing for a heavy deadlift" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC66F0apJ3zcdCj_yXakrzUDAJ78dFx8cbGmvk1Q7l6GQfsJeAslx003etTerV5jqJXA8ppq441PXpBdiafnxR4sdO2230hIlqQRyTI1tnB_D-KMGf3PO6RsQ5s9UWaxQO7nMPLkPXnF4FWymIA-snPuAbF_01DiKMRMliJy7e2-ySl6jkCQnEaEYnn96mi9jXmh4I8ijcGZW2XBWzqBmk7YJkmgYbryZM7pI_VmcnnUWhikStHfOCAKQC0A6morWCK8CtbN7ji6pbO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<span class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter">Live Session</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="flex items-center gap-2 text-primary mb-2">
+<span class="material-symbols-outlined">workspace_premium</span>
+<p class="text-sm font-bold tracking-widest uppercase">Current Peak Achievement</p>
+</div>
+<h3 class="text-slate-100 text-4xl font-black mb-4 group-hover:text-primary transition-colors">Deadlift: 585 lbs</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+<div>
+<p class="text-slate-500 text-xs uppercase font-bold tracking-wider">World Rank</p>
+<p class="text-slate-100 text-xl font-bold">#1 Global</p>
+</div>
+<div>
+<p class="text-slate-500 text-xs uppercase font-bold tracking-wider">Weight Class</p>
+<p class="text-slate-100 text-xl font-bold">198 lbs</p>
+</div>
+<div class="hidden md:block">
+<p class="text-slate-500 text-xs uppercase font-bold tracking-wider">Lift Type</p>
+<p class="text-slate-100 text-xl font-bold">Sumo</p>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">play_circle</span>
+                                    View Performance
+                                </button>
+<button class="border border-border-dark hover:border-primary text-slate-300 font-bold py-3 px-6 rounded-xl transition-all">
+                                    Compare PRs
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Leaderboard Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+<!-- PR Card 1 -->
+<div class="bg-surface-dark border border-border-dark p-6 rounded-2xl hover:bg-primary/5 transition-all">
+<div class="flex justify-between items-start mb-6">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">fitness_center</span>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-500 uppercase">Personal Best</span>
+<h4 class="text-2xl font-black text-slate-100">405 lbs</h4>
+</div>
+</div>
+<h5 class="text-xl font-bold text-slate-100 mb-1">Back Squat</h5>
+<p class="text-slate-500 text-sm mb-6">Advanced • 3 Rep Max</p>
+<div class="flex items-center justify-between border-t border-border-dark pt-4">
+<div class="flex -space-x-3">
+<div class="size-8 rounded-full border-2 border-surface-dark bg-cover bg-center" data-alt="Athlete avatar 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDOSKhKQAIeIVESoTI4dfmMk6oZEuLB5egPlFn6P9MSfiEZD2lZrG9VZXMGRUF9KS8yBkpQCKbxdUbWEPK14FOp8DgY3rIn1wyzGj_r_VVls7_BBY7Ql7yCcbrD2-pqZk2fw9Icyy3RNOc-9l1AVy93SUHINmC-t194CTQZ3yMlTNkjge3xDaattMytZqXmUpExweUg5HxZNv1mTUM6UWt-v7VYA_sOeCHKH3upp4TiG_udYBaFWD8OmuJDdhAozqi82RaiXUrMJymb");'></div>
+<div class="size-8 rounded-full border-2 border-surface-dark bg-cover bg-center" data-alt="Athlete avatar 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBDB6pp9BhjM97TF0QVP5vTZfxL4g_WG2aOT9YWphRLxuThcKqnolOXCBIQN_vgrh9_SCPyb_84pe6_5RgfGlxtBH_rKwBoo93f3siHEbd1JUj74d9qHzgQtX1yhGDuzsGQDNLiNENMcZfcBWsh7q4GvFUgnq4ydGXt28MU7C2qwPpNorc_KOUWAmWhGBKk757ZEV8vS8NpuFY0IRiYxyxPvROuTO1_NMv3kHM94kKGTMwtIwJcVVfAoCpHRk8cQYt7YPC8h7tsP7kM");'></div>
+<div class="size-8 rounded-full border-2 border-surface-dark bg-primary flex items-center justify-center text-[10px] font-bold">+12</div>
+</div>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                Details <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- PR Card 2 -->
+<div class="bg-surface-dark border border-border-dark p-6 rounded-2xl hover:bg-primary/5 transition-all">
+<div class="flex justify-between items-start mb-6">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">sports_gymnastics</span>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-500 uppercase">Personal Best</span>
+<h4 class="text-2xl font-black text-slate-100">315 lbs</h4>
+</div>
+</div>
+<h5 class="text-xl font-bold text-slate-100 mb-1">Bench Press</h5>
+<p class="text-slate-500 text-sm mb-6">Elite • 1 Rep Max</p>
+<div class="flex items-center justify-between border-t border-border-dark pt-4">
+<div class="flex -space-x-3">
+<div class="size-8 rounded-full border-2 border-surface-dark bg-cover bg-center" data-alt="Athlete avatar 3" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDChryIjveTmg5msbtD1eJKzGZzp0v3ofiV6lTVAE1cTB8Iep9e632jbIiVS1eeWzrURM8ENAaFtpibx6JJzuZRmt-hjk25920sLzI0hvQkSIpEQNtljSzQu_Px5yBlql2LWLc6NsPPGI7P-Y9HfWLOsXtGzMh1-2m5UxNW8hX4WOgDecbguv6yefDH7HGa3RUwymWClW_1ljl8YqYxuytRzPTdAQJjYqPsmpxrup_j-9oqiqaeCdorjOOtkn7f0GXq5PGMZqYUTjET");'></div>
+<div class="size-8 rounded-full border-2 border-surface-dark bg-primary flex items-center justify-center text-[10px] font-bold">+45</div>
+</div>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                Details <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- PR Card 3 -->
+<div class="bg-surface-dark border border-border-dark p-6 rounded-2xl hover:bg-primary/5 transition-all border-dashed border-primary/40 group relative">
+<div class="flex flex-col items-center justify-center h-full text-center py-4">
+<div class="size-14 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl">add</span>
+</div>
+<h5 class="text-xl font-bold text-slate-100 mb-1">Log New Record</h5>
+<p class="text-slate-500 text-sm">Challenge your limits today</p>
+</div>
+</div>
+</div>
+<!-- Detailed Table Leaderboard -->
+<div class="bg-surface-dark border border-border-dark rounded-2xl overflow-hidden shadow-2xl">
+<div class="px-8 py-6 border-b border-border-dark flex justify-between items-center">
+<h3 class="text-slate-100 text-xl font-bold">Global Bench Leaderboard</h3>
+<div class="flex gap-2">
+<select class="bg-background-dark border-border-dark text-slate-300 text-sm rounded-lg px-3 py-1 outline-none">
+<option>Weight Class: All</option>
+<option>148 lbs</option>
+<option>181 lbs</option>
+<option>198 lbs</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-border-dark bg-background-dark/30">
+<th class="px-8 py-4">Rank</th>
+<th class="px-8 py-4">Athlete</th>
+<th class="px-8 py-4 text-center">Weight Class</th>
+<th class="px-8 py-4 text-center">Wilks Score</th>
+<th class="px-8 py-4 text-right">Max Lift</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-dark">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-2">
+<span class="text-primary font-black">01</span>
+<span class="material-symbols-outlined text-amber-500 text-sm" style="font-variation-settings: 'FILL' 1">emoji_events</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-primary" data-alt="Athlete photo rank 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAY_3AkydklS4VSeU9DU9w5Do9p_RVemrbr147Q2qwPFYkgk4JOFrHrp3NOSRNiV-KuoqETen1NdNCXiClI1QI0Jlefz0rLoMV2ATXWo5NxQpOjllUl6LkwwacD87xnWgKPU0R6viyk8D1ad4n3aVivYjuvX3LprlUeISHMw7LpLG9wHUY93tGr5ndZ_Ondqw-3H1Hud_l8_m1TFAm8AHHdWYpkAyqeGh9ZJxX_D1F8jyk-NpRO5PhXHTGIK4wD1KDPheIJIpmhvbiA");'></div>
+<div>
+<p class="text-slate-100 font-bold">Marcus Sterling</p>
+<p class="text-slate-500 text-xs uppercase">Pro Athlete</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5 text-center text-slate-300">198 lbs</td>
+<td class="px-8 py-5 text-center text-slate-300">482.5</td>
+<td class="px-8 py-5 text-right font-black text-primary text-lg">585 lbs</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-8 py-5 text-slate-500 font-bold">02</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Athlete photo rank 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtZirfskCGTprjPtWO1CV8d-cxdLa_heN0kYudso0NxY0dbFeUxIUe1DW660I-C0pZhzCnOVO6vU7d_CUkZN8dp8qOkuNoy_4lhlAK9jlqbuTIzH8qqGSqzhLuc4yeJXbbjeNdl1C9ZJWCiXnNf4h8hv9k9VMh-V8pFFCHHJ8VjnZlxVG2Vl6tti2WmxFphah4cWxfFrVP6xBIuLrSqoWlWkHL3LXWhGYTfnQ0ePNDryUQAsW293hNVABUisk6K1K0BJbK6z1xDUgM");'></div>
+<div>
+<p class="text-slate-100 font-bold">David Chen</p>
+<p class="text-slate-500 text-xs uppercase">Elite Tier</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5 text-center text-slate-300">181 lbs</td>
+<td class="px-8 py-5 text-center text-slate-300">465.2</td>
+<td class="px-8 py-5 text-right font-black text-slate-100 text-lg">545 lbs</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-8 py-5 text-slate-500 font-bold">03</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Athlete photo rank 3" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAW1-9Khqt18C0peIbEqM3OjkXEwPlo9Xe7G2eVMgfQRpZbEPAsv1AwvQ9rhkHTdYh7MJqSQGcn1XQW764nvms05Wu54k9_q8MkNDykTXyS3AeniQn_sDMQJnHr9XhlN3NvzalY2o3Ci1iZaX9IW7ISMx58q5WgylFfbi8CODQJh5m9rkCjet956daCF2V6Bye40UfIZ3fdADzjcA8rA2ECDJsE1u1mCPX8IspEkrAgC_XFFeB5LPuMjkL0W8B_AR-EahYOum7jHT8Q");'></div>
+<div>
+<p class="text-slate-100 font-bold">Sarah Jenkins</p>
+<p class="text-slate-500 text-xs uppercase">National Qualifier</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5 text-center text-slate-300">148 lbs</td>
+<td class="px-8 py-5 text-center text-slate-300">441.8</td>
+<td class="px-8 py-5 text-right font-black text-slate-100 text-lg">425 lbs</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 bg-background-dark/50 border-t border-border-dark text-center">
+<button class="text-primary font-bold text-sm uppercase tracking-widest hover:text-white transition-colors">Show All Rankings</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="border-t border-border-dark mt-auto bg-surface-dark px-20 py-10">
+<div class="flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined font-bold">exercise</span>
+<span class="font-black text-slate-100">PROGRESSIVE TRAINER</span>
+</div>
+<p class="text-slate-500 text-sm">© 2024 Progressive Trainer Inc. All rights reserved.</p>
+</div>
+<div class="flex gap-8 text-slate-400 text-sm font-medium">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">API Docs</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

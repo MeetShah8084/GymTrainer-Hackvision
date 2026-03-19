@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#1a120e",
+                        "card-dark": "#2a1d17",
+                        "accent-dark": "#3d2a21",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Progress Analysis | Progressive Trainer</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation -->
+<header class="border-b border-accent-dark px-6 py-4 flex items-center justify-between sticky top-0 bg-background-dark/80 backdrop-blur-md z-50">
+<div class="flex items-center gap-4">
+<div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-3xl">exercise</span>
+</div>
+<div>
+<h2 class="text-xl font-black leading-none tracking-tight">PROGRESSIVE <span class="text-primary">TRAINER</span></h2>
+<p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Elite Performance Analytics</p>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-semibold text-slate-400 hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span> Dashboard
+            </a>
+<a class="text-sm font-semibold text-slate-400 hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg">fitness_center</span> Workouts
+            </a>
+<a class="text-sm font-semibold text-primary flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg">monitoring</span> Progress
+            </a>
+<a class="text-sm font-semibold text-slate-400 hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg">settings</span> Settings
+            </a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="size-10 rounded-xl bg-accent-dark flex items-center justify-center text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="size-10 rounded-full border-2 border-primary p-0.5">
+<div class="w-full h-full rounded-full bg-center bg-cover" data-alt="Portrait of an athletic person smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRZSz1R5dNHLfDefI1E0JfvgPnTmOVDNBtpqKH6ihKFw0B-U4RKfWka1qViQNTLdmZYPxXWqXbdP6kcuS-RZl61tCC-vQ869P6STnh3MF4axnjzP-929tIxVPRnE_smRi5hdNq8c9DvKN9XipZWHhcOf268eiXDkZHzW-80BhnZxPfi9luTI8SudCb6b4_Zi8D-ePhOE0hK7O2ckOgq0qpfxYvsbd-aT7cIvVuGlO5t43B8BwKnmkinVrmnYC_qSHNjJ4EA60Oopxs')"></div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+<div>
+<h1 class="text-4xl md:text-5xl font-black tracking-tight mb-2">Progress Analysis</h1>
+<p class="text-slate-400 text-lg">Advanced metrics and performance trends for the current mesocycle.</p>
+</div>
+<div class="flex bg-accent-dark p-1 rounded-xl">
+<button class="px-6 py-2 bg-primary rounded-lg text-sm font-bold text-white shadow-lg shadow-primary/20">Overview</button>
+<button class="px-6 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors">Volume</button>
+<button class="px-6 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors">Strength</button>
+</div>
+</div>
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<div class="bg-card-dark border border-accent-dark rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Total Volume Load</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black">124,500 <span class="text-sm font-normal text-slate-500">kg</span></h3>
+<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">trending_up</span> 12.5%</span>
+</div>
+<div class="mt-4 h-1 bg-accent-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%] rounded-full"></div>
+</div>
+</div>
+<div class="bg-card-dark border border-accent-dark rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Max Squat (1RM)</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black">185 <span class="text-sm font-normal text-slate-500">kg</span></h3>
+<span class="text-rose-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">trending_down</span> 2.1%</span>
+</div>
+<div class="mt-4 h-1 bg-accent-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[92%] rounded-full"></div>
+</div>
+</div>
+<div class="bg-card-dark border border-accent-dark rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Avg Intensity</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black">84 <span class="text-sm font-normal text-slate-500">%</span></h3>
+<span class="text-emerald-500 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">trending_up</span> 4.3%</span>
+</div>
+<div class="mt-4 h-1 bg-accent-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[84%] rounded-full"></div>
+</div>
+</div>
+<div class="bg-card-dark border border-accent-dark rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+<p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Sessions Completed</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black">24 <span class="text-sm font-normal text-slate-500">/ 30</span></h3>
+<span class="text-slate-500 text-xs font-bold">Month</span>
+</div>
+<div class="mt-4 h-1 bg-accent-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[80%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Volume Load Chart -->
+<div class="bg-card-dark border border-accent-dark rounded-xl p-8 flex flex-col h-[450px]">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h4 class="text-xl font-bold">Volume Load Analysis</h4>
+<p class="text-slate-400 text-sm">Cumulative weight moved per session (30-day view)</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 text-xs text-slate-400"><span class="size-2 rounded-full bg-primary"></span> Volume</span>
+<span class="flex items-center gap-1 text-xs text-slate-400"><span class="size-2 rounded-full bg-accent-dark border border-primary/30"></span> Baseline</span>
+</div>
+</div>
+<div class="flex-1 w-full flex items-end justify-between gap-2 relative">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none py-2">
+<div class="w-full border-t border-accent-dark/30"></div>
+<div class="w-full border-t border-accent-dark/30"></div>
+<div class="w-full border-t border-accent-dark/30"></div>
+<div class="w-full border-t border-accent-dark/30"></div>
+<div class="w-full border-t border-accent-dark/30"></div>
+</div>
+<!-- Chart Bars (Simplified Data Viz) -->
+<div class="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[30%]" title="Day 1: 4,200kg"></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[45%]" title="Day 2: 5,100kg"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[25%]" title="Day 3: 3,800kg"></div>
+<div class="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[60%]" title="Day 4: 7,200kg"></div>
+<div class="flex-1 bg-primary/50 hover:bg-primary/60 transition-all rounded-t-sm h-[55%]" title="Day 5: 6,800kg"></div>
+<div class="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[70%]" title="Day 6: 8,400kg"></div>
+<div class="flex-1 bg-primary/60 hover:bg-primary/70 transition-all rounded-t-sm h-[85%]" title="Day 7: 10,200kg"></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[40%]" title="Day 8: 4,900kg"></div>
+<div class="flex-1 bg-primary/50 hover:bg-primary/60 transition-all rounded-t-sm h-[65%]" title="Day 9: 7,800kg"></div>
+<div class="flex-1 bg-primary/70 hover:bg-primary/80 transition-all rounded-t-sm h-[95%]" title="Day 10: 11,500kg"></div>
+<div class="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[50%]" title="Day 11: 6,100kg"></div>
+<div class="flex-1 bg-primary/60 hover:bg-primary/70 transition-all rounded-t-sm h-[80%]" title="Day 12: 9,600kg"></div>
+</div>
+<div class="flex justify-between mt-4 px-2 text-[10px] text-slate-500 font-bold uppercase">
+<span>Week 1</span>
+<span>Week 2</span>
+<span>Week 3</span>
+<span>Week 4</span>
+</div>
+</div>
+<!-- Strength Progression Chart -->
+<div class="bg-card-dark border border-accent-dark rounded-xl p-8 flex flex-col h-[450px]">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h4 class="text-xl font-bold">Strength Progression</h4>
+<p class="text-slate-400 text-sm">Estimated 1RM for main lifts</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-primary shadow-sm shadow-primary/40"></div>
+<span class="text-xs font-semibold">Squat</span>
+</div>
+<div class="flex items-center gap-1.5 opacity-40">
+<div class="size-2 rounded-full bg-slate-400"></div>
+<span class="text-xs font-semibold">Deadlift</span>
+</div>
+</div>
+</div>
+<div class="flex-1 relative flex items-center justify-center">
+<!-- Complex Line Chart Visualization using SVG -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 400 200">
+<defs>
+<lineargradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#ec5b13" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#ec5b13" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#3d2a21" stroke-width="0.5" x1="0" x2="400" y1="40" y2="40"></line>
+<line stroke="#3d2a21" stroke-width="0.5" x1="0" x2="400" y1="80" y2="80"></line>
+<line stroke="#3d2a21" stroke-width="0.5" x1="0" x2="400" y1="120" y2="120"></line>
+<line stroke="#3d2a21" stroke-width="0.5" x1="0" x2="400" y1="160" y2="160"></line>
+<!-- Area Under Curve -->
+<path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55 L400,200 L0,200 Z" fill="url(#gradient)"></path>
+<!-- Primary Strength Line -->
+<path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55" fill="none" stroke="#ec5b13" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<!-- Data Points -->
+<circle cx="0" cy="150" fill="#ec5b13" r="4"></circle>
+<circle cx="100" cy="145" fill="#ec5b13" r="4"></circle>
+<circle cx="200" cy="100" fill="#ec5b13" r="4"></circle>
+<circle cx="300" cy="85" fill="#ec5b13" r="4"></circle>
+<circle cx="400" cy="55" fill="#ec5b13" r="4"></circle>
+</svg>
+<!-- Tooltip Highlight -->
+<div class="absolute top-[55px] right-0 translate-x-1/2 -translate-y-full bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-xl">
+                        185kg (PR)
+                    </div>
+</div>
+<div class="flex justify-between mt-4 px-2 text-[10px] text-slate-500 font-bold">
+<span>JAN 01</span>
+<span>JAN 08</span>
+<span>JAN 15</span>
+<span>JAN 22</span>
+<span>JAN 29</span>
+</div>
+</div>
+</div>
+<!-- Exercise Details Table -->
+<div class="mt-10 bg-card-dark border border-accent-dark rounded-xl overflow-hidden">
+<div class="p-6 border-b border-accent-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
+<h4 class="text-xl font-bold">Main Lift Performance</h4>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-lg">search</span>
+<input class="bg-accent-dark border-none rounded-lg pl-10 pr-4 py-2 text-sm w-full md:w-64 focus:ring-1 focus:ring-primary" placeholder="Search exercises..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-500 text-xs font-black uppercase tracking-widest border-b border-accent-dark">
+<th class="px-6 py-4">Exercise</th>
+<th class="px-6 py-4">Prev 1RM</th>
+<th class="px-6 py-4">Current 1RM</th>
+<th class="px-6 py-4">Change</th>
+<th class="px-6 py-4">Trend</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-accent-dark/50">
+<tr class="hover:bg-accent-dark/30 transition-colors">
+<td class="px-6 py-4 font-bold">Low Bar Back Squat</td>
+<td class="px-6 py-4 text-slate-400">175.0 kg</td>
+<td class="px-6 py-4">185.0 kg</td>
+<td class="px-6 py-4 text-emerald-500 font-bold">+5.7%</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-emerald-500">show_chart</span></td>
+</tr>
+<tr class="hover:bg-accent-dark/30 transition-colors">
+<td class="px-6 py-4 font-bold">Conventional Deadlift</td>
+<td class="px-6 py-4 text-slate-400">210.0 kg</td>
+<td class="px-6 py-4">225.0 kg</td>
+<td class="px-6 py-4 text-emerald-500 font-bold">+7.1%</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-emerald-500">show_chart</span></td>
+</tr>
+<tr class="hover:bg-accent-dark/30 transition-colors">
+<td class="px-6 py-4 font-bold">Bench Press</td>
+<td class="px-6 py-4 text-slate-400">125.0 kg</td>
+<td class="px-6 py-4">122.5 kg</td>
+<td class="px-6 py-4 text-rose-500 font-bold">-2.0%</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-rose-500">trending_down</span></td>
+</tr>
+<tr class="hover:bg-accent-dark/30 transition-colors">
+<td class="px-6 py-4 font-bold">Overhead Press</td>
+<td class="px-6 py-4 text-slate-400">80.0 kg</td>
+<td class="px-6 py-4">85.0 kg</td>
+<td class="px-6 py-4 text-emerald-500 font-bold">+6.2%</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-emerald-500">show_chart</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- Sidebar / Bottom Bar for Mobile -->
+<footer class="md:hidden fixed bottom-0 left-0 right-0 bg-background-dark border-t border-accent-dark p-4 flex justify-around items-center backdrop-blur-lg">
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">HOME</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-[10px] font-bold">TRAIN</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-bold">PROGRESS</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">PROFILE</span>
+</button>
+</footer>
+</body></html>

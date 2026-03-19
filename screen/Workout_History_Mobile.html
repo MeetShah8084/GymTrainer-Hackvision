@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#1a120e",
+                        "surface-dark": "#2a1d17",
+                        "border-dark": "#3d2a21",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab {
+            border-bottom: 2px solid #ec5b13;
+            color: #ec5b13;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Workout History</h1>
+</div>
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">calendar_month</span>
+</button>
+</header>
+<!-- Stats Overview (Premium touch) -->
+<div class="px-4 py-6">
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-xl flex flex-col items-center">
+<span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Sessions</span>
+<span class="text-lg font-bold">24</span>
+</div>
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-xl flex flex-col items-center">
+<span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Hours</span>
+<span class="text-lg font-bold">38.5</span>
+</div>
+<div class="bg-primary/5 border border-primary/20 p-3 rounded-xl flex flex-col items-center">
+<span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Streak</span>
+<span class="text-lg font-bold">5d</span>
+</div>
+</div>
+</div>
+<!-- Filter Tabs -->
+<div class="px-4 mb-4">
+<div class="flex gap-6 overflow-x-auto custom-scrollbar border-b border-primary/10">
+<button class="pb-3 text-sm font-bold active-tab whitespace-nowrap">All Activities</button>
+<button class="pb-3 text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Strength</button>
+<button class="pb-3 text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Cardio</button>
+<button class="pb-3 text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Recovery</button>
+</div>
+</div>
+<!-- Session List -->
+<main class="flex-1 px-4 pb-24">
+<!-- Section: This Week -->
+<div class="mb-6">
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">This Week</h3>
+<div class="space-y-4">
+<!-- Session Card 1 -->
+<div class="group relative flex items-center gap-4 bg-primary/5 dark:bg-surface-dark border border-primary/10 rounded-xl p-4 hover:border-primary/40 transition-all">
+<div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-primary/20">
+<img alt="Gym athlete" class="h-full w-full object-cover opacity-80" data-alt="Close up of weightlifting plates in gym" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5V3h5VvyP18zjdKL-LLEyRSqigw75A-MkyzxQn04DJ_foP6XkHjDMoqqZfZOjGkn1cNWHLX4zvKslnrPOTg6WtnMfvJvDm91BI7RXpLya7iTHnQ_dPXxBrR9xPoGou7P85rkNab00oQ3jvzYlgMDWScxGJm2_FvrrI9-g21MHFdiUfMbvcMoHQkRIUYFa0I18Qgm1F_OKCyVgYRmHkvnzYRfuYlEELKvMrA5uBqQiAKIRANe-LO3qsC6ydzJoTmY65cjtUgzz4A95"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/60 to-transparent"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Push Day: Hypertrophy</h4>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase">Today</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-2">
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Chest</span>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Triceps</span>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Shoulders</span>
+</div>
+<div class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>75 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>480 kcal</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<!-- Session Card 2 -->
+<div class="group relative flex items-center gap-4 bg-primary/5 dark:bg-surface-dark border border-primary/10 rounded-xl p-4 hover:border-primary/40 transition-all">
+<div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-primary/20">
+<img alt="Athlete running" class="h-full w-full object-cover opacity-80" data-alt="Man running on a treadmill in a dark gym" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDujuBU7z7W8YdiIx8XkrfhqxMbpQiH2iB128CykI6JbCkC9IT6Dj0GOGx6AaOKPJLIrnbjYQ1_Y_7pxl91Xxq7H-AK7sIy89jfBf5lsBWLwyWE6VIc1Low7LNmI4EmkDgR6Qx6-JepuDvWVmMfr5EV5IvMQ5Hs7O2o1UteNiVK1DK-TQ5gH28bdZ9frrgcTwTHxLDM0RpSkaqYMiqZcHW5j6mFkWkUpnoy-FapXBU7_MyX6LLc6s13ALCg-njUMYGdSDEghJFcv8KT"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">HIIT Cardio Session</h4>
+<span class="text-[10px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full uppercase">Tue</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-2">
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Full Body</span>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Cardio</span>
+</div>
+<div class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>45 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>620 kcal</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Section: Last Week -->
+<div>
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4 opacity-70">Last Week</h3>
+<div class="space-y-4">
+<!-- Session Card 3 -->
+<div class="group relative flex items-center gap-4 bg-primary/5 dark:bg-surface-dark border border-primary/10 rounded-xl p-4">
+<div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-primary/20">
+<img alt="Deadlift" class="h-full w-full object-cover opacity-80" data-alt="Person performing a deadlift exercise" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDps1WV19a4qaOIEfM8A0LE_TFX2w1jTmZAXJ91ZZxoSJGOyoA-qjsZGE2U_2snf1odepQQ_tm9IITiPnbZ80e9GxZuifLCdZBQyM5aAVkvKBVOSr6v1Nl_mWXdXEZSvuwMDubyhCtgx-qGTyxuHTNmqbLeTbqxarX7ILdhQPc8oXZKFkj0hAN7uJk6k5ONLbs2eb9vsl88EHhxAvFj4d0pY3ci-5reffdmnFHq6NWsUDmV4smhb1ZVudE3CQ1eyaTUEQhqXEAuc4Pi"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Leg Day: Power</h4>
+<span class="text-[10px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full uppercase">Sun</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-2">
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Quads</span>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Glutes</span>
+</div>
+<div class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>90 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>550 kcal</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<!-- Session Card 4 -->
+<div class="group relative flex items-center gap-4 bg-primary/5 dark:bg-surface-dark border border-primary/10 rounded-xl p-4 opacity-80">
+<div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-primary/20">
+<img alt="Pull up" class="h-full w-full object-cover opacity-80" data-alt="Close up of back muscles during a pull up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGcpV12rfeoVKdvoBDWFeO24b8IBSQL3wKM6j8TVViTX1uQpSDsBVNB0NbxrhZ3VCfrnJOQGFxddOU0Bx2a3TxVfgvYDQWthe-l3aZ-MD8pyJc3otuCfGEJqQBB0F2KRjnvS_3dpHoAyBU7kNmooFF3_cTxvSS2aGEtusa5zPON_PEbbAZzsO1FqsRJc6eyec4d0VRJnUqw-2TLcAJA_nv_bmM86ZgEelOItkNNE23fOcIcfj-4P4bA7DhAz-2GvMwbbT1d8_97F_o"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Pull Day: Volume</h4>
+<span class="text-[10px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full uppercase">Fri</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-2">
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Back</span>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-md">Biceps</span>
+</div>
+<div class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>65 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>410 kcal</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-lg border-t border-primary/10 z-30">
+<div class="flex items-center justify-around py-2">
+<a class="flex flex-col items-center gap-1 px-4 py-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-4 py-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-[10px] font-medium">Plans</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-4 py-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="text-[10px] font-bold">History</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-4 py-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+<!-- iPhone Home Indicator area -->
+<div class="h-5"></div>
+</nav>
+<!-- Quick Log Action Button -->
+<button class="fixed bottom-24 right-6 h-14 w-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 flex items-center justify-center z-40 max-md:right-[calc(50%-200px+24px)]">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</body></html>

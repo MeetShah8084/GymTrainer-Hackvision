@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Progressive Trainer - Workout Calendar</title>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Manrope', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              orange: '#FF5C1A',
+              dark: '#1A0F0A',
+              surface: '#261914',
+              muted: '#3D2D26',
+            }
+          },
+          borderRadius: {
+            'twelve': '12px',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1A0F0A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3D2D26;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FF5C1A;
+    }
+  </style>
+<style data-purpose="calendar-specifics">
+    .heatmap-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 2px;
+    }
+    .heatmap-0 { background-color: #261914; }
+    .heatmap-1 { background-color: #4D2614; }
+    .heatmap-2 { background-color: #8C3A14; }
+    .heatmap-3 { background-color: #CC4D14; }
+    .heatmap-4 { background-color: #FF5C1A; }
+  </style>
+</head>
+<body class="bg-brand-dark text-white font-sans flex h-screen overflow-hidden">
+<!-- BEGIN: Sidebar Navigation -->
+<aside class="w-64 bg-brand-dark border-r border-brand-muted flex flex-col p-6 space-y-8" data-purpose="sidebar">
+<div class="flex items-center space-x-3 px-2">
+<div class="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+<span class="font-extrabold text-xl tracking-tight">Progressive</span>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center space-x-3 p-3 rounded-twelve text-gray-400 hover:bg-brand-muted transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-twelve text-gray-400 hover:bg-brand-muted transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-semibold">Workouts</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-twelve text-gray-400 hover:bg-brand-muted transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-semibold">Progress</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-twelve bg-brand-orange text-white shadow-lg shadow-brand-orange/20" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-semibold">Calendar</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-twelve text-gray-400 hover:bg-brand-muted transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-semibold">Settings</span>
+</a>
+</nav>
+<div class="bg-brand-surface p-4 rounded-twelve border border-brand-muted" data-purpose="sidebar-promo">
+<p class="text-[10px] uppercase tracking-widest text-brand-orange font-bold mb-1">Premium Tier</p>
+<p class="text-sm text-gray-300">Next billing: Oct 12</p>
+</div>
+</aside>
+<!-- END: Sidebar Navigation -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- BEGIN: Top Header Bar -->
+<header class="h-20 flex items-center justify-between px-8 border-b border-brand-muted sticky top-0 bg-brand-dark/95 backdrop-blur-md z-10" data-purpose="main-header">
+<div>
+<h1 class="text-2xl font-extrabold">Workout Calendar</h1>
+<p class="text-sm text-gray-500">Track your consistency and plan your gains</p>
+</div>
+<div class="flex items-center space-x-6">
+<button class="bg-brand-orange hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-twelve shadow-lg shadow-brand-orange/20 transition-all flex items-center space-x-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<span>Log Workout</span>
+</button>
+<div class="flex items-center space-x-3 border-l border-brand-muted pl-6">
+<button class="w-10 h-10 bg-brand-surface border border-brand-muted rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors relative">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-2 right-2.5 w-2 h-2 bg-brand-orange rounded-full"></span>
+</button>
+<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-brand-muted" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUP6XS5grXcN_OoQNjdIAZziBAgN06bRozpPlBlkDZ4hSuKv4KvH0B3b1ivpDp9puhbgV3sLq2W9XEY8t-gVAZTGLVNc5AKhzmkBxqfj_qhZruTVmGjBSLc0yQzZpMPFMEOLFLuLIPTsCafgr60DfSuFjBG1PJCfVObPl3etuqso6RU_unbFb1yDOv-ZukwLfYepdOaUQjGYrpc9Jj665Dbmki5FShuVQdCU9TFD_Ln_ol1W-QyqIwnJqf7ZQ0OtKH7JTE52s6rSTd"/>
+</div>
+</div>
+</header>
+<!-- END: Top Header Bar -->
+<section class="p-8 space-y-8" data-purpose="calendar-dashboard">
+<!-- BEGIN: Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-brand-surface p-6 rounded-twelve border border-brand-muted flex items-center justify-between">
+<div>
+<p class="text-gray-400 text-sm font-medium mb-1">Current Streak</p>
+<p class="text-3xl font-extrabold">12 Days</p>
+</div>
+<div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center text-brand-orange">
+<svg class="w-7 h-7" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1014 0c0-1.187-.249-2.315-.699-3.334a1 1 0 00-1.014-.57c-.421.05-.81.06-1.141.021-.33-.039-.638-.134-.93-.261-1.288-.562-1.823-1.5-1.823-1.5zM10 17a2 2 0 100-4 2 2 0 000 4z" fill-rule="evenodd"></path></svg>
+</div>
+</div>
+<div class="bg-brand-surface p-6 rounded-twelve border border-brand-muted flex items-center justify-between">
+<div>
+<p class="text-gray-400 text-sm font-medium mb-1">Completion Rate</p>
+<p class="text-3xl font-extrabold">85%</p>
+</div>
+<div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500">
+<svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+</div>
+<div class="bg-brand-surface p-6 rounded-twelve border border-brand-muted flex items-center justify-between">
+<div>
+<p class="text-gray-400 text-sm font-medium mb-1">Total Workouts</p>
+<p class="text-3xl font-extrabold">156</p>
+</div>
+<div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-400">
+<svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+</div>
+</div>
+<!-- END: Stats Grid -->
+<!-- BEGIN: Monthly Calendar -->
+<div class="bg-brand-surface rounded-twelve border border-brand-muted p-8 shadow-2xl" data-purpose="main-calendar">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-bold flex items-center space-x-2">
+<span>October 2023</span>
+<span class="text-gray-500 font-medium">/ 22 Workouts</span>
+</h2>
+<div class="flex items-center space-x-2">
+<button class="p-2 bg-brand-dark border border-brand-muted rounded-lg hover:bg-brand-muted transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-2 bg-brand-dark border border-brand-muted rounded-lg hover:bg-brand-muted transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Calendar Grid -->
+<div class="grid grid-cols-7 gap-px bg-brand-muted overflow-hidden rounded-lg border border-brand-muted">
+<!-- Days Header -->
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Sun</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Mon</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Tue</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Wed</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Thu</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Fri</div>
+<div class="bg-brand-dark py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Sat</div>
+<!-- Calendar Dates (Simplified 5-row grid) -->
+<!-- Empty first day if month starts on Mon -->
+<div class="bg-brand-dark min-h-[100px] p-2 opacity-30"></div>
+<!-- Oct 1 -->
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">1</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">LEG DAY</div>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">2</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">PUSH (A)</div>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end relative group">
+<span class="text-sm font-semibold mb-auto text-gray-500">3</span>
+<div class="absolute inset-0 flex items-center justify-center">
+<svg class="w-8 h-8 text-gray-700" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<span class="text-[10px] text-gray-600 font-bold uppercase mt-auto">Skipped</span>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">4</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">PULL (B)</div>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">5</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">ABS</div>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">6</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">HIIT</div>
+</div>
+<!-- Row 2 -->
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto text-gray-500">7</span>
+<span class="text-[10px] text-gray-600 font-bold uppercase">Rest Day</span>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">8</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">LEGS (B)</div>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto">9</span>
+<div class="w-full h-8 bg-brand-orange rounded-md flex items-center justify-center text-[10px] font-bold">PUSH (B)</div>
+</div>
+<!-- Today -->
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end ring-2 ring-brand-orange ring-inset">
+<span class="text-sm font-extrabold text-brand-orange mb-auto">10</span>
+<div class="w-full h-8 border border-brand-orange border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-brand-orange">PLANNING...</div>
+</div>
+<!-- Future Days -->
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto text-gray-400">11</span>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto text-gray-400">12</span>
+</div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end">
+<span class="text-sm font-semibold mb-auto text-gray-400">13</span>
+</div>
+<!-- Remaining slots for visualization purpose -->
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">14</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">15</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">16</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">17</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">18</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">19</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">20</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">21</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">22</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">23</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">24</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">25</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">26</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">27</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">28</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">29</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">30</span></div>
+<div class="bg-brand-dark min-h-[100px] p-3 flex flex-col items-end"><span class="text-sm text-gray-400">31</span></div>
+</div>
+<!-- Legend -->
+<div class="mt-6 flex items-center space-x-6 text-xs font-bold text-gray-400 uppercase tracking-widest">
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 bg-brand-orange rounded-sm"></span>
+<span>Completed</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 bg-transparent border border-brand-orange border-dashed rounded-sm"></span>
+<span>Scheduled</span>
+</div>
+<div class="flex items-center space-x-2">
+<svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+<span>Skipped</span>
+</div>
+</div>
+</div>
+<!-- END: Monthly Calendar -->
+<!-- BEGIN: Consistency Heatmap -->
+<section class="bg-brand-surface rounded-twelve border border-brand-muted p-8" data-purpose="consistency-heatmap">
+<h3 class="text-lg font-bold mb-6">Yearly Consistency</h3>
+<div class="flex items-end space-x-1 overflow-x-auto pb-4">
+<!-- Labels for months -->
+<div class="flex flex-col space-y-2 text-[10px] text-gray-500 font-bold uppercase pr-4">
+<span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span>
+</div>
+<!-- Mocking GitHub style heatmap grid -->
+<div class="grid grid-flow-col grid-rows-7 gap-1 flex-1">
+<!-- This is a loop simulation for 52 weeks -->
+<!-- Week 1-52 (Randomized intensities for demo) -->
+<div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<!-- Additional columns for full 52 weeks -->
+<div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div><div class="heatmap-cell w-3 heatmap-0"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-4"></div><div class="heatmap-cell w-3 heatmap-3"></div><div class="heatmap-cell w-3 heatmap-1"></div><div class="heatmap-cell w-3 heatmap-2"></div>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-end space-x-2 text-[10px] text-gray-500 font-bold uppercase">
+<span>Less</span>
+<div class="flex space-x-1">
+<div class="heatmap-cell w-3 heatmap-0"></div>
+<div class="heatmap-cell w-3 heatmap-1"></div>
+<div class="heatmap-cell w-3 heatmap-2"></div>
+<div class="heatmap-cell w-3 heatmap-3"></div>
+<div class="heatmap-cell w-3 heatmap-4"></div>
+</div>
+<span>More</span>
+</div>
+</section>
+<!-- END: Consistency Heatmap -->
+</section>
+<!-- BEGIN: Footer -->
+<footer class="p-8 pt-0 text-center" data-purpose="footer-info">
+<p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Powered by Progressive AI v4.2</p>
+</footer>
+<!-- END: Footer -->
+</main>
+<!-- END: Main Content Area -->
+</body></html>

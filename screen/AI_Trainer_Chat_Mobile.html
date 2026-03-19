@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Trainer - Premium Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#ec5b13",
+                "background-light": "#f8f6f6",
+                "background-dark": "#221610",
+              },
+              fontFamily: {
+                "display": ["Public Sans"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 font-display">
+<div class="relative flex h-screen w-full flex-col bg-background-dark overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-4 py-4 border-b border-primary/10 bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-slate-400">menu</span>
+</button>
+<div class="flex flex-col items-center">
+<h2 class="text-white text-base font-bold leading-tight tracking-tight">Progressive AI</h2>
+<div class="flex items-center gap-1.5">
+<span class="size-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Online Coach</span>
+</div>
+</div>
+<div class="flex items-center justify-end size-10">
+<div class="size-8 rounded-full border border-primary/30 p-0.5 overflow-hidden">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Portrait of a fit professional athlete" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCzdPB5HP3RvK8N6ab1TzCJlzDZLUdR63HhU0VjWnoKHDpzdV2hpQcqNkYnPv1-ZPBuFV1VtT3XcWeReyWk1mC5MIiXjd9obSuAPk_zegQKn0Ahlj2RlLYl01L5WeqyfFnsRIWg2d_BHn8EFnKez8HTWbR8n-WQGcZ-FkkD7rKKQdkI6Scdey9v8jB9_4deHZz2mrBCw3kheQZ9FGAZsVME6nsOU2dRTWJ7nOnslfB4lqNgnmmQ3geSshotUhMW9Fnqwkc1pSmzxEYi')"></div>
+</div>
+</div>
+</header>
+<!-- Chat Area -->
+<main class="flex-1 overflow-y-auto px-4 py-6 space-y-6 no-scrollbar">
+<!-- AI Message -->
+<div class="flex items-end gap-3 max-w-[85%]">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30">
+<span class="material-symbols-outlined text-primary text-sm">bolt</span>
+</div>
+<div class="flex flex-col gap-1.5 items-start">
+<p class="text-slate-400 text-[11px] font-medium ml-1">AI TRAINER</p>
+<div class="rounded-2xl rounded-bl-none px-4 py-3 bg-slate-800/50 border border-slate-700/50 text-slate-100 text-sm leading-relaxed">
+                        Good morning, Alex. I've analyzed your heart rate variability from last night. Your recovery score is 84%. Ready to push your limits today?
+                    </div>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex items-end gap-3 justify-end ml-auto max-w-[85%]">
+<div class="flex flex-col gap-1.5 items-end text-right">
+<p class="text-slate-400 text-[11px] font-medium mr-1">YOU</p>
+<div class="rounded-2xl rounded-br-none px-4 py-3 bg-primary text-white text-sm leading-relaxed shadow-lg shadow-primary/20">
+                        Show me the recovery plan details. I'm feeling a bit tight in my hamstrings.
+                    </div>
+</div>
+</div>
+<!-- AI Recovery Plan Card -->
+<div class="flex items-end gap-3 max-w-[90%]">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30">
+<span class="material-symbols-outlined text-primary text-sm">bolt</span>
+</div>
+<div class="flex flex-col gap-1.5 items-start w-full">
+<p class="text-slate-400 text-[11px] font-medium ml-1">AI TRAINER</p>
+<div class="w-full rounded-2xl rounded-bl-none p-1 bg-gradient-to-br from-primary/20 to-transparent border border-primary/20">
+<div class="bg-slate-900/80 rounded-[14px] p-4">
+<h3 class="text-primary font-bold text-sm mb-3">Today's Optimized Recovery</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+<span class="material-symbols-outlined text-primary">self_improvement</span>
+<div>
+<p class="text-xs font-bold text-slate-100">Hamstring Mobility Flow</p>
+<p class="text-[10px] text-slate-400">12 Minutes • Low Intensity</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+<span class="material-symbols-outlined text-primary">hot_tub</span>
+<div>
+<p class="text-xs font-bold text-slate-100">Contrast Therapy</p>
+<p class="text-[10px] text-slate-400">3 Rounds • Cold/Heat</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30">
+<span class="material-symbols-outlined text-primary">restaurant</span>
+<div>
+<p class="text-xs font-bold text-slate-100">Anti-inflammatory Boost</p>
+<p class="text-[10px] text-slate-400">Turmeric &amp; Magnesium Focus</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider">Start Routine</button>
+</div>
+</div>
+</div>
+</div>
+<!-- More AI Conversation -->
+<div class="flex items-end gap-3 max-w-[85%]">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30">
+<span class="material-symbols-outlined text-primary text-sm">bolt</span>
+</div>
+<div class="flex flex-col gap-1.5 items-start">
+<div class="rounded-2xl rounded-bl-none px-4 py-3 bg-slate-800/50 border border-slate-700/50 text-slate-100 text-sm leading-relaxed">
+                        I've also logged a light 20-min zone 2 ride for active recovery. Would you like to schedule that for this afternoon?
+                    </div>
+</div>
+</div>
+</main>
+<!-- Bottom Input & Controls -->
+<footer class="p-4 bg-background-dark/95 border-t border-slate-800">
+<!-- Suggested Prompts -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-1">
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium hover:border-primary/50 transition-colors">
+                    Tell me more about nutrition
+                </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium hover:border-primary/50 transition-colors">
+                    Log a workout
+                </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium hover:border-primary/50 transition-colors">
+                    Adjust intensity
+                </button>
+</div>
+<!-- Input Bar -->
+<div class="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-2xl p-2 pl-4">
+<input class="flex-1 bg-transparent border-none text-slate-100 text-sm focus:ring-0 placeholder-slate-500" placeholder="Ask your coach..." type="text"/>
+<button class="flex items-center justify-center size-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<!-- Bottom Navigation -->
+<nav class="flex justify-between items-center mt-6 px-4">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] fill-[1]">chat</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Coach</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">fitness_center</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Workouts</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">query_stats</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Insights</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+</body></html>
