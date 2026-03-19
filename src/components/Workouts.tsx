@@ -62,13 +62,13 @@ const initialExercises: Exercise[] = [
 ];
 
 interface WorkoutsProps {
-  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records') => void;
+  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => void;
 }
 
 const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records') => {
+  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -121,7 +121,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('records')}>
             <span>Personal Records</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('schedule')}>
             <span>Schedule</span>
           </a>
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
@@ -423,27 +423,31 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
       </button>
 
       {/* Bottom Navigation Bar (Mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-2 pb-6 pt-2">
         <div className="flex items-center justify-between">
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('dashboard')}>
-            <LayoutDashboard className="w-6 h-6" />
-            <span className="text-[10px] font-medium uppercase tracking-widest">Dash</span>
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Dash</span>
           </a>
           <a className="flex flex-1 flex-col items-center gap-1 text-primary cursor-pointer" onClick={() => navigateTo('workouts')}>
-            <Dumbbell className="w-6 h-6 stroke-[3px]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Workouts</span>
+            <Dumbbell className="w-5 h-5 stroke-[3px]" />
+            <span className="text-[9px] font-bold uppercase tracking-widest">Train</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('schedule')}>
+            <CalendarDays className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Sched</span>
           </a>
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('analysis')}>
-            <LineChart className="w-6 h-6" />
-            <span className="text-[10px] font-medium uppercase tracking-widest">Stats</span>
+            <LineChart className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Stats</span>
           </a>
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('records')}>
-            <Trophy className="w-6 h-6" />
-            <span className="text-[10px] font-medium uppercase tracking-widest">Records</span>
+            <Trophy className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Records</span>
           </a>
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => {}}>
-            <User className="w-6 h-6" />
-            <span className="text-[10px] font-medium uppercase tracking-widest">Profile</span>
+            <User className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Profile</span>
           </a>
         </div>
       </nav>
