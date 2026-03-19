@@ -412,18 +412,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
 
           </div>
 
-          {/* Desktop Bottom Action Footer */}
-          <footer className="hidden md:flex mt-auto p-6 border-t border-slate-200 dark:border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-sm sticky bottom-0">
-            <div className="max-w-6xl w-full mx-auto flex justify-between items-center gap-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">© 2024 Progressive Trainer. Keep pushing your limits.</p>
-              <div className="flex gap-4">
-                <a href="#" className="text-xs font-bold text-slate-400 hover:text-primary transition-colors">Privacy</a>
-                <a href="#" className="text-xs font-bold text-slate-400 hover:text-primary transition-colors">Terms of Service</a>
-                <a href="#" className="text-xs font-bold text-slate-400 hover:text-primary transition-colors">Privacy Policy</a>
-                <a className="text-xs font-bold text-slate-400 hover:text-primary transition-colors" href="#">Help Center</a>
-              </div>
-            </div>
-          </footer>
+
 
         </main>
       </div>

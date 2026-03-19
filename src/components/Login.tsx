@@ -14,6 +14,7 @@ export default function Login({ navigateTo }: LoginProps) {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+  const [error, setError] = useState<string | null>(null);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -40,6 +41,7 @@ export default function Login({ navigateTo }: LoginProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setStep(2); // Transition to "waiting for confirmation page"
 
     // Simulate or perform Supabase signin depending on configuration
@@ -51,28 +53,26 @@ export default function Login({ navigateTo }: LoginProps) {
         });
 
         if (error) {
-           console.log('Falling back to Anonymous Auth or Simulation since regular Auth failed: ', error.message);
-           const { error: anonError } = await supabase.auth.signInAnonymously();
-           
-           if (anonError) {
-             // Ultimate fallback simulation so the visual flow never breaks for the capstone demo
-             setTimeout(() => {
-               setStep(3);
-               setTimeout(() => navigateTo('dashboard'), 2000);
-             }, 3000);
-           }
+          setError(error.message);
+          setStep(1);
+        } else {
+          setStep(3);
+          setTimeout(() => navigateTo('dashboard'), 2000);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error during sign in:', err);
+        setError(err.message || 'An unexpected error occurred');
+        setStep(1);
       }
     }, 1000);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!form.email) return;
     if (form.password !== form.confirmPassword) {
-      alert("Passwords don't match");
+      setError("Passwords don't match");
       return;
     }
     setStep(2); // Transition to waiting
@@ -85,21 +85,17 @@ export default function Login({ navigateTo }: LoginProps) {
         });
 
         if (error) {
-           console.log('Falling back to Anonymous Auth since regular Auth failed: ', error.message);
-           const { error: anonError } = await supabase.auth.signInAnonymously();
-           if (anonError) {
-             setTimeout(() => {
-               setStep(3);
-               setTimeout(() => navigateTo('dashboard'), 2000);
-             }, 3000);
-           }
+          setError(error.message);
+          setStep(1);
         } else {
-           // Actually success
-           setStep(3);
-           setTimeout(() => navigateTo('dashboard'), 2000);
+          // Actually success
+          setStep(3);
+          setTimeout(() => navigateTo('dashboard'), 2000);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error during sign up:', err);
+        setError(err.message || 'An unexpected error occurred');
+        setStep(1);
       }
     }, 1000);
   };
@@ -150,13 +146,13 @@ export default function Login({ navigateTo }: LoginProps) {
 
       {/* Right panel - Dynamic Flow */}
       <div className="flex-1 flex flex-col items-center justify-start lg:justify-center p-6 pt-16 lg:p-12 relative bg-[#1A110B] lg:bg-transparent overflow-hidden">
-        
+
         {/* Mobile decorative background (matches provided image) */}
         <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 lg:hidden w-80 h-80 rounded-full opacity-10"
           style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
 
         <div className="w-full max-w-md relative z-10 w-full mt-8 lg:mt-0">
-          
+
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-10 lg:hidden text-[#F8F8F8]">
             <img src={companyIcon} alt="Logo" className="w-10 h-10 rounded-xl object-contain filter invert brightness-0" />
@@ -164,29 +160,30 @@ export default function Login({ navigateTo }: LoginProps) {
           </div>
 
           <AnimatePresence mode="wait">
-            
+
             {/* STEP 1: LOGINPAGE.JPEG & LOGINPAGE2.JPEG EQUIVALENT */}
             {step === 1 && mode === 'login' && (
               <motion.div key="login" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 4 }}>WELCOME BACK</h2>
                 <p className="text-[#A3A3A3] text-sm mb-8">Sign in to continue your journey</p>
+                {error && <div className="text-red-500 text-sm mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</div>}
 
                 <form onSubmit={handleLogin} className="flex flex-col gap-4">
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">EMAIL ADDRESS</label>
-                    <input 
+                    <input
                       className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                       type="email" placeholder="you@example.com" required
-                      value={form.email} onChange={e => set('email', e.target.value)} 
+                      value={form.email} onChange={e => set('email', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">PASSWORD</label>
                     <div className="relative">
-                      <input 
+                      <input
                         className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                         type={showPass ? 'text' : 'password'} placeholder="••••••••" required
-                        value={form.password} onChange={e => set('password', e.target.value)} 
+                        value={form.password} onChange={e => set('password', e.target.value)}
                       />
                       <button type="button" onClick={() => setShowPass(v => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-white">
@@ -202,7 +199,7 @@ export default function Login({ navigateTo }: LoginProps) {
 
                 <p className="text-center mt-6 text-sm text-[#A3A3A3]">
                   New here?{' '}
-                  <button onClick={() => setMode('signup')} className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
+                  <button onClick={() => { setMode('signup'); setError(null); }} className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
                     Create account
                   </button>
                 </p>
@@ -213,23 +210,24 @@ export default function Login({ navigateTo }: LoginProps) {
               <motion.div key="signup" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 4 }}>CREATE ACCOUNT</h2>
                 <p className="text-[#A3A3A3] text-sm mb-8">Start tracking your progress today</p>
+                {error && <div className="text-red-500 text-sm mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</div>}
 
                 <form onSubmit={handleSignup} className="flex flex-col gap-4">
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">EMAIL ADDRESS</label>
-                    <input 
+                    <input
                       className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                       type="email" placeholder="you@example.com" required
-                      value={form.email} onChange={e => set('email', e.target.value)} 
+                      value={form.email} onChange={e => set('email', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">PASSWORD</label>
                     <div className="relative">
-                      <input 
+                      <input
                         className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 pr-10 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                         type={showPass ? 'text' : 'password'} placeholder="Min. 8 characters" required
-                        value={form.password} onChange={e => set('password', e.target.value)} 
+                        value={form.password} onChange={e => set('password', e.target.value)}
                       />
                       <button type="button" onClick={() => setShowPass(v => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-white">
@@ -239,10 +237,10 @@ export default function Login({ navigateTo }: LoginProps) {
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">CONFIRM PASSWORD</label>
-                    <input 
+                    <input
                       className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                       type="password" placeholder="••••••••" required
-                      value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} 
+                      value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}
                     />
                   </div>
                   <button type="submit"
@@ -266,7 +264,7 @@ export default function Login({ navigateTo }: LoginProps) {
                 <div className="relative mb-8">
                   <div className="w-20 h-20 rounded-full border-4 border-[#333] flex items-center justify-center relative">
                     {/* Spinning ring */}
-                    <motion.div 
+                    <motion.div
                       className="absolute inset-[-4px] rounded-full border-4 border-transparent border-t-[#F97316]"
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
@@ -274,7 +272,7 @@ export default function Login({ navigateTo }: LoginProps) {
                     <Mail size={32} className="text-[#F97316]" />
                   </div>
                 </div>
-                
+
                 <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 32, marginBottom: 8 }}>WAITING CONFIRMATION</h2>
                 <p className="text-[#A3A3A3] text-[15px] leading-relaxed max-w-[280px]">
                   Connecting to Supabase to securely authenticate your session. Please hold on...
@@ -284,21 +282,21 @@ export default function Login({ navigateTo }: LoginProps) {
 
             {/* STEP 3: LOGINPAGE3.JPEG EQUIVALENT (SUCCESS) */}
             {step === 3 && (
-               <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
-                 <motion.div 
-                   initial={{ scale: 0 }}
-                   animate={{ scale: 1 }}
-                   transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                   className="w-20 h-20 rounded-full bg-[#1A0E08] border border-[#F97316]/30 text-[#F97316] flex items-center justify-center mb-8"
-                 >
-                   <CheckCircle2 size={40} />
-                 </motion.div>
+              <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="w-20 h-20 rounded-full bg-[#1A0E08] border border-[#F97316]/30 text-[#F97316] flex items-center justify-center mb-8"
+                >
+                  <CheckCircle2 size={40} />
+                </motion.div>
 
-                 <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>AUTHENTICATED</h2>
-                 <p className="text-[#A3A3A3] text-sm">
-                   Redirecting to your dashboard...
-                 </p>
-               </motion.div>
+                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>AUTHENTICATED</h2>
+                <p className="text-[#A3A3A3] text-sm">
+                  Redirecting to your dashboard...
+                </p>
+              </motion.div>
             )}
 
           </AnimatePresence>
