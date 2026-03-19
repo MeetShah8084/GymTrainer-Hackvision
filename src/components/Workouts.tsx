@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dumbbell, Flame, Activity, LayoutDashboard, Settings, Bell, Plus, Weight, Edit, Trash2, AlertTriangle, Repeat, CalendarDays, LineChart, User, ArrowLeft, Timer, Trophy } from 'lucide-react';
+import { Dumbbell, Flame, Activity, LayoutDashboard, Settings, Bell, Plus, Weight, Edit, Trash2, AlertTriangle, Repeat, CalendarDays, LineChart, User, ArrowLeft, Timer, Trophy, Menu, X } from 'lucide-react';
 
 interface Exercise {
   id: string;
@@ -22,7 +22,7 @@ const initialExercises: Exercise[] = [
     reps: '10, 8, 8, 6',
     weight: '85 kg',
     imageAlt: 'Close up of a heavy barbell in a gym',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAi-zh0ORyd2vD7BveJVlfBkF6Pi9aFM9uLYhqbjUr9ecwa3vJktv_DwdP37317CTi-hbZlk-geylgXPpA7Iy25QlQgmKI8A4f4TqAT_KzJQEPpPnw-8mdhRd5tb2P_2QCjtQlNxh6U_NcwwuHgzZMKq4NBMwDem33oQPC4pJmKaQjWIo26WnZD9Ew567uhAmOVnXn2KTtM8Q6c4ncvHFejhC0sbgfqSn74T9VhCtA273AWuI5QayYRVwe5rbm9dN4T8KB8HvQKO4_q',
+    imageSrc: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop',
     icon: <Dumbbell className="hidden md:block w-7 h-7" />
   },
   {
@@ -33,7 +33,7 @@ const initialExercises: Exercise[] = [
     reps: '15, 15, 12',
     weight: '12 kg',
     imageAlt: 'Dumbbells on a rack in a premium gym',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC-xSo8uDEKzJHKw8xhg0RKwYRK6mGzwRdoANtHQlOv3QyxsZL59Pqk-ZpBeoIidc7vlyUP2OxmQ5SPV85Gj1-8VfgHup5SZguGQxV-Ae18fo20wk09gS5KjvCEsVaBV9AANZLJEZ1dLu9GiyDUWhCXzIpf_BjRVye8SHquBK65ntKCIMOxIfxK5w5MWfvz5k0IKG1eNgLW4cfKpiMD_WG4w5D4fN_andoCtKlIczRv-Ze0Nv4UtncuUoMJSCnSxkNJi5gD44cyvpPH',
+    imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
     icon: <Activity className="hidden md:block w-7 h-7" />
   },
   {
@@ -44,7 +44,7 @@ const initialExercises: Exercise[] = [
     reps: '12, 10, 10, 8',
     weight: '60 kg',
     imageAlt: 'Seated Row machine',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAi-zh0ORyd2vD7BveJVlfBkF6Pi9aFM9uLYhqbjUr9ecwa3vJktv_DwdP37317CTi-hbZlk-geylgXPpA7Iy25QlQgmKI8A4f4TqAT_KzJQEPpPnw-8mdhRd5tb2P_2QCjtQlNxh6U_NcwwuHgzZMKq4NBMwDem33oQPC4pJmKaQjWIo26WnZD9Ew567uhAmOVnXn2KTtM8Q6c4ncvHFejhC0sbgfqSn74T9VhCtA273AWuI5QayYRVwe5rbm9dN4T8KB8HvQKO4_q',
+    imageSrc: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200&h=200&fit=crop',
     icon: <Activity className="hidden md:block w-7 h-7" />
   },
   {
@@ -55,7 +55,7 @@ const initialExercises: Exercise[] = [
     reps: '12, 12, 12',
     weight: '25 kg',
     imageAlt: 'Lat pull down machine detail',
-    imageSrc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAWApY6Mc2a5mlNxyT0rnLhSZVemDILAOTCI-EKw-JSn3vhvY45QZK3h5FKjxRFlpKdSQIwri8xtK3PAjXGs_Ssy3lyxi2EysfWPRnDxfE6EPwGsRrNnN340emQkMpEHbK07lg1U-6TIZ7xFXuqojqsiHr1LqZiIVLKr7q46758cBoopipGBvRC8ZzCZ72JV-Wp_CkMnZdLhKboNQaMg0H-HWyzt40yNlTHsD_YK_RSOd0qqUH3mqXv6tGgEajRB4rprAWFeZJZjPop',
+    imageSrc: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=200&h=200&fit=crop',
     icon: <Repeat className="hidden md:block w-7 h-7" />
   }
 ];
@@ -65,6 +65,7 @@ interface WorkoutsProps {
 }
 
 const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -78,12 +79,26 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
       
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark shrink-0">
-        <div className="p-6 flex items-center gap-3">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-            <Dumbbell className="w-5 h-5" />
+            {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+              <Dumbbell className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
+          <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('dashboard')}>
@@ -112,26 +127,21 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
           </a>
         </nav>
         
-        {/* Attribution */}
-        <div className="p-4 border-t border-primary/10 space-y-4">
-          <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
-             <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary underline">Trainer icons created by Freepik - Flaticon</a>
-          </div>
-          <div className="bg-primary/10 rounded-xl p-4">
-            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Premium Tier</p>
-            <p className="text-sm dark:text-slate-300">Next billing: Oct 12</p>
-          </div>
-        </div>
-      </aside>
+        </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
         
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
-          <div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Workout Sessions</h1>
             <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Activity from the last 24 hours</p>
+          </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
@@ -163,7 +173,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo }) => {
         </header>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto w-full relative">
+        <main className="flex-1 overflow-y-auto w-full custom-gradient relative md:pb-8">
           <div className="max-w-6xl mx-auto w-full p-4 md:p-10 pb-28 md:pb-10 space-y-6 md:space-y-8">
             
             {/* Desktop Action Header */}

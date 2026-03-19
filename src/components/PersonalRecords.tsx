@@ -7,11 +7,14 @@ import {
   User, 
   CalendarDays,
   Trophy,
-  ArrowLeft,
   ChevronRight,
   TrendingUp,
   Bell,
-  Settings
+  Settings,
+  Menu,
+  X,
+  ArrowLeft,
+  Share2
 } from 'lucide-react';
 
 interface PersonalRecordsProps {
@@ -19,16 +22,31 @@ interface PersonalRecordsProps {
 }
 
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
       
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark shrink-0">
-        <div className="p-6 flex items-center gap-3">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-            <Dumbbell className="w-5 h-5" />
+            {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+              <Dumbbell className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
+          <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('dashboard')}>
@@ -58,29 +76,53 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
         </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full relative">
+      {/* Main Content Area Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
         
-        {/* === DESKTOP LAYOUT === */}
-        <div className="hidden md:flex flex-col max-w-[1200px] mx-auto w-full px-4 lg:px-10 py-8">
-          
-          {/* Header */}
-          <header className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-black tracking-tight">Personal Records</h1>
-            <div className="flex gap-4 items-center">
-              <div className="flex gap-2">
-                <button className="flex items-center justify-center rounded-xl size-10 bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20">
-                  <Bell className="w-5 h-5" />
-                </button>
-                <button className="flex items-center justify-center rounded-xl size-10 bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20">
-                  <Settings className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/50" data-alt="Profile photo" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCECHIeXWmzuDS303_0JqiiEkCPDENkfygKDk_dk13mFplYxUfDh5ScrrMBc9IXBZ4lZW8KfwL8ZIZEOHHK3VTkAnReecPFna1stIywFaGpsjenjrQPvH1y7V3VqvFWDX-7l82pLCPonToRaFZsF2-_dlLwM-_KHRugP675sdBx75Ah-KSih1c7Ulb-u8X46w0OHJkaQHpFGYdUINmMphffROSm6ueSqc-2QoyFpsYXglqe1tn7QWdQAEHv1fJTVlEdFYQP7HrwwPHr")'}}></div>
+        {/* Desktop Header */}
+        <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Personal Records</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2">
+              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+                <Bell className="w-5 h-5" />
+              </button>
+              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+                <Settings className="w-5 h-5" />
+              </button>
             </div>
-          </header>
+            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" data-alt="Profile photo" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCECHIeXWmzuDS303_0JqiiEkCPDENkfygKDk_dk13mFplYxUfDh5ScrrMBc9IXBZ4lZW8KfwL8ZIZEOHHK3VTkAnReecPFna1stIywFaGpsjenjrQPvH1y7V3VqvFWDX-7l82pLCPonToRaFZsF2-_dlLwM-_KHRugP675sdBx75Ah-KSih1c7Ulb-u8X46w0OHJkaQHpFGYdUINmMphffROSm6ueSqc-2QoyFpsYXglqe1tn7QWdQAEHv1fJTVlEdFYQP7HrwwPHr")'}}></div>
+          </div>
+        </header>
 
-          {/* Hero Section */}
+        {/* Mobile Header */}
+        <header className="md:hidden sticky top-0 z-20 shrink-0 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 justify-between border-b border-slate-200 dark:border-primary/10">
+          <div className="flex items-center gap-3">
+            <button className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary cursor-pointer" onClick={() => navigateTo('dashboard')}>
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold leading-tight tracking-tight">Elite Records</h1>
+              <p className="text-xs text-slate-500 dark:text-primary/60 font-medium uppercase tracking-wider">Personal Best</p>
+            </div>
+          </div>
+          <button className="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-primary/10 text-slate-900 dark:text-primary">
+            <Share2 className="w-5 h-5" />
+          </button>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto w-full custom-gradient relative md:pb-8">
+          
+          {/* === DESKTOP LAYOUT === */}
+          <div className="hidden md:flex flex-col max-w-[1200px] mx-auto w-full px-4 lg:px-10 py-8 pt-4">
+            
+            {/* Hero Section */}
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 mb-2">
@@ -290,22 +332,6 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
         {/* === MOBILE LAYOUT === */}
         <div className="md:hidden flex flex-col w-full pb-20">
           
-          {/* Header */}
-          <div className="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-20">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <ArrowLeft className="w-5 h-5 hidden" />
-            </div>
-            <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Elite Records</h2>
-            <div className="flex items-center justify-end gap-2">
-              <button className="flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
-                <Bell className="w-5 h-5" />
-              </button>
-              <button className="flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
           {/* Profile Section */}
           <div className="flex p-4">
             <div className="flex w-full flex-col gap-4 items-center bg-surface-dark/40 border border-primary/10 p-6 rounded-xl">
@@ -438,6 +464,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
         </div>
 
       </main>
+      </div>
 
       {/* Bottom Navigation Bar (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-2">

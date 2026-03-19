@@ -13,7 +13,9 @@ import {
   CheckCircle, 
   TrendingUp, 
   BarChart,
-  Trophy
+  Trophy,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -21,16 +23,31 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
       
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark">
-        <div className="p-6 flex items-center gap-3">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-            <Dumbbell className="w-5 h-5" />
+            {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+              <Dumbbell className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
+          <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           <a className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => navigateTo('dashboard')}>
@@ -59,26 +76,21 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
           </a>
         </nav>
         
-        {/* Attribution */}
-        <div className="p-4 border-t border-primary/10 space-y-4">
-          <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
-             <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary underline">Trainer icons created by Freepik - Flaticon</a>
-          </div>
-          <div className="bg-primary/10 rounded-xl p-4">
-            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Premium Tier</p>
-            <p className="text-sm dark:text-slate-300">Next billing: Oct 12</p>
-          </div>
-        </div>
-      </aside>
+        </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
         
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
-          <div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Good Morning, John</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Ready for your push day today?</p>
+          </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
@@ -113,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         </div>
 
         <main className="flex-1 overflow-y-auto custom-gradient relative md:pb-8">
-          <div className="p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto w-full p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
           
           {/* Mobile Hero Stats */}
           <div className="md:hidden relative overflow-hidden rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/20">

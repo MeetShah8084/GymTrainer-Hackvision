@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import {
   Dumbbell, LayoutDashboard, Activity, LineChart, CalendarDays,
-  User, Bell, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy
+  User, Bell, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy,
+  Menu,
+  X, ArrowLeft, Share2
 } from 'lucide-react';
 
 interface ProgressAnalysisProps {
@@ -9,7 +11,9 @@ interface ProgressAnalysisProps {
 }
 
 export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
+  const [activeTab, setActiveTab] = useState('overview');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
@@ -27,12 +31,26 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
 
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark">
-        <div className="p-6 flex items-center gap-3">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-            <Dumbbell className="w-5 h-5" />
+            {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+              <Dumbbell className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
           </div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ProgressiveTrainer</h2>
+          <button className="text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
           <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => navigateTo('dashboard')}>
@@ -61,26 +79,21 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
           </a>
         </nav>
 
-        {/* Attribution */}
-        <div className="p-4 border-t border-primary/10 space-y-4">
-          <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
-            <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary underline">Trainer icons created by Freepik - Flaticon</a>
-          </div>
-          <div className="bg-primary/10 rounded-xl p-4">
-            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Premium Tier</p>
-            <p className="text-sm dark:text-slate-300">Next billing: Oct 12</p>
-          </div>
-        </div>
-      </aside>
+        </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
 
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
-          <div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Progress Analysis</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Advanced metrics and performance trends</p>
+          </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
@@ -96,42 +109,42 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
         </header>
 
         {/* Mobile Header */}
-        <div className="md:hidden flex shrink-0 z-20 items-center p-4 justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10">
-          <div className="flex size-10 shrink-0 items-center overflow-hidden rounded-full border-2 border-primary">
-            <img alt="User Profile" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVrzpsn6_U1odECZkvw4RS520J75eoPMqvh9YQ0JbkGmUJcjso9-P6XoCX8c3Z09xexCRYGXmwGJ8JqZQJtZmNcdG-3j74bfXinTwW9OMizO4NAgHyVwigVwOfsCzlSBl3SNSa50DM9Of5-J8XpJ8rORai6IkrZUllEe9kkDIeaJ8R3R_KcVLZFHoGZzFibHIDxx4x1eMSTtOm_kHt_tHtVb7NESWjUNT1XuA5Fhn9-zzkUw3ZbKTG1M5JI0TAG6kreGxSlJcSlpHt" />
-          </div>
-          <div className="flex flex-col ml-3 flex-1">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Progress</span>
-            <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">Analysis</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors">
-              <Bell className="w-5 h-5" />
+        <header className="md:hidden sticky top-0 z-20 shrink-0 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 justify-between border-b border-slate-200 dark:border-primary/10">
+          <div className="flex items-center gap-3">
+            <button className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary cursor-pointer" onClick={() => navigateTo('dashboard')}>
+              <ArrowLeft className="w-6 h-6" />
             </button>
-            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors">
-              <Settings className="w-5 h-5" />
-            </button>
+            <div>
+              <h1 className="text-xl font-bold leading-tight tracking-tight">Progress Analysis</h1>
+              <p className="text-xs text-slate-500 dark:text-primary/60 font-medium uppercase tracking-wider">Meso-cycle Trends</p>
+            </div>
           </div>
-        </div>
+          <button className="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-primary/10 text-slate-900 dark:text-primary">
+            <Share2 className="w-5 h-5" />
+          </button>
+        </header>
 
         <main className="flex-1 overflow-y-auto custom-gradient relative md:pb-8">
-          <div className="p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
+          <div className="p-4 md:p-8 lg:p-12 xl:px-24 mx-auto max-w-7xl space-y-6 md:space-y-8 pb-24 md:pb-8">
 
             {/* --- MOBILE TABS --- */}
-            <div className="md:hidden overflow-x-auto no-scrollbar">
+            <div className="md:hidden overflow-x-auto no-scrollbar -mx-4 px-4">
               <div className="flex gap-6 border-b border-slate-200 dark:border-primary/10">
-                <a className="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-2 whitespace-nowrap" href="#">
-                  <p className="text-sm font-bold tracking-wide">Overview</p>
-                </a>
-                <a className="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
-                  <p className="text-sm font-medium">Strength</p>
-                </a>
-                <a className="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
-                  <p className="text-sm font-medium">Volume</p>
-                </a>
-                <a className="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
-                  <p className="text-sm font-medium">History</p>
-                </a>
+                <button 
+                  onClick={() => setActiveTab('overview')}
+                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'overview' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
+                  <p className={`text-sm tracking-wide ${activeTab === 'overview' ? 'font-bold' : 'font-medium'}`}>Overview</p>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('volume')}
+                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'volume' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
+                  <p className={`text-sm tracking-wide ${activeTab === 'volume' ? 'font-bold' : 'font-medium'}`}>Volume</p>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('strength')}
+                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'strength' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
+                  <p className={`text-sm tracking-wide ${activeTab === 'strength' ? 'font-bold' : 'font-medium'}`}>Strength</p>
+                </button>
               </div>
             </div>
 
@@ -142,9 +155,15 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
                 <p className="text-slate-400 text-lg">Advanced metrics and performance trends for the current mesocycle.</p>
               </div>
               <div className="flex bg-slate-200 dark:bg-surface-dark p-1 rounded-xl shrink-0">
-                <button className="px-6 py-2 bg-primary rounded-lg text-sm font-bold text-white shadow-lg shadow-primary/20">Overview</button>
-                <button className="px-6 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Volume</button>
-                <button className="px-6 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Strength</button>
+                <button 
+                  onClick={() => setActiveTab('overview')}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Overview</button>
+                <button 
+                  onClick={() => setActiveTab('volume')}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'volume' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Volume</button>
+                <button 
+                  onClick={() => setActiveTab('strength')}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'strength' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Strength</button>
               </div>
             </div>
 
@@ -152,17 +171,15 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold md:font-bold uppercase tracking-wider mb-0 md:mb-1">Total Volume Load</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-xl md:text-3xl font-bold md:font-black text-slate-900 dark:text-white">124,500 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
+                <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Total Volume Load</p>
+                  <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <TrendingUp className="w-3 h-3" /> 
+                    <span className="font-bold text-[10px] lg:text-xs">+12.5%</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 mt-1 md:absolute md:top-6 md:right-6 md:mt-0">
-                  <span className="md:hidden text-emerald-500 font-bold flex items-center gap-1 text-[10px]">
-                    <TrendingUp className="w-3 h-3" /> +12.5%
-                  </span>
-                  <span className="hidden md:flex text-emerald-500 text-xs font-bold items-center gap-1">
-                    <TrendingUp className="w-4 h-4" /> 12.5%
-                  </span>
+                <div className="flex items-baseline gap-2 z-10 relative">
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">124,500 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-[75%] rounded-full"></div>
@@ -171,17 +188,15 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
 
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold md:font-bold uppercase tracking-wider mb-0 md:mb-1">Max Squat (1RM)</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-xl md:text-3xl font-bold md:font-black text-slate-900 dark:text-white">185 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
+                <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max Squat <span className="hidden lg:inline">(1RM)</span></p>
+                  <div className="flex items-center gap-1 shrink-0 text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                    <TrendingDown className="w-3 h-3" /> 
+                    <span className="font-bold text-[10px] lg:text-xs">-2.1%</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 mt-1 md:absolute md:top-6 md:right-6 md:mt-0">
-                  <span className="md:hidden text-emerald-500 font-bold flex items-center gap-1 text-[10px]">
-                    <TrendingUp className="w-3 h-3" /> +5.2%
-                  </span>
-                  <span className="hidden md:flex text-rose-500 text-xs font-bold items-center gap-1">
-                    <TrendingDown className="w-4 h-4" /> 2.1%
-                  </span>
+                <div className="flex items-baseline gap-2 z-10 relative">
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">185 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-[92%] rounded-full"></div>
@@ -190,17 +205,15 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
 
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold md:font-bold uppercase tracking-wider mb-0 md:mb-1">Avg Intensity</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-xl md:text-3xl font-bold md:font-black text-slate-900 dark:text-white">84 <span className="text-[10px] md:text-sm font-normal text-slate-500">%</span></h3>
+                <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Avg Intensity</p>
+                  <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <TrendingUp className="w-3 h-3" /> 
+                    <span className="font-bold text-[10px] lg:text-xs">+4.3%</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 mt-1 md:absolute md:top-6 md:right-6 md:mt-0">
-                  <span className="md:hidden text-emerald-500 font-bold flex items-center gap-1 text-[10px]">
-                    <TrendingUp className="w-3 h-3" /> +3.1%
-                  </span>
-                  <span className="hidden md:flex text-emerald-500 text-xs font-bold items-center gap-1">
-                    <TrendingUp className="w-4 h-4" /> 4.3%
-                  </span>
+                <div className="flex items-baseline gap-2 z-10 relative">
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">84 <span className="text-[10px] md:text-sm font-normal text-slate-500">%</span></h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-[84%] rounded-full"></div>
@@ -209,15 +222,14 @@ export default function ProgressAnalysis({ navigateTo }: ProgressAnalysisProps) 
 
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold md:font-bold uppercase tracking-wider mb-0 md:mb-1">Sessions Completed</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-xl md:text-3xl font-bold md:font-black text-slate-900 dark:text-white">24 <span className="hidden md:inline text-[10px] md:text-sm font-normal text-slate-500">/ 30</span></h3>
+                <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Sessions Completed</p>
+                  <div className="flex items-center gap-1 shrink-0 text-slate-400 bg-slate-400/10 px-1.5 py-0.5 rounded">
+                    <span className="font-bold text-[10px] lg:text-xs">Month</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 mt-1 md:absolute md:top-6 md:right-6 md:mt-0">
-                  <span className="md:hidden text-slate-500 font-bold flex items-center gap-1 text-[10px] uppercase">
-                    Month
-                  </span>
-                  <span className="hidden md:flex text-slate-500 text-xs font-bold">Month</span>
+                <div className="flex items-baseline gap-2 z-10 relative">
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">24 <span className="hidden md:inline text-[10px] md:text-sm font-normal text-slate-500">/ 30</span></h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-[80%] rounded-full"></div>
