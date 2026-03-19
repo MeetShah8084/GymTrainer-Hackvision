@@ -449,19 +449,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
             </div>
           </div>
 
-          {/* Recent Activity Chart Area (Placeholder) */}
-          <div className="px-4 py-6">
-            <h3 className="text-slate-900 dark:text-slate-100 text-lg font-extrabold tracking-tight mb-4">Strength Progression</h3>
-            <div className="h-40 w-full rounded-xl bg-surface-dark border border-primary/5 flex items-end justify-between p-4 gap-2">
-              <div className="flex-1 bg-primary/20 rounded-t-lg h-[40%]"></div>
-              <div className="flex-1 bg-primary/30 rounded-t-lg h-[55%]"></div>
-              <div className="flex-1 bg-primary/40 rounded-t-lg h-[45%]"></div>
-              <div className="flex-1 bg-primary/60 rounded-t-lg h-[75%]"></div>
-              <div className="flex-1 bg-primary/80 rounded-t-lg h-[65%]"></div>
-              <div className="flex-1 bg-primary rounded-t-lg h-[90%]"></div>
-              <div className="flex-1 bg-primary rounded-t-lg h-[100%]"></div>
-            </div>
-          </div>
+
 
         </div>
 
