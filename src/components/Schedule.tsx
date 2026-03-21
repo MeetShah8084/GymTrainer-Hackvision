@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, User, Menu, X, Bell, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
 
 const currentYear = new Date().getFullYear();
@@ -14,10 +14,12 @@ const calendarData = Array.from({ length: 365 }).map((_, i) => {
 });
 
 interface ScheduleProps {
-  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  notificationsEnabled?: boolean;
+  toggleNotifications?: () => void;
 }
 
-const Schedule: React.FC<ScheduleProps> = ({ navigateTo }) => {
+const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [monthOffset, setMonthOffset] = useState(0);
@@ -94,7 +96,7 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo }) => {
     );
   }
 
-  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -141,8 +143,8 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo }) => {
           <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => handleNavigation('schedule')}>
             <span>Schedule</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-            <span>Profile</span>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
+            <span>Settings</span>
           </a>
         </nav>
       </aside>
@@ -163,10 +165,18 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo }) => {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
-                <Bell className="w-5 h-5" />
+              <button 
+                onClick={toggleNotifications}
+                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+                style={{
+                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+                }}
+                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+              >
+                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
               </button>
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all" onClick={() => { setIsSidebarOpen(false); navigateTo('settings'); }}>
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -493,9 +503,9 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo }) => {
             <Trophy className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Records</span>
           </a>
-          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => { }}>
-            <User className="w-5 h-5" />
-            <span className="text-[9px] font-medium uppercase tracking-widest">Profile</span>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
+            <Settings className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
           </a>
         </div>
       </nav>

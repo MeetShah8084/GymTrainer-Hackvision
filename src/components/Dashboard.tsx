@@ -1,31 +1,33 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { 
-  Dumbbell, 
-  LayoutDashboard, 
-  LineChart, 
-  User, 
-  Bell, 
-  Settings, 
-  Flame, 
-  RotateCcw, 
-  CheckCircle, 
-  TrendingUp, 
+import {
+  Dumbbell,
+  LayoutDashboard,
+  LineChart,
+  Bell,
+  Settings,
+  Flame,
+  RotateCcw,
+  CheckCircle,
+  TrendingUp,
   BarChart,
   Trophy,
   Menu,
   X,
-  CalendarDays
+  CalendarDays,
+  BellOff // Added BellOff import
 } from 'lucide-react';
 
 interface DashboardProps {
-  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  notificationsEnabled?: boolean; // Added prop
+  toggleNotifications?: () => void; // Added prop
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -33,12 +35,12 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   };
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
-      
+
       {/* Sidebar (Desktop) */}
-            {/* Overlay */}
+      {/* Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40" 
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -72,16 +74,16 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('schedule')}>
             <span>Schedule</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
-            <span>Profile</span>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
+            <span>Settings</span>
           </a>
         </nav>
-        
-        </aside>
+
+      </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
-        
+
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
           <div className="flex items-center gap-4">
@@ -89,16 +91,24 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
               <Menu className="w-6 h-6" />
             </button>
             <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Good Morning, John</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Ready for your push day today?</p>
-          </div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Good Morning, John</h1>
+              <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Ready for your push day today?</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
-                <Bell className="w-5 h-5" />
+              <button 
+                onClick={toggleNotifications}
+                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+                style={{
+                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+                }}
+                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+              >
+                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
               </button>
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all" onClick={() => handleNavigation('settings')}>
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -116,10 +126,18 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
             <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">John Doe</h2>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors">
+              <button 
+                onClick={toggleNotifications}
+                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+                style={{
+                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+                }}
+                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+              >
+                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+              </button>
+            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors" onClick={() => navigateTo('settings')}>
               <Settings className="w-5 h-5" />
             </button>
           </div>
@@ -127,229 +145,229 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
 
         <main className="flex-1 overflow-y-auto custom-gradient relative md:pb-8">
           <div className="max-w-7xl mx-auto w-full p-4 md:p-8 space-y-6 md:space-y-8 pb-24 md:pb-8">
-          
-          {/* Mobile Hero Stats */}
-          <div className="md:hidden relative overflow-hidden rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/20">
-            <div className="relative z-10">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-white/80 text-sm font-medium">Daily Consistency</p>
-                  <h3 className="text-4xl font-bold mt-1">94%</h3>
-                </div>
-                <div className="bg-white/20 backdrop-blur-md rounded-lg p-2">
-                  <TrendingUp className="w-6 h-6 stroke-[3px]" />
-                </div>
-              </div>
-              <div className="mt-6 flex gap-4">
-                <div className="flex-1 border-r border-white/20">
-                  <p className="text-white/70 text-xs">Current Streak</p>
-                  <p className="text-xl font-bold">12 Days</p>
-                </div>
-                <div className="flex-1">
-                  <p className="text-white/70 text-xs">Total Workouts</p>
-                  <p className="text-xl font-bold">148</p>
-                </div>
-              </div>
-            </div>
-            {/* Abstract Design Elements */}
-            <div className="absolute -right-8 -top-8 size-32 rounded-full bg-white/10 blur-2xl"></div>
-            <div className="absolute -left-8 -bottom-8 size-32 rounded-full bg-black/10 blur-2xl"></div>
-          </div>
 
-          {/* Desktop Stats Overview */}
-          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Consistency</p>
-                <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+2.4%</span>
-              </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">94%</p>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-4">
-                <div className="bg-primary h-full rounded-full" style={{ width: '94%' }}></div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Workouts</p>
-                <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+12</span>
-              </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">128</p>
-              <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Total Sessions</p>
-            </div>
-            
-            <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Volume</p>
-                <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+5.2%</span>
-              </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">450k <span className="text-lg font-medium text-slate-400">kg</span></p>
-              <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Monthly Lifted</p>
-            </div>
-            
-            <div className="bg-primary p-6 rounded-xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group">
+            {/* Mobile Hero Stats */}
+            <div className="md:hidden relative overflow-hidden rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/20">
               <div className="relative z-10">
-                <p className="text-white/80 text-sm font-medium">Daily Streak</p>
-                <p className="text-3xl font-black">15 Days</p>
-                <button className="mt-4 px-4 py-2 bg-white text-primary rounded-lg text-sm font-bold shadow-md hover:bg-slate-50 transition-colors">
-                  View History
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-white/80 text-sm font-medium">Daily Consistency</p>
+                    <h3 className="text-4xl font-bold mt-1">94%</h3>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-md rounded-lg p-2">
+                    <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-4">
+                  <div className="flex-1 border-r border-white/20">
+                    <p className="text-white/70 text-xs">Current Streak</p>
+                    <p className="text-xl font-bold">12 Days</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white/70 text-xs">Total Workouts</p>
+                    <p className="text-xl font-bold">148</p>
+                  </div>
+                </div>
+              </div>
+              {/* Abstract Design Elements */}
+              <div className="absolute -right-8 -top-8 size-32 rounded-full bg-white/10 blur-2xl"></div>
+              <div className="absolute -left-8 -bottom-8 size-32 rounded-full bg-black/10 blur-2xl"></div>
+            </div>
+
+            {/* Desktop Stats Overview */}
+            <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+                <div className="flex justify-between items-start mb-4">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Consistency</p>
+                  <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+2.4%</span>
+                </div>
+                <p className="text-3xl font-black text-slate-900 dark:text-white">94%</p>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-4">
+                  <div className="bg-primary h-full rounded-full" style={{ width: '94%' }}></div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+                <div className="flex justify-between items-start mb-4">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Workouts</p>
+                  <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+12</span>
+                </div>
+                <p className="text-3xl font-black text-slate-900 dark:text-white">128</p>
+                <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Total Sessions</p>
+              </div>
+
+              <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-primary/5 shadow-sm">
+                <div className="flex justify-between items-start mb-4">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Volume</p>
+                  <span className="bg-green-500/10 text-green-500 text-xs font-bold px-2 py-1 rounded">+5.2%</span>
+                </div>
+                <p className="text-3xl font-black text-slate-900 dark:text-white">450k <span className="text-lg font-medium text-slate-400">kg</span></p>
+                <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Monthly Lifted</p>
+              </div>
+
+              <div className="bg-primary p-6 rounded-xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group">
+                <div className="relative z-10">
+                  <p className="text-white/80 text-sm font-medium">Daily Streak</p>
+                  <p className="text-3xl font-black">15 Days</p>
+                  <button className="mt-4 px-4 py-2 bg-white text-primary rounded-lg text-sm font-bold shadow-md hover:bg-slate-50 transition-colors">
+                    View History
+                  </button>
+                </div>
+                <Flame className="absolute -right-4 -bottom-4 text-white/10 w-32 h-32 group-hover:scale-110 transition-transform" />
+              </div>
+            </div>
+
+            {/* Quick Actions (Mobile) */}
+            <div className="md:hidden grid grid-cols-2 gap-3">
+              <button className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95">
+                <CheckCircle className="w-[18px] h-[18px]" />
+                <span>Complete</span>
+              </button>
+              <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95">
+                <RotateCcw className="w-[18px] h-[18px]" />
+                <span>Relog</span>
+              </button>
+            </div>
+
+            {/* Action Section (Desktop) */}
+            <div className="hidden md:flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary shadow-sm">
+              <div>
+                <h3 className="text-xl font-bold dark:text-white">Current Session: Push B (Heavy)</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • 4/6 Exercises completed</p>
+              </div>
+              <div className="flex gap-3">
+                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
+                  <RotateCcw className="w-5 h-5" />
+                  Relog
+                </button>
+                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+                  <CheckCircle className="w-5 h-5" />
+                  Workout Complete
                 </button>
               </div>
-              <Flame className="absolute -right-4 -bottom-4 text-white/10 w-32 h-32 group-hover:scale-110 transition-transform" />
             </div>
-          </div>
 
-          {/* Quick Actions (Mobile) */}
-          <div className="md:hidden grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95">
-              <CheckCircle className="w-[18px] h-[18px]" />
-              <span>Complete</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95">
-              <RotateCcw className="w-[18px] h-[18px]" />
-              <span>Relog</span>
-            </button>
-          </div>
-
-          {/* Action Section (Desktop) */}
-          <div className="hidden md:flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary shadow-sm">
+            {/* Muscle Group Grid */}
             <div>
-              <h3 className="text-xl font-bold dark:text-white">Current Session: Push B (Heavy)</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • 4/6 Exercises completed</p>
-            </div>
-            <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
-                <RotateCcw className="w-5 h-5" />
-                Relog
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
-                <CheckCircle className="w-5 h-5" />
-                Workout Complete
-              </button>
-            </div>
-          </div>
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="text-xl md:text-2xl font-black dark:text-white leading-tight tracking-tight">Target Muscle Groups</h2>
+                <a className="text-primary font-bold text-sm hover:underline" href="#">View Details</a>
+              </div>
 
-          {/* Muscle Group Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-black dark:text-white leading-tight tracking-tight">Target Muscle Groups</h2>
-              <a className="text-primary font-bold text-sm hover:underline" href="#">View Details</a>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                {[
+                  { name: "Chest", count: "8 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCzGrQlmZiiGly8uNyGA6-XBGKTI_gS5sXWVT-CLq28p_mWuRATrROrpBMiAJAwyeHxECJkKc8L6PBlPJWJJ-pCn2kABXAj6f23o8kr8HNYJ1Umaw1crMOvhCA3pDCXG5cDFJmaeEczV0iQYm5q_1PJrcDb91oXkXrTj-v0zrjMfw9sAqRREmqnhCrqlIOLD8LFA7jugkOExHjbsaE2iMmVImKss2sn2fpFTJim5Kq58FlAmR2F5pJvmBgaeu1zS2vsElHtqVmZN_h9" },
+                  { name: "Back", count: "12 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCh7Mo4Sy-rjWyVdu8WADiL9FoFVUbq2nGX0xT7W1OCXXSQ6L1At4RVZhT6CP30-djO745HYFI_MH85F00keEo4HFasLZwTOBGesdkXjkBA_qVHWNLaEQsZjehmbLWjLcMyRuF6PQZEZvfIhY-pfM17wQRQGVcWC1fqZoAeOR5_zTLJAd3SJz7UsZLJw4LscESBtT-k4HcSIulRQ-CsooxarxXoEpqANELlBQMOSu2KnTNtE3x7F4NfRw7su72MtD_a1kMO5T1HVJDq" },
+                  { name: "Legs", count: "15 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCx2nKoTp9hIulqcJzftHscAPbTvJbtUWbR1d2huWsNSd8udVImqzEbU35zWy6u_01ZrVZPyc3Pq2eZWH0NT5-tcGNrBaBSbMWMf8jNfqRzOhm2-95jUAN9OeEvqt5FjZECkyzOmllQeE282Ws5S5MB-EPuXTp0HU2rVl9HSN20tvNECw19jP98eSne0VaWGCeFfUcR0lvwSP6Quj5LBzfSOZnm56eH0-w0IuDFXuv8NAEDMXgrJ4ZiJGQUYOiMTHt8qOgB4aFLKhFx" },
+                  { name: "Arms", count: "10 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz" },
+                  { name: "Abs", count: "6 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm" },
+                ].map((group) => (
+                  <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+                    <img alt={`${group.name} Muscle Group`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={group.src} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 md:via-transparent to-transparent z-10"></div>
+                    <div className="absolute bottom-4 left-4 z-20">
+                      <p className="text-white text-lg md:text-xl font-bold md:font-black uppercase">{group.name}</p>
+                      <div className="flex items-center gap-1">
+                        <div className="hidden md:block size-1.5 rounded-full bg-primary"></div>
+                        <p className="text-primary md:text-white/60 text-xs font-medium uppercase tracking-tighter md:tracking-normal">{group.count}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-              {[
-                { name: "Chest", count: "8 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCzGrQlmZiiGly8uNyGA6-XBGKTI_gS5sXWVT-CLq28p_mWuRATrROrpBMiAJAwyeHxECJkKc8L6PBlPJWJJ-pCn2kABXAj6f23o8kr8HNYJ1Umaw1crMOvhCA3pDCXG5cDFJmaeEczV0iQYm5q_1PJrcDb91oXkXrTj-v0zrjMfw9sAqRREmqnhCrqlIOLD8LFA7jugkOExHjbsaE2iMmVImKss2sn2fpFTJim5Kq58FlAmR2F5pJvmBgaeu1zS2vsElHtqVmZN_h9" },
-                { name: "Back", count: "12 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCh7Mo4Sy-rjWyVdu8WADiL9FoFVUbq2nGX0xT7W1OCXXSQ6L1At4RVZhT6CP30-djO745HYFI_MH85F00keEo4HFasLZwTOBGesdkXjkBA_qVHWNLaEQsZjehmbLWjLcMyRuF6PQZEZvfIhY-pfM17wQRQGVcWC1fqZoAeOR5_zTLJAd3SJz7UsZLJw4LscESBtT-k4HcSIulRQ-CsooxarxXoEpqANELlBQMOSu2KnTNtE3x7F4NfRw7su72MtD_a1kMO5T1HVJDq" },
-                { name: "Legs", count: "15 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCx2nKoTp9hIulqcJzftHscAPbTvJbtUWbR1d2huWsNSd8udVImqzEbU35zWy6u_01ZrVZPyc3Pq2eZWH0NT5-tcGNrBaBSbMWMf8jNfqRzOhm2-95jUAN9OeEvqt5FjZECkyzOmllQeE282Ws5S5MB-EPuXTp0HU2rVl9HSN20tvNECw19jP98eSne0VaWGCeFfUcR0lvwSP6Quj5LBzfSOZnm56eH0-w0IuDFXuv8NAEDMXgrJ4ZiJGQUYOiMTHt8qOgB4aFLKhFx" },
-                { name: "Arms", count: "10 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz" },
-                { name: "Abs", count: "6 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm" },
-              ].map((group) => (
-                <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
-                  <img alt={`${group.name} Muscle Group`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={group.src} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 md:via-transparent to-transparent z-10"></div>
-                  <div className="absolute bottom-4 left-4 z-20">
-                    <p className="text-white text-lg md:text-xl font-bold md:font-black uppercase">{group.name}</p>
-                    <div className="flex items-center gap-1">
-                      <div className="hidden md:block size-1.5 rounded-full bg-primary"></div>
-                      <p className="text-primary md:text-white/60 text-xs font-medium uppercase tracking-tighter md:tracking-normal">{group.count}</p>
+
+            {/* Recent Activity (Desktop only layout) */}
+            <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
+              <div className="lg:col-span-2 space-y-6">
+                <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                        <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                      </div>
+                      <div>
+                        <p className="font-bold dark:text-white">Deadlift</p>
+                        <p className="text-sm text-slate-500">New 1RM: 180kg</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-primary">+15kg</p>
+                      <p className="text-xs text-slate-400">2 days ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                        <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                      </div>
+                      <div>
+                        <p className="font-bold dark:text-white">Bench Press</p>
+                        <p className="text-sm text-slate-500">New 5RM: 100kg</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-primary">+5kg</p>
+                      <p className="text-xs text-slate-400">Yesterday</p>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Recent Activity (Desktop only layout) */}
-          <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
-            <div className="lg:col-span-2 space-y-6">
-              <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
-                  <div className="flex items-center gap-4">
-                    <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                      <TrendingUp className="w-6 h-6 stroke-[3px]" />
-                    </div>
+              <div className="space-y-6">
+                <h2 className="text-2xl font-black dark:text-white">Nutrition</h2>
+                <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-primary/5 shadow-sm space-y-6">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-bold dark:text-white">Deadlift</p>
-                      <p className="text-sm text-slate-500">New 1RM: 180kg</p>
+                      <p className="text-3xl font-black text-slate-900 dark:text-white">2,450</p>
+                      <p className="text-sm text-slate-500 uppercase tracking-widest font-bold">Calories In</p>
+                    </div>
+                    <div className="size-16 border-4 border-primary border-t-transparent rounded-full flex items-center justify-center">
+                      <p className="text-xs font-bold text-primary">85%</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-primary">+15kg</p>
-                    <p className="text-xs text-slate-400">2 days ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
-                  <div className="flex items-center gap-4">
-                    <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                      <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+                      <span className="text-slate-500">Protein</span>
+                      <span className="dark:text-white">180g / 200g</span>
                     </div>
-                    <div>
-                      <p className="font-bold dark:text-white">Bench Press</p>
-                      <p className="text-sm text-slate-500">New 5RM: 100kg</p>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
+                      <div className="bg-primary h-full rounded-full" style={{ width: '90%' }}></div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-primary">+5kg</p>
-                    <p className="text-xs text-slate-400">Yesterday</p>
+                    <div className="flex justify-between text-xs font-bold uppercase tracking-wider pt-2">
+                      <span className="text-slate-500">Carbs</span>
+                      <span className="dark:text-white">210g / 300g</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
+                      <div className="bg-orange-300 h-full rounded-full" style={{ width: '70%' }}></div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black dark:text-white">Nutrition</h2>
-              <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-primary/5 shadow-sm space-y-6">
-                <div className="flex justify-between items-center">
+
+            {/* Mobile Weekly Summary */}
+            <div className="md:hidden mt-4">
+              <div className="rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-primary/5 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <BarChart className="w-6 h-6" />
+                  </div>
                   <div>
-                    <p className="text-3xl font-black text-slate-900 dark:text-white">2,450</p>
-                    <p className="text-sm text-slate-500 uppercase tracking-widest font-bold">Calories In</p>
-                  </div>
-                  <div className="size-16 border-4 border-primary border-t-transparent rounded-full flex items-center justify-center">
-                    <p className="text-xs font-bold text-primary">85%</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                    <span className="text-slate-500">Protein</span>
-                    <span className="dark:text-white">180g / 200g</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
-                    <div className="bg-primary h-full rounded-full" style={{ width: '90%' }}></div>
-                  </div>
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider pt-2">
-                    <span className="text-slate-500">Carbs</span>
-                    <span className="dark:text-white">210g / 300g</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
-                    <div className="bg-orange-300 h-full rounded-full" style={{ width: '70%' }}></div>
+                    <p className="text-slate-900 dark:text-slate-100 font-bold">Weekly Performance</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">You are 8% ahead of last week</p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Mobile Weekly Summary */}
-          <div className="md:hidden mt-4">
-            <div className="rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-primary/5 p-4">
-              <div className="flex items-center gap-3">
-                <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                  <BarChart className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-slate-900 dark:text-slate-100 font-bold">Weekly Performance</p>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">You are 8% ahead of last week</p>
-                </div>
+
+              {/* Mobile Footer Attribution */}
+              <div className="mt-8 mb-4 text-center">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
+                </span>
               </div>
             </div>
-            
-            {/* Mobile Footer Attribution */}
-            <div className="mt-8 mb-4 text-center">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
-              </span>
-            </div>
-          </div>
 
           </div>
         </main>
@@ -378,13 +396,13 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
             <Trophy className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Records</span>
           </a>
-          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => {}}>
-            <User className="w-5 h-5" />
-            <span className="text-[9px] font-medium uppercase tracking-widest">Profile</span>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
+            <Settings className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
           </a>
         </div>
       </nav>
-      
+
     </div>
   );
 };

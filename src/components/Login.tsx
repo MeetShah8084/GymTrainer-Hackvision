@@ -5,7 +5,7 @@ import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LoginProps {
-  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
 }
 
 export default function Login({ navigateTo }: LoginProps) {

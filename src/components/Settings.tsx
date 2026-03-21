@@ -1,0 +1,306 @@
+import { useState, useEffect } from 'react';
+import companyIcon from '../assets/company_icon.png';
+import { supabase } from '../lib/supabase';
+import {
+  Menu, Settings as SettingsIcon, ArrowLeft,
+  Bell as BellIcon, BellOff, Mail, Phone,
+  Camera, Shield, Edit3, X, Dumbbell, LineChart,
+  LayoutDashboard, CalendarDays, Trophy
+} from 'lucide-react';
+
+interface SettingsProps {
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  notificationsEnabled?: boolean;
+  setNotificationsEnabled?: (value: boolean) => void;
+}
+
+export default function Settings({ navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('Loading...');
+  const [userName, setUserName] = useState<string>('Loading User...');
+  const [memberSince, setMemberSince] = useState<string>('');
+
+  const [localNotificationsEnabled, setLocalNotificationsEnabled] = useState(notificationsEnabled);
+
+  // Toggles state
+  const [toggles, setToggles] = useState({
+    workoutReminder: true,
+    twoFactorAuth: false,
+  });
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (user && !error) {
+        setUserEmail(user.email || 'No email');
+
+        // Use full_name from raw_user_meta_data if available, fallback to email prefix
+        const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+        setUserName(fullName);
+
+        // Format creation date
+        const date = new Date(user.created_at);
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+        setMemberSince(`Member since ${date.toLocaleDateString(undefined, options)}`);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  const handleToggle = (key: keyof typeof toggles) => {
+    setToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+    setIsSidebarOpen(false);
+    setTimeout(() => {
+      navigateTo(page);
+    }, 300);
+  };
+
+  return (
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark font-sans overflow-hidden">
+
+      {/* Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Navigation */}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="shrink-0 size-8 bg-primary rounded-lg flex items-center justify-center p-1">
+              <img src={companyIcon} alt="Progressive Trainer" className="w-full h-full object-contain filter invert brightness-0" />
+            </div>
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">ProgressiveTrainer</h2>
+          </div>
+          <button className="shrink-0 text-slate-500 hover:text-primary cursor-pointer" onClick={() => setIsSidebarOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <nav className="flex-1 px-4 space-y-2 mt-4 font-['Poppins']">
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('dashboard')}>
+            <span>Dashboard</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('workouts')}>
+            <span>Workouts</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('analysis')}>
+            <span>Statistics</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('records')}>
+            <span>Personal Records</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('schedule')}>
+            <span>Schedule</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => handleNavigation('settings')}>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      {/* Main Content Area Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
+
+        {/* Desktop Header */}
+        <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Settings</h1>
+              <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Manage your account preferences</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}></div>
+          </div>
+        </header>
+
+        {/* Mobile Header */}
+        <header className="md:hidden sticky top-0 z-20 shrink-0 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 justify-between border-b border-slate-200 dark:border-primary/10">
+          <div className="flex items-center gap-3">
+            <button className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary cursor-pointer" onClick={() => navigateTo('dashboard')}>
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">Settings</h1>
+              <p className="text-xs text-slate-500 dark:text-primary/60 font-medium uppercase tracking-wider">Preferences</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 flex flex-col items-center overflow-y-auto w-full custom-gradient">
+          <div className="w-full max-w-[800px] px-4 md:px-8 py-6 md:py-8 flex flex-col gap-8 pb-32">
+
+            {/* Profile Section */}
+            <section className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-primary/10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold dark:text-white">Profile Information</h3>
+                <button className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                  Edit <Edit3 className="size-4" />
+                </button>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+                <div className="relative shrink-0">
+                  <div className="size-24 rounded-full bg-center bg-cover border-4 border-primary/20 shadow-inner" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}>
+                  </div>
+                  <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white">
+                    <Camera className="size-4" />
+                  </button>
+                </div>
+                <div className="text-center sm:text-left">
+                  <h4 className="text-lg font-bold dark:text-white">{userName}</h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">{memberSince}</p>
+                  <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    PRO TRAINER
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
+                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-primary/10">
+                    <Mail className="size-5 text-slate-400" />
+                    <span className="text-sm dark:text-slate-200">{userEmail}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-primary/10">
+                    <Phone className="size-5 text-slate-400" />
+                    <span className="text-sm dark:text-slate-200">+1 (555) 902-1234</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Notification Toggles */}
+            <section className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-primary/10">
+              <div className="flex items-center gap-2 mb-6">
+                <div
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: localNotificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                    color: localNotificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+                  }}
+                >
+                  {localNotificationsEnabled
+                    ? <BellIcon className="size-5" />
+                    : <BellOff className="size-5" />}
+                </div>
+                <h3 className="text-xl font-bold dark:text-white">Notification Settings</h3>
+                {!localNotificationsEnabled && <span className="ml-auto text-xs font-semibold uppercase tracking-wider text-slate-400">Muted</span>}
+              </div>
+              <div className="flex flex-col gap-4">
+
+                {/* Workout Reminder */}
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex flex-col">
+                    <p className="font-medium dark:text-slate-200">Workout Reminder</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Daily alerts to keep you on track</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={localNotificationsEnabled} 
+                      onChange={() => setLocalNotificationsEnabled(prev => !prev)} 
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-[#1a0e08] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary border border-slate-300 dark:border-[#333]"></div>
+                  </label>
+                </div>
+
+              </div>
+            </section>
+
+            {/* Privacy & Security */}
+            <section className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-primary/10">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Shield className="size-5" />
+                </div>
+                <h3 className="text-xl font-bold dark:text-white">Privacy & Security</h3>
+              </div>
+              <div className="flex flex-col gap-4">
+                {/* Two Factor Authentication */}
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex flex-col">
+                    <p className="font-medium dark:text-slate-200">Two-Factor Authentication</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Add an extra layer of security to your account</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={toggles.twoFactorAuth} onChange={() => handleToggle('twoFactorAuth')} />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-[#1a0e08] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary border border-slate-300 dark:border-[#333]"></div>
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            {/* Account Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-end mt-4">
+              <button
+                className="px-8 py-3 rounded-xl border border-slate-200 dark:border-primary/20 font-bold dark:text-white hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors"
+                onClick={() => {
+                  setLocalNotificationsEnabled(notificationsEnabled);
+                  navigateTo('dashboard');
+                }}
+              >
+                Discard Changes
+              </button>
+              <button
+                className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
+                onClick={() => {
+                  if (setNotificationsEnabled) setNotificationsEnabled(localNotificationsEnabled);
+                  navigateTo('dashboard');
+                }}
+              >
+                Save Settings
+              </button>
+            </div>
+
+          </div>
+        </main>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-2 pb-6 pt-2">
+        <div className="flex items-center justify-between">
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('dashboard')}>
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Dash</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('workouts')}>
+            <Dumbbell className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Train</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('schedule')}>
+            <CalendarDays className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Sched</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('analysis')}>
+            <LineChart className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Stats</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('records')}>
+            <Trophy className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Records</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-primary cursor-pointer" onClick={() => navigateTo('settings')}>
+            <SettingsIcon className="w-5 h-5 stroke-[3px]" />
+            <span className="text-[9px] font-bold uppercase tracking-widest">Settings</span>
+          </a>
+        </div>
+      </nav>
+
+    </div>
+  );
+}

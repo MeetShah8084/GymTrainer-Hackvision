@@ -5,11 +5,11 @@ import {
   LayoutDashboard, 
   Activity, 
   LineChart, 
-  User, 
   Trophy,
   ChevronRight,
   TrendingUp,
   Bell,
+  BellOff,
   Settings,
   Menu,
   X,
@@ -19,13 +19,15 @@ import {
 } from 'lucide-react';
 
 interface PersonalRecordsProps {
-  navigateTo: (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  notificationsEnabled?: boolean;
+  toggleNotifications?: () => void;
 }
 
-const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
+const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
-  const handleNavigation = (page: 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -72,8 +74,8 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('schedule')}>
             <span>Schedule</span>
           </a>
-          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => {}}>
-            <span>Profile</span>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
+            <span>Settings</span>
           </a>
         </nav>
       </aside>
@@ -87,14 +89,25 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
             <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Personal Records</h1>
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Personal Records</h1>
+              <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Your all-time best lifts and achievements</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
-                <Bell className="w-5 h-5" />
+              <button 
+                onClick={toggleNotifications}
+                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+                style={{
+                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+                }}
+                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+              >
+                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
               </button>
-              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all">
+              <button className="p-2.5 rounded-xl bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all" onClick={() => { setIsSidebarOpen(false); navigateTo('settings'); }}>
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -479,9 +492,9 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo }) => {
             <Trophy className="w-5 h-5 stroke-[3px]" />
             <span className="text-[9px] font-bold uppercase tracking-widest">Records</span>
           </a>
-          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => {}}>
-            <User className="w-5 h-5" />
-            <span className="text-[9px] font-medium uppercase tracking-widest">Profile</span>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
+            <Settings className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
           </a>
         </div>
       </nav>
