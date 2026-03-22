@@ -20,6 +20,13 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
   const [userName, setUserName] = useState<string>('Loading User...');
   const [memberSince, setMemberSince] = useState<string>('');
 
+  // Editing state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('+1 (555) 902-1234');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   const [localNotificationsEnabled, setLocalNotificationsEnabled] = useState(notificationsEnabled);
 
   // Toggles state
@@ -37,6 +44,13 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
         // Use full_name from raw_user_meta_data if available, fallback to email prefix
         const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
         setUserName(fullName);
+        setEditName(fullName);
+        setEditEmail(user.email || '');
+
+        // Use phone from metadata if available
+        if (user.user_metadata?.phone) {
+          setEditPhone(user.user_metadata.phone);
+        }
 
         // Format creation date
         const date = new Date(user.created_at);
@@ -61,6 +75,50 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigateTo('login');
+  };
+
+  const handleSaveSettings = async (shouldNavigate: boolean = false) => {
+    // Save notifications
+    if (setNotificationsEnabled) setNotificationsEnabled(localNotificationsEnabled);
+
+    // Save profile if in edit mode or if edits were made
+    if (isEditingProfile && editName.trim() && editEmail.trim()) {
+      setIsSavingProfile(true);
+      try {
+        await supabase.auth.updateUser({
+          email: editEmail,
+          data: { full_name: editName, phone: editPhone }
+        });
+
+        const n8nWebhookUrl = 'http://localhost:5678/webhook/update-profile';
+        const { data: { user } } = await supabase.auth.getUser();
+
+        await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user_id: user?.id,
+            name: editName,
+            email: editEmail,
+            phone: editPhone
+          })
+        }).catch(err => console.warn("Failed to ping n8n webhook", err));
+
+        setUserName(editName);
+        setUserEmail(editEmail);
+      } catch (err) {
+        console.error('Failed to update profile:', err);
+      } finally {
+        setIsSavingProfile(false);
+        setIsEditingProfile(false);
+      }
+    }
+
+    if (shouldNavigate) {
+      navigateTo('dashboard');
+    }
   };
 
   return (
@@ -149,40 +207,71 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
             <section className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-primary/10">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold dark:text-white">Profile Information</h3>
-                <button className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
-                  Edit <Edit3 className="size-4" />
-                </button>
+                {!isEditingProfile ? (
+                  <button onClick={() => setIsEditingProfile(true)} className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                    Edit <Edit3 className="size-4" />
+                  </button>
+                ) : (
+                  <div className="flex gap-3">
+                    <button onClick={() => setIsEditingProfile(false)} disabled={isSavingProfile} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-sm font-bold transition-colors">
+                      Cancel
+                    </button>
+                    <button onClick={() => handleSaveSettings(false)} disabled={isSavingProfile} className="bg-primary hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                      {isSavingProfile ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                )}
               </div>
+              
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                 <div className="relative shrink-0">
                   <div className="size-24 rounded-full bg-center bg-cover border-4 border-primary/20 shadow-inner" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}>
                   </div>
-                  <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white">
+                  <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white hover:bg-orange-600 transition-colors">
                     <Camera className="size-4" />
                   </button>
                 </div>
-                <div className="text-center sm:text-left">
-                  <h4 className="text-lg font-bold dark:text-white">{userName}</h4>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">{memberSince}</p>
-                  <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    PRO TRAINER
-                  </div>
+                <div className="text-center sm:text-left w-full sm:w-auto flex-1">
+                  {!isEditingProfile ? (
+                    <>
+                      <h4 className="text-lg font-bold dark:text-white">{userName}</h4>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">{memberSince}</p>
+                      <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        PRO TRAINER
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2 max-w-sm">
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Name</label>
+                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} 
+                               className="w-full px-3 py-2 bg-slate-50 dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#333] rounded-lg text-sm focus:outline-none focus:border-primary transition-colors text-slate-900 dark:text-white" />
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{memberSince}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-primary/10">
-                    <Mail className="size-5 text-slate-400" />
-                    <span className="text-sm dark:text-slate-200">{userEmail}</span>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                    <Mail className="size-5 text-slate-400 shrink-0" />
+                    {!isEditingProfile ? (
+                      <span className="text-sm dark:text-slate-200 truncate">{userEmail}</span>
+                    ) : (
+                      <input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-background-dark rounded-xl border border-slate-200 dark:border-primary/10">
-                    <Phone className="size-5 text-slate-400" />
-                    <span className="text-sm dark:text-slate-200">+1 (555) 902-1234</span>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                    <Phone className="size-5 text-slate-400 shrink-0" />
+                    {!isEditingProfile ? (
+                      <span className="text-sm dark:text-slate-200">{editPhone}</span>
+                    ) : (
+                      <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -271,10 +360,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
                 </button>
                 <button
                   className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
-                  onClick={() => {
-                    if (setNotificationsEnabled) setNotificationsEnabled(localNotificationsEnabled);
-                    navigateTo('dashboard');
-                  }}
+                  onClick={() => handleSaveSettings(true)}
                 >
                   Save Settings
                 </button>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
+import { supabase } from '../lib/supabase';
 import {
   Dumbbell,
   LayoutDashboard,
@@ -26,6 +27,20 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userName, setUserName] = useState<string>('Loading...');
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+        setUserName(fullName);
+      } else {
+        setUserName('Guest');
+      }
+    }
+    fetchUser();
+  }, []);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
     setIsSidebarOpen(false);
@@ -91,7 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled 
               <Menu className="w-6 h-6" />
             </button>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Good Morning, John</h1>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Good Morning, {userName.split(' ')[0] || userName}</h1>
               <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Ready for your push day today?</p>
             </div>
           </div>
@@ -123,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled 
           </div>
           <div className="flex flex-col ml-3 flex-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Welcome back</span>
-            <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">John Doe</h2>
+            <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">{userName}</h2>
           </div>
           <div className="flex items-center gap-2">
               <button 

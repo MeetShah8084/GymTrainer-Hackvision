@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LoginProps {
@@ -14,71 +14,80 @@ export default function Login({ navigateTo }: LoginProps) {
   const [waitMode, setWaitMode] = useState<'auth' | 'email'>('auth');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showPass, setShowPass] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    fullName: '',
+    age: '',
+    height: '',
+    weight: '',
+    phone: '',
+    bodyType: 'Mesomorph'
+  });
 
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const set = (field: keyof typeof form, value: string) => setForm(f => ({ ...f, [field]: value }));
+  const setProfile = (field: keyof typeof profileForm, value: string) => setProfileForm(f => ({ ...f, [field]: value }));
+
+  const checkOnboardingState = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.from('profiles').select('height').eq('user_id', userId).single();
+      if (!error && (!data || data.height === null)) {
+        setStep(4);
+      } else {
+        navigateTo('dashboard');
+      }
+    } catch {
+        navigateTo('dashboard');
+    }
+  };
 
   useEffect(() => {
-    const isVerificationHash = typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('access_token');
+    // Check for email verification hash
+    const isVerificationHash = window.location.hash && (window.location.hash.includes('type=signup') || window.location.hash.includes('access_token'));
 
-    // Check if we are already logged in when the component mounts
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        if (isVerificationHash) {
-          setStep(4);
-          setTimeout(() => window.close(), 3000);
-        } else {
-          navigateTo('dashboard');
-        }
+        await checkOnboardingState(session.user.id);
       }
     };
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        // If we just got signed in via a hash URL in THIS tab
-        if (isVerificationHash) {
-          setStep(4);
-          setTimeout(() => window.close(), 3000);
-        } else if (step !== 4) {
-          navigateTo('dashboard');
+        if (_event === 'SIGNED_IN') {
+           // Small buffer to allow trigger to create DB copy before checking
+           setTimeout(() => checkOnboardingState(session.user.id), 500);
+        } else {
+           await checkOnboardingState(session.user.id);
         }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigateTo, step]);
+  }, [navigateTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsAuthenticating(true);
 
-    // Simulate or perform Supabase signin depending on configuration
-    setTimeout(async () => {
-      try {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: form.email,
-          password: form.password || 'dummy-password' // Use dummy if they just hit sign in without pass for seamless demo
-        });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password || 'dummy-password' // Use dummy if they just hit sign in without pass for seamless demo
+      });
 
-        if (error) {
-          setError(error.message);
-          setStep(1);
-          setIsAuthenticating(false);
-        } else {
-          navigateTo('dashboard');
-        }
-      } catch (err: any) {
-        console.error('Error during sign in:', err);
-        setError(err.message || 'An unexpected error occurred');
-        setStep(1);
-        setIsAuthenticating(false);
+      if (error) {
+        setError(error.message);
+      } else {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) await checkOnboardingState(session.user.id);
       }
-    }, 1000);
+    } catch (err: any) {
+      console.error('Error during sign in:', err);
+      setError(err.message || 'An unexpected error occurred');
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -89,7 +98,8 @@ export default function Login({ navigateTo }: LoginProps) {
       setError("Passwords don't match");
       return;
     }
-    setIsAuthenticating(true);
+    setWaitMode('auth');
+    setStep(2); // Transition to waiting
 
     setTimeout(async () => {
       try {
@@ -101,12 +111,9 @@ export default function Login({ navigateTo }: LoginProps) {
         if (error) {
           setError(error.message);
           setStep(1);
-          setIsAuthenticating(false);
         } else if (data.session === null) {
           // Email confirmation is required
-          setIsAuthenticating(false);
           setWaitMode('email');
-          setStep(2);
         } else {
           // Actually success without confirmation
           navigateTo('dashboard');
@@ -115,7 +122,6 @@ export default function Login({ navigateTo }: LoginProps) {
         console.error('Error during sign up:', err);
         setError(err.message || 'An unexpected error occurred');
         setStep(1);
-        setIsAuthenticating(false);
       }
     }, 1000);
   };
@@ -211,13 +217,9 @@ export default function Login({ navigateTo }: LoginProps) {
                       </button>
                     </div>
                   </div>
-                  <button type="submit" disabled={isAuthenticating}
-                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
-                    {isAuthenticating ? (
-                      <><Loader2 size={16} className="animate-spin" /><span>Authenticating...</span></>
-                    ) : (
-                      <><span>Sign In</span><ArrowRight size={16} /></>
-                    )}
+                  <button type="submit"
+                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
+                    <span>Sign In</span><ArrowRight size={16} />
                   </button>
                 </form>
 
@@ -267,13 +269,9 @@ export default function Login({ navigateTo }: LoginProps) {
                       value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}
                     />
                   </div>
-                  <button type="submit" disabled={isAuthenticating}
-                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
-                    {isAuthenticating ? (
-                      <><Loader2 size={16} className="animate-spin" /><span>Creating Account...</span></>
-                    ) : (
-                      <><span>Create Account</span><ArrowRight size={16} /></>
-                    )}
+                  <button type="submit"
+                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
+                    <span>Create Account</span><ArrowRight size={16} />
                   </button>
                 </form>
 
@@ -317,11 +315,9 @@ export default function Login({ navigateTo }: LoginProps) {
               </motion.div>
             )}
 
-            {/* STEP 3 REMOVED - DIRECT NAVIGATION USED */}
-
-            {/* STEP 4: VERIFIED TAB */}
-            {step === 4 && (
-              <motion.div key="step4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
+            {/* STEP 3: LOGINPAGE3.JPEG EQUIVALENT (SUCCESS) */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -331,16 +327,94 @@ export default function Login({ navigateTo }: LoginProps) {
                   <CheckCircle2 size={40} />
                 </motion.div>
 
-                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>EMAIL VERIFIED</h2>
-                <p className="text-[#A3A3A3] text-sm mb-6 max-w-[280px]">
-                  You can safely close this tab and return to your original window.
+                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>AUTHENTICATED</h2>
+                <p className="text-[#A3A3A3] text-sm">
+                  Redirecting to your dashboard...
                 </p>
-                <button onClick={() => {
-                  window.location.hash = ''; // Clear hash so it doesn't trigger again
-                  navigateTo('dashboard');
-                }} className="px-6 py-3 bg-transparent border border-[#F97316] text-[#F97316] rounded-lg font-medium transition-colors hover:bg-[#F97316]/10">
-                  Continue here instead
-                </button>
+              </motion.div>
+            )}
+
+            {/* STEP 4: BUILD PROFILE */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col w-full text-left">
+                <div className="inline-block px-3 py-1 text-[10px] font-bold rounded-lg mb-4 text-[#F97316] bg-[#F97316]/10 border border-[#F97316]/20 self-start">
+                  STEP 2 OF 2
+                </div>
+                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 32, marginBottom: 4 }}>BUILD YOUR PROFILE</h2>
+                <p className="text-[#A3A3A3] text-sm mb-8">Help your AI trainer personalize your experience</p>
+
+                {error && <div className="text-red-500 text-sm mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">{error}</div>}
+
+                <form onSubmit={handleBuildProfile} className="flex flex-col gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">FULL NAME *</label>
+                    <input
+                      className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                      type="text" placeholder="Alex Rivers" required
+                      value={profileForm.fullName} onChange={e => setProfile('fullName', e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">AGE</label>
+                      <input
+                        className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                        type="number" placeholder="25" required
+                        value={profileForm.age} onChange={e => setProfile('age', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">HEIGHT (cm)</label>
+                      <input
+                        className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                        type="number" placeholder="175" required
+                        value={profileForm.height} onChange={e => setProfile('height', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">WEIGHT (kg)</label>
+                      <input
+                        className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                        type="number" step="0.1" placeholder="75.0" required
+                        value={profileForm.weight} onChange={e => setProfile('weight', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">PHONE NUMBER</label>
+                      <input
+                        className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                        type="tel" placeholder="+1234567890" required
+                        value={profileForm.phone} onChange={e => setProfile('phone', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-2">BODY TYPE</label>
+                    <div className="flex gap-2">
+                       {['Ectomorph', 'Mesomorph', 'Endomorph'].map(type => (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => setProfile('bodyType', type)}
+                            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                              profileForm.bodyType === type
+                                ? 'bg-transparent border-[#F97316] text-[#F97316]'
+                                : 'bg-[#1A1A1A] border-[#333] text-[#A3A3A3] hover:text-white'
+                            }`}
+                          >
+                            {type}
+                          </button>
+                       ))}
+                    </div>
+                  </div>
+                  
+                  <button type="submit" disabled={isSaving}
+                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-4 bg-[#F97316] hover:bg-[#EA580C] text-white disabled:opacity-50 font-medium transition-colors">
+                    <span>{isSaving ? 'Saving...' : 'Start Training'}</span><ArrowRight size={16} />
+                  </button>
+                </form>
               </motion.div>
             )}
 
