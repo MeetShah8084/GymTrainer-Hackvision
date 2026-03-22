@@ -19,15 +19,41 @@ import {
   BellOff // Added BellOff import
 } from 'lucide-react';
 
+import type { Exercise } from '../data/exercises';
+
 interface DashboardProps {
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
-  notificationsEnabled?: boolean; // Added prop
-  toggleNotifications?: () => void; // Added prop
+  notificationsEnabled?: boolean; 
+  toggleNotifications?: () => void; 
+  incompleteExercises?: Exercise[];
+  setIncompleteExercises?: (exercises: Exercise[]) => void;
+  completedExercises?: Exercise[];
+  setCompletedExercises?: (exercises: Exercise[]) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+  navigateTo, 
+  notificationsEnabled = true, 
+  toggleNotifications,
+  incompleteExercises = [],
+  setIncompleteExercises,
+  completedExercises = [],
+  setCompletedExercises 
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userName, setUserName] = useState<string>('Loading...');
+
+  const handleCompleteExercise = (exerciseId: string) => {
+    const exercise = incompleteExercises.find(e => e.id === exerciseId);
+    if (!exercise || !setIncompleteExercises || !setCompletedExercises) return;
+    setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
+    setCompletedExercises([...completedExercises, exercise]);
+  };
+
+  const handleRelog = () => {
+    if (setIncompleteExercises) setIncompleteExercises([]);
+    if (setCompletedExercises) setCompletedExercises([]);
+  };
 
   useEffect(() => {
     async function fetchUser() {
@@ -234,11 +260,17 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled 
 
             {/* Quick Actions (Mobile) */}
             <div className="md:hidden grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95">
+              <button 
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95"
+                onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
+              >
                 <CheckCircle className="w-[18px] h-[18px]" />
                 <span>Complete</span>
               </button>
-              <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95">
+              <button 
+                className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95"
+                onClick={handleRelog}
+              >
                 <RotateCcw className="w-[18px] h-[18px]" />
                 <span>Relog</span>
               </button>
@@ -247,20 +279,54 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo, notificationsEnabled 
             {/* Action Section (Desktop) */}
             <div className="hidden md:flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary shadow-sm">
               <div>
-                <h3 className="text-xl font-bold dark:text-white">Current Session: Push B (Heavy)</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • 4/6 Exercises completed</p>
+                <h3 className="text-xl font-bold dark:text-white">Current Session: {incompleteExercises.length > 0 ? incompleteExercises[0].name : "All Completed"}</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {completedExercises.length}/{completedExercises.length + incompleteExercises.length} Exercises completed</p>
               </div>
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
+                <button 
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                  onClick={handleRelog}
+                >
                   <RotateCcw className="w-5 h-5" />
                   Relog
                 </button>
-                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+                <button 
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
+                  onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
+                >
                   <CheckCircle className="w-5 h-5" />
-                  Workout Complete
+                  Complete Workout
                 </button>
               </div>
             </div>
+
+            {/* Incomplete Exercises List (Synced across session) */}
+            {incompleteExercises.length > 0 && (
+              <div className="flex flex-col gap-3 mt-4">
+                {incompleteExercises.map((exercise) => (
+                  <div key={exercise.id} className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/5 p-4 rounded-xl shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-slate-100 dark:bg-background-dark/50 flex items-center justify-center text-primary shrink-0">
+                        {exercise.icon}
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-bold text-slate-900 dark:text-slate-100 text-base md:text-lg">{exercise.name}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          {exercise.sets} sets • {exercise.reps} • {exercise.weight}
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      className="w-full md:w-auto mt-2 md:mt-0 px-4 py-2 border-2 border-primary/20 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                      onClick={() => handleCompleteExercise(exercise.id)}
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Complete Workout
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Muscle Group Grid */}
             <div>

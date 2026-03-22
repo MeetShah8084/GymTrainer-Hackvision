@@ -72,6 +72,11 @@ export default defineConfig([
 ])
 ```
 
+# Credits:
+
 
 Icons used:
 - Company icon: <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons">Trainer icons created by Leremy - Flaticon</a>
+
+3D Model of male:
+- "Male base muscular anatomy" (https://skfb.ly/ouVoo) by CharacterZone is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).

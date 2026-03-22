@@ -8,9 +8,16 @@ import Settings from './components/Settings'
 import Login from './components/Login'
 import './index.css'
 
+import { initialCompletedExercises, initialIncompleteExercises } from './data/exercises'
+import type { Exercise } from './data/exercises'
+
 function App() {
   const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings'>('login')
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  // Lifted state for exercises
+  const [incompleteExercises, setIncompleteExercises] = useState<Exercise[]>(initialIncompleteExercises);
+  const [completedExercises, setCompletedExercises] = useState<Exercise[]>(initialCompletedExercises);
 
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
 
@@ -19,6 +26,10 @@ function App() {
     notificationsEnabled,
     toggleNotifications,
     setNotificationsEnabled,
+    incompleteExercises,
+    setIncompleteExercises,
+    completedExercises,
+    setCompletedExercises
   };
 
   return (

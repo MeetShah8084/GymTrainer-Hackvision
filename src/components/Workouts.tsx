@@ -1,73 +1,29 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { Dumbbell, Flame, Activity, LayoutDashboard, Settings, Bell, BellOff, Plus, Weight, Edit, Trash2, AlertTriangle, Repeat, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity } from 'lucide-react';
 
-interface Exercise {
-  id: string;
-  name: string;
-  timeInfo: string;
-  sets: number;
-  reps: string;
-  weight: string;
-  imageAlt: string;
-  imageSrc: string;
-  icon: React.ReactNode;
-}
-
-const initialExercises: Exercise[] = [
-  {
-    id: '1',
-    name: 'Barbell Bench Press',
-    timeInfo: '14:20 • Muscle Pump Gym • Chest',
-    sets: 4,
-    reps: '10, 8, 8, 6',
-    weight: '85 kg',
-    imageAlt: 'Close up of a heavy barbell in a gym',
-    imageSrc: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop',
-    icon: <Dumbbell className="hidden md:block w-7 h-7" />
-  },
-  {
-    id: '2',
-    name: 'Dumbbell Lateral Raise',
-    timeInfo: '12:15 • Muscle Pump Gym • Shoulders',
-    sets: 3,
-    reps: '15, 15, 12',
-    weight: '12 kg',
-    imageAlt: 'Dumbbells on a rack in a premium gym',
-    imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
-    icon: <Activity className="hidden md:block w-7 h-7" />
-  },
-  {
-    id: '3',
-    name: 'Seated Row',
-    timeInfo: '10:30 • Muscle Pump Gym • Back',
-    sets: 4,
-    reps: '12, 10, 10, 8',
-    weight: '60 kg',
-    imageAlt: 'Seated Row machine',
-    imageSrc: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200&h=200&fit=crop',
-    icon: <Activity className="hidden md:block w-7 h-7" />
-  },
-  {
-    id: '4',
-    name: 'Cable Tricep Pushdown',
-    timeInfo: '08:45 • Home Gym • Triceps',
-    sets: 3,
-    reps: '12, 12, 12',
-    weight: '25 kg',
-    imageAlt: 'Lat pull down machine detail',
-    imageSrc: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=200&h=200&fit=crop',
-    icon: <Repeat className="hidden md:block w-7 h-7" />
-  }
-];
+import { CheckCircle } from 'lucide-react';
+import type { Exercise } from '../data/exercises';
 
 interface WorkoutsProps {
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
+  incompleteExercises: Exercise[];
+  setIncompleteExercises: (exercises: Exercise[]) => void;
+  completedExercises: Exercise[];
+  setCompletedExercises: (exercises: Exercise[]) => void;
 }
 
-const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
+const Workouts: React.FC<WorkoutsProps> = ({
+  navigateTo,
+  notificationsEnabled = true,
+  toggleNotifications,
+  incompleteExercises,
+  setIncompleteExercises,
+  completedExercises,
+  setCompletedExercises
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
@@ -76,23 +32,60 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
       navigateTo(page);
     }, 300);
   };
-  const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleDelete = (id: string) => {
-    setExercises(exercises.filter(e => e.id !== id));
+  // HTML5 Drag and Drop State
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedItemIndex === null || draggedItemIndex === index) return;
+
+    const newItems = [...incompleteExercises];
+    const draggedItemContent = newItems[draggedItemIndex];
+    newItems.splice(draggedItemIndex, 1);
+    newItems.splice(index, 0, draggedItemContent);
+
+    setDraggedItemIndex(index);
+    setIncompleteExercises(newItems);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemIndex(null);
+  };
+
+  const handleCompleteExercise = (exerciseId: string) => {
+    const exercise = incompleteExercises.find(e => e.id === exerciseId);
+    if (!exercise) return;
+    setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
+    setCompletedExercises([...completedExercises, exercise]);
+  };
+
+  const handleDeleteIncomplete = (id: string) => {
+    setIncompleteExercises(incompleteExercises.filter(e => e.id !== id));
+    setDeletingId(null);
+  };
+
+  const handleDeleteCompleted = (id: string) => {
+    setCompletedExercises(completedExercises.filter(e => e.id !== id));
     setDeletingId(null);
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
-      
+
       {/* Sidebar (Desktop) */}
-            {/* Overlay */}
+      {/* Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40" 
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -130,12 +123,12 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
             <span>Settings</span>
           </a>
         </nav>
-        
-        </aside>
+
+      </aside>
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
-        
+
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
           <div className="flex items-center gap-4">
@@ -143,13 +136,13 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
               <Menu className="w-6 h-6" />
             </button>
             <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Workout Sessions</h1>
-            <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Activity from the last 24 hours</p>
-          </div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Workout Sessions</h1>
+              <p className="text-sm text-slate-500 dark:text-primary/70 font-medium">Activity from the last 24 hours</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={toggleNotifications}
                 className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
                 style={{
@@ -187,14 +180,6 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto w-full custom-gradient relative md:pb-8">
           <div className="max-w-6xl mx-auto w-full p-4 md:p-10 pb-28 md:pb-10 space-y-6 md:space-y-8">
-            
-            {/* Desktop Action Header */}
-            <div className="hidden md:flex items-center justify-end">
-              <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
-                <Plus className="w-5 h-5 stroke-[3px]" />
-                New Session
-              </button>
-            </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
@@ -212,7 +197,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                   <span>+12% vs yesterday</span>
                 </div>
               </div>
-              
+
               <div className="col-span-1 md:col-span-1 flex flex-col gap-1 md:gap-2 rounded-xl md:rounded-2xl p-4 md:p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group hidden sm:flex">
                 <div className="hidden md:block absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Flame className="w-12 h-12" />
@@ -232,7 +217,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                 <p className="text-slate-500 dark:text-primary/70 text-xs font-semibold uppercase tracking-wider">Exercises</p>
                 <p className="text-2xl font-black leading-tight">14</p>
               </div>
-              
+
               <div className="col-span-2 sm:col-span-1 flex flex-col gap-1 md:gap-2 rounded-xl md:rounded-2xl p-4 md:p-6 bg-primary text-white shadow-lg shadow-primary/20 relative overflow-hidden group">
                 <div className="hidden md:block absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Timer className="w-12 h-12" />
@@ -248,15 +233,132 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
               </div>
             </div>
 
-            {/* Exercise List Section */}
+            {/* Incomplete Exercises Section */}
+            {incompleteExercises.length > 0 && (
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Incomplete Exercises</h3>
+                  <span className="text-xs font-medium md:font-bold px-3 py-1 bg-primary/10 rounded-full text-primary">{incompleteExercises.length} Remaining</span>
+                </div>
+
+                <div className="space-y-4">
+                  {incompleteExercises.map((exercise, index) => {
+                    if (deletingId === exercise.id) {
+                      return (
+                        <div key={exercise.id} className="group relative overflow-hidden rounded-xl bg-red-50 dark:bg-red-950/20 border-2 md:border md:border-red-500/30 border-red-200 dark:border-red-900/40 p-4 md:p-0 md:bg-white md:dark:bg-surface-dark shadow-sm">
+                          <div className="md:bg-red-500/5 md:p-6 flex items-center justify-between gap-4 md:gap-6 flex-wrap">
+                            <div className="flex items-center gap-4">
+                              <div className="hidden md:flex size-14 rounded-xl bg-red-500/20 items-center justify-center text-red-500">
+                                <AlertTriangle className="w-7 h-7" />
+                              </div>
+                              <div className="flex flex-col">
+                                <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-slate-100">Delete {exercise.name}?</p>
+                                <p className="text-xs md:text-sm text-red-600 dark:text-slate-400 font-medium md:mt-1">This action cannot be undone.</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 items-center">
+                              <button type="button" className="md:hidden size-10 rounded-full bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-slate-600 flex items-center justify-center shrink-0" onClick={() => setDeletingId(null)}>
+                                <ArrowLeft className="w-5 h-5" />
+                              </button>
+                              <button type="button" className="hidden md:block px-6 py-2 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-background-dark transition-colors border border-transparent" onClick={() => setDeletingId(null)}>
+                                Cancel
+                              </button>
+                              <button type="button" className="flex-1 md:flex-none px-4 md:px-6 py-2 bg-red-600 text-white text-xs md:text-sm font-bold rounded-lg shadow-lg shadow-red-600/20" onClick={() => handleDeleteIncomplete(exercise.id)}>
+                                CONFIRM DELETE
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={exercise.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragEnd={handleDragEnd}
+                        className={`group relative overflow-hidden rounded-xl bg-white dark:bg-surface-dark border ${draggedItemIndex === index ? 'border-primary border-dashed opacity-50' : 'border-slate-200 dark:border-primary/10'} p-4 md:p-6 transition-all shadow-sm cursor-grab active:cursor-grabbing`}
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 pointer-events-none">
+                          <div className="flex items-start md:items-center gap-4">
+                            <div className="relative size-16 md:size-14 shrink-0 overflow-hidden rounded-lg md:rounded-xl md:bg-slate-100 md:dark:bg-background-dark md:flex md:items-center md:justify-center md:text-primary md:border md:border-primary/10">
+                              <img className="h-full w-full object-cover md:hidden" alt={exercise.imageAlt} src={exercise.imageSrc} />
+                              {exercise.icon}
+                            </div>
+                            <div className="flex flex-1 flex-col">
+                              <div className="flex items-center justify-between md:hidden pointer-events-auto">
+                                <p className="text-base font-bold text-slate-900 dark:text-slate-100">{exercise.name}</p>
+                                <div className="flex gap-2">
+                                  <button className="text-primary hover:text-primary/70 transition-colors" onClick={() => handleCompleteExercise(exercise.id)}>
+                                    <CheckCircle className="w-5 h-5 fill-primary/20" />
+                                  </button>
+                                  <button className="text-slate-400 hover:text-red-500 transition-colors" onClick={() => { setDeletingId(exercise.id); setEditingId(null); }}>
+                                    <Trash2 className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </div>
+                              <h3 className="hidden md:block text-lg font-bold text-slate-900 dark:text-slate-100">{exercise.name}</h3>
+                              <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-primary/60 md:dark:text-slate-400 mt-0.5 md:mt-0">{exercise.timeInfo}</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-1 md:mt-0 flex items-center md:gap-12 gap-6 flex-wrap md:ml-0 ml-[80px]">
+                            <div className="flex flex-col text-left">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Sets</span>
+                              <span className="text-sm md:text-xl font-bold md:font-black text-slate-900 dark:text-slate-100">{exercise.sets}</span>
+                            </div>
+                            <div className="flex flex-col text-left">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Reps</span>
+                              <span className="text-sm md:text-xl font-bold md:font-black text-slate-900 dark:text-slate-100">{exercise.reps}</span>
+                            </div>
+                            <div className="flex flex-col text-left">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Weight</span>
+                              <span className="text-sm md:text-xl font-bold md:font-black text-primary">{exercise.weight}</span>
+                            </div>
+
+                            {/* Desktop actions */}
+                            <div className="hidden md:flex gap-2 ml-auto pointer-events-auto">
+                              <button className="h-10 px-4 rounded-lg flex items-center justify-center gap-2 bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-all" onClick={() => handleCompleteExercise(exercise.id)}>
+                                <CheckCircle className="w-5 h-5" />
+                                Complete
+                              </button>
+                              <button className="size-10 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all" onClick={() => { setDeletingId(exercise.id); setEditingId(null); }}>
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Completed Exercises List Section */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-2">
                 <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Completed Exercises</h3>
-                <span className="text-xs font-medium md:font-bold px-3 py-1 bg-slate-100 dark:bg-primary/10 rounded-full text-slate-600 dark:text-primary">{exercises.length} Sessions Total</span>
+                <span className="text-xs font-medium md:font-bold px-3 py-1 bg-slate-100 dark:bg-primary/10 rounded-full text-slate-600 dark:text-primary">{completedExercises.length} Sessions Total</span>
               </div>
-              
+
+              {completedExercises.length === 0 && incompleteExercises.length === 0 && (
+                <div className="mt-8 border border-dashed border-yellow-500/50 dark:border-yellow-500/40 rounded-3xl p-12 flex flex-col items-center justify-center text-center bg-yellow-500/5">
+                  <div className="size-32 border border-yellow-500/30 dark:border-yellow-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <div className="flex items-center justify-center gap-2 text-yellow-500">
+                      <CircleAlert className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <p className="text-yellow-600 dark:text-yellow-500 text-xl md:text-2xl max-w-md mt-4">
+                    No exercises are added in the list. Add exercises through per muscle group in the dashboard
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-4">
-                {exercises.map((exercise) => {
+                {completedExercises.map((exercise) => {
                   if (deletingId === exercise.id) {
                     return (
                       <div key={exercise.id} className="group relative overflow-hidden rounded-xl bg-red-50 dark:bg-red-950/20 border-2 md:border md:border-red-500/30 border-red-200 dark:border-red-900/40 p-4 md:p-0 md:bg-white md:dark:bg-surface-dark shadow-sm">
@@ -275,9 +377,9 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                               <ArrowLeft className="w-5 h-5" />
                             </button>
                             <button type="button" className="hidden md:block px-6 py-2 rounded-lg font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-background-dark transition-colors border border-transparent" onClick={() => setDeletingId(null)}>
-                                Cancel
+                              Cancel
                             </button>
-                            <button type="button" className="flex-1 md:flex-none px-4 md:px-6 py-2 bg-red-600 text-white text-xs md:text-sm font-bold rounded-lg shadow-lg shadow-red-600/20" onClick={() => handleDelete(exercise.id)}>
+                            <button type="button" className="flex-1 md:flex-none px-4 md:px-6 py-2 bg-red-600 text-white text-xs md:text-sm font-bold rounded-lg shadow-lg shadow-red-600/20" onClick={() => handleDeleteCompleted(exercise.id)}>
                               CONFIRM DELETE
                             </button>
                           </div>
@@ -292,7 +394,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
                           <div className="flex items-start md:items-center gap-4">
                             <div className="relative size-16 md:size-14 shrink-0 overflow-hidden rounded-lg md:rounded-xl shadow-[0_0_0_2px_rgba(236,91,19,1)] md:bg-primary/20 md:flex md:items-center md:justify-center md:text-primary md:border-none">
-                              <img className="h-full w-full object-cover md:hidden" alt={exercise.imageAlt} src={exercise.imageSrc}/>
+                              <img className="h-full w-full object-cover md:hidden" alt={exercise.imageAlt} src={exercise.imageSrc} />
                               {exercise.icon}
                             </div>
                             <div className="flex flex-1 flex-col">
@@ -305,7 +407,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                               <p className="hidden md:block text-sm font-medium text-primary mt-0.5">Editing session data...</p>
                             </div>
                           </div>
-                          
+
                           <form className="mt-1 md:mt-0 flex-1 md:flex-initial" onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -313,7 +415,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                             const reps = String(formData.get('reps'));
                             const weightStr = String(formData.get('weight'));
                             const weight = weightStr.includes('kg') ? weightStr : `${weightStr} kg`;
-                            setExercises(exercises.map(ex => ex.id === exercise.id ? { ...ex, sets, reps, weight } : ex));
+                            setCompletedExercises(completedExercises.map(ex => ex.id === exercise.id ? { ...ex, sets, reps, weight } : ex));
                             setEditingId(null);
                           }}>
                             <div className="flex items-center gap-2 md:gap-4 md:ml-0 md:w-[350px] w-full mt-2 md:mt-0">
@@ -345,7 +447,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
                         <div className="flex items-start md:items-center gap-4">
                           <div className="relative size-16 md:size-14 shrink-0 overflow-hidden rounded-lg md:rounded-xl md:bg-slate-100 md:dark:bg-background-dark md:flex md:items-center md:justify-center md:text-primary md:border md:border-primary/10">
-                            <img className="h-full w-full object-cover md:hidden" alt={exercise.imageAlt} src={exercise.imageSrc}/>
+                            <img className="h-full w-full object-cover md:hidden" alt={exercise.imageAlt} src={exercise.imageSrc} />
                             {exercise.icon}
                           </div>
                           <div className="flex flex-1 flex-col">
@@ -364,7 +466,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                             <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-primary/60 md:dark:text-slate-400 mt-0.5 md:mt-0">{exercise.timeInfo}</p>
                           </div>
                         </div>
-                        
+
                         <div className="mt-1 md:mt-0 flex items-center md:gap-12 gap-6 flex-wrap md:ml-0 ml-[80px]">
                           <div className="flex flex-col">
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Sets</span>
@@ -378,7 +480,7 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Weight</span>
                             <span className="text-sm md:text-xl font-bold md:font-black text-primary">{exercise.weight}</span>
                           </div>
-                          
+
                           {/* Desktop actions */}
                           <div className="hidden md:flex gap-2 ml-auto">
                             <button className="size-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-background-dark text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" onClick={() => { setEditingId(exercise.id); setDeletingId(null); }}>
@@ -426,11 +528,6 @@ const Workouts: React.FC<WorkoutsProps> = ({ navigateTo, notificationsEnabled = 
 
         </main>
       </div>
-
-      {/* Floating Action Button (Mobile) */}
-      <button className="md:hidden fixed bottom-24 right-6 size-14 rounded-full bg-primary text-white shadow-xl shadow-primary/30 flex items-center justify-center z-20">
-        <Plus className="w-8 h-8" />
-      </button>
 
       {/* Bottom Navigation Bar (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark/95 backdrop-blur-md px-2 pb-6 pt-2">
