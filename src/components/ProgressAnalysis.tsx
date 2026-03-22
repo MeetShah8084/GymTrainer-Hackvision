@@ -16,7 +16,6 @@ interface ProgressAnalysisProps {
 export default function ProgressAnalysis({ navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
@@ -139,26 +138,7 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
         <main className="flex-1 overflow-y-auto custom-gradient relative md:pb-8">
           <div className="p-4 md:p-8 lg:p-12 xl:px-24 mx-auto max-w-7xl space-y-6 md:space-y-8 pb-24 md:pb-8">
 
-            {/* --- MOBILE TABS --- */}
-            <div className="md:hidden overflow-x-auto no-scrollbar -mx-4 px-4">
-              <div className="flex gap-6 border-b border-slate-200 dark:border-primary/10">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'overview' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
-                  <p className={`text-sm tracking-wide ${activeTab === 'overview' ? 'font-bold' : 'font-medium'}`}>Overview</p>
-                </button>
-                <button
-                  onClick={() => setActiveTab('volume')}
-                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'volume' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
-                  <p className={`text-sm tracking-wide ${activeTab === 'volume' ? 'font-bold' : 'font-medium'}`}>Volume</p>
-                </button>
-                <button
-                  onClick={() => setActiveTab('strength')}
-                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-2 whitespace-nowrap outline-none ${activeTab === 'strength' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400'}`}>
-                  <p className={`text-sm tracking-wide ${activeTab === 'strength' ? 'font-bold' : 'font-medium'}`}>Strength</p>
-                </button>
-              </div>
-            </div>
+            {/* --- MOBILE TABS (Removed) --- */}
 
             {/* --- DESKTOP PAGE TITLE & TABS --- */}
             <div className="hidden md:flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -166,17 +146,7 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
                 <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-2">Progress Analysis</h1>
                 <p className="text-slate-400 text-lg">Advanced metrics and performance trends for the current mesocycle.</p>
               </div>
-              <div className="flex bg-slate-200 dark:bg-surface-dark p-1 rounded-xl shrink-0">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Overview</button>
-                <button
-                  onClick={() => setActiveTab('volume')}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'volume' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Volume</button>
-                <button
-                  onClick={() => setActiveTab('strength')}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all outline-none ${activeTab === 'strength' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Strength</button>
-              </div>
+              {/* Tabs removed as requested */}
             </div>
 
             {/* --- COMMON KEY METRICS GRID --- */}

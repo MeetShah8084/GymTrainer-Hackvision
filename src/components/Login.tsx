@@ -31,11 +31,26 @@ export default function Login({ navigateTo }: LoginProps) {
 
   const checkOnboardingState = async (userId: string) => {
     try {
-      const { data, error } = await supabase.from('profiles').select('height').eq('user_id', userId).maybeSingle();
-      if (error) {
-        console.error("Onboarding check error:", error);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setStep(4);
+        return;
       }
-      if (!data || data.height === null) {
+
+      console.log('[Onboarding Check] Fetching for user:', userId);
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?user_id=eq.${userId}&select=height`, {
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch profile");
+      
+      const rows = await res.json();
+      console.log('[Onboarding Check] Profile rows:', rows);
+
+      if (!rows || rows.length === 0 || rows[0].height === null) {
         setStep(4);
       } else {
         navigateTo('dashboard');
@@ -58,8 +73,8 @@ export default function Login({ navigateTo }: LoginProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         if (_event === 'SIGNED_IN') {
-           // Small buffer to allow trigger to create DB copy before checking
-           setTimeout(() => checkOnboardingState(session.user.id), 500);
+          // Small buffer to allow trigger to create DB copy before checking
+          setTimeout(() => checkOnboardingState(session.user.id), 500);
         }
       }
     });
@@ -136,7 +151,7 @@ export default function Login({ navigateTo }: LoginProps) {
     const weightVal = Number(profileForm.weight);
 
     if (!profileForm.fullName.trim()) { setError('Full name is required'); setIsSaving(false); return; }
-    if (!profileForm.age || isNaN(ageVal))    { setError('Please enter a valid age');    setIsSaving(false); return; }
+    if (!profileForm.age || isNaN(ageVal)) { setError('Please enter a valid age'); setIsSaving(false); return; }
     if (!profileForm.height || isNaN(heightVal)) { setError('Please enter a valid height'); setIsSaving(false); return; }
     if (!profileForm.weight || isNaN(weightVal)) { setError('Please enter a valid weight'); setIsSaving(false); return; }
 
@@ -155,7 +170,7 @@ export default function Login({ navigateTo }: LoginProps) {
       };
 
       console.log('[Profile Save] Sending authenticated fetch for user:', user.id);
-      
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?user_id=eq.${user.id}`, {
         method: 'PATCH',
         headers: {
@@ -456,23 +471,22 @@ export default function Login({ navigateTo }: LoginProps) {
                   <div>
                     <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-2">BODY TYPE</label>
                     <div className="flex gap-2">
-                       {['Ectomorph', 'Mesomorph', 'Endomorph'].map(type => (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => setProfile('bodyType', type)}
-                            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                              profileForm.bodyType === type
-                                ? 'bg-transparent border-[#F97316] text-[#F97316]'
-                                : 'bg-[#1A1A1A] border-[#333] text-[#A3A3A3] hover:text-white'
+                      {['Ectomorph', 'Mesomorph', 'Endomorph'].map(type => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setProfile('bodyType', type)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${profileForm.bodyType === type
+                              ? 'bg-transparent border-[#F97316] text-[#F97316]'
+                              : 'bg-[#1A1A1A] border-[#333] text-[#A3A3A3] hover:text-white'
                             }`}
-                          >
-                            {type}
-                          </button>
-                       ))}
+                        >
+                          {type}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  
+
                   <button type="submit" disabled={isSaving}
                     className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-4 bg-[#F97316] hover:bg-[#EA580C] text-white disabled:opacity-50 font-medium transition-colors">
                     <span>{isSaving ? 'Saving...' : 'Start Training'}</span><ArrowRight size={16} />
