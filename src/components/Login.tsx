@@ -30,8 +30,7 @@ export default function Login({ navigateTo }: LoginProps) {
           setStep(4);
           setTimeout(() => window.close(), 3000);
         } else {
-          setStep(3);
-          setTimeout(() => navigateTo('dashboard'), 2000);
+          navigateTo('dashboard');
         }
       }
     };
@@ -43,9 +42,8 @@ export default function Login({ navigateTo }: LoginProps) {
         if (isVerificationHash) {
           setStep(4);
           setTimeout(() => window.close(), 3000);
-        } else if (step !== 3 && step !== 4) {
-          setStep(3);
-          setTimeout(() => navigateTo('dashboard'), 2000);
+        } else if (step !== 4) {
+          navigateTo('dashboard');
         }
       }
     });
@@ -71,8 +69,7 @@ export default function Login({ navigateTo }: LoginProps) {
           setError(error.message);
           setStep(1);
         } else {
-          setStep(3);
-          setTimeout(() => navigateTo('dashboard'), 2000);
+          navigateTo('dashboard');
         }
       } catch (err: any) {
         console.error('Error during sign in:', err);
@@ -108,8 +105,7 @@ export default function Login({ navigateTo }: LoginProps) {
           setWaitMode('email');
         } else {
           // Actually success without confirmation
-          setStep(3);
-          setTimeout(() => navigateTo('dashboard'), 2000);
+          navigateTo('dashboard');
         }
       } catch (err: any) {
         console.error('Error during sign up:', err);
@@ -308,24 +304,7 @@ export default function Login({ navigateTo }: LoginProps) {
               </motion.div>
             )}
 
-            {/* STEP 3: LOGINPAGE3.JPEG EQUIVALENT (SUCCESS) */}
-            {step === 3 && (
-              <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                  className="w-20 h-20 rounded-full bg-[#1A0E08] border border-[#F97316]/30 text-[#F97316] flex items-center justify-center mb-8"
-                >
-                  <CheckCircle2 size={40} />
-                </motion.div>
-
-                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>AUTHENTICATED</h2>
-                <p className="text-[#A3A3A3] text-sm">
-                  Redirecting to your dashboard...
-                </p>
-              </motion.div>
-            )}
+            {/* STEP 3 REMOVED - DIRECT NAVIGATION USED */}
 
             {/* STEP 4: VERIFIED TAB */}
             {step === 4 && (
@@ -345,8 +324,7 @@ export default function Login({ navigateTo }: LoginProps) {
                 </p>
                 <button onClick={() => {
                   window.location.hash = ''; // Clear hash so it doesn't trigger again
-                  setStep(3);
-                  setTimeout(() => navigateTo('dashboard'), 2000);
+                  navigateTo('dashboard');
                 }} className="px-6 py-3 bg-transparent border border-[#F97316] text-[#F97316] rounded-lg font-medium transition-colors hover:bg-[#F97316]/10">
                   Continue here instead
                 </button>
