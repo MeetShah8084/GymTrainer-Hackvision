@@ -1,82 +1,75 @@
-# React + TypeScript + Vite
+# ProgressiveTrainer Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive fitness tracking application built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Workout Tracking**: Manage and track your exercises.
+- **Dynamic Dashboard**: View your current session status and metrics.
+- **Drag-and-Drop**: Easily reorder exercises in your workout list.
+- **Secure Authentication**: Integrated with Supabase.
+- **Real-time Updates**: Changes reflect instantly across the dashboard and workout views.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Follow these steps to run the project on your local machine:
 
-## Expanding the ESLint configuration
+### 1. Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Ensure you have **Node.js** (v18 or higher) installed. Using **npm** is recommended for package management.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 2. Clone the Repository
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <your-github-repo-url>
+cd modern-frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 3. Install Dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-# Credits:
+### 4. Setup Environment Variables
 
+The project uses Supabase and n8n. These configurations are sensitive and were not pushed to GitHub.
 
-Icons used:
-- Company icon: <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons">Trainer icons created by Leremy - Flaticon</a>
+1.  Create a file named `.env` in the root directory.
+2.  Open `.env.example` in this folder and copy its content into your new `.env` file.
+3.  Replace the placeholder values with your actual project credentials:
+    ```env
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    VITE_N8N_BASE_URL=your_n8n_workflow_url
+    ```
 
-3D Model of male:
-- "Male base muscular anatomy" (https://skfb.ly/ouVoo) by CharacterZone is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+### 5. Start Developing
+
+Launch the local development server:
+
+```bash
+npm run dev
+```
+
+The application will typically be accessible at `http://localhost:5173`.
+
+## Deployment
+
+To create a production-ready build:
+
+```bash
+npm run build
+```
+
+The output will be in the `dist` folder, ready for deployment to platforms like Vercel or Netlify.
+
+---
+
+## Credits
+
+### Graphics & Assets
+
+- **Icons**: [Trainer icons](https://www.flaticon.com/free-icons/trainer) created by Leremy - Flaticon.
+- **3D Model**: [Male base muscular anatomy](https://skfb.ly/ouVoo) by CharacterZone, licensed under [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).
+- **Libraries**: Lucide-React for component icons, Nivo for data visualization.
