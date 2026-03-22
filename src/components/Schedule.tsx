@@ -16,13 +16,17 @@ const calendarData = Array.from({ length: 365 }).map((_, i) => {
 });
 
 interface ScheduleProps {
+  userName?: string;
+  setUserName?: (name: string) => void;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   completedExercises: Exercise[];
 }
 
-const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications, completedExercises }) => {
+const Schedule: React.FC<ScheduleProps> = ({
+  userName = "Loading...",
+   navigateTo, notificationsEnabled = true, toggleNotifications, completedExercises }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -200,7 +204,9 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 

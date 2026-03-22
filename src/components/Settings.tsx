@@ -9,15 +9,16 @@ import {
 } from 'lucide-react';
 
 interface SettingsProps {
+  userName?: string;
+  setUserName?: (name: string) => void;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean;
   setNotificationsEnabled?: (value: boolean) => void;
 }
 
-export default function Settings({ navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
+export default function Settings({ userName = 'User', setUserName, navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('Loading...');
-  const [userName, setUserName] = useState<string>('Loading User...');
   const [memberSince, setMemberSince] = useState<string>('');
 
   // Editing state
@@ -43,7 +44,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
 
         // Use full_name from raw_user_meta_data if available, fallback to email prefix
         const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        setUserName(fullName);
+        if (setUserName) setUserName(fullName);
         setEditName(fullName);
         setEditEmail(user.email || '');
 
@@ -106,7 +107,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
           })
         }).catch(err => console.warn("Failed to ping n8n webhook", err));
 
-        setUserName(editName);
+        if (setUserName) setUserName(editName);
         setUserEmail(editEmail);
       } catch (err) {
         console.error('Failed to update profile:', err);
@@ -182,7 +183,9 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
@@ -225,7 +228,8 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
               
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                 <div className="relative shrink-0">
-                  <div className="size-24 rounded-full bg-center bg-cover border-4 border-primary/20 shadow-inner" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}>
+                  <div className="size-24 rounded-full border-4 border-primary/20 bg-primary/10 shadow-inner flex items-center justify-center text-primary font-bold text-5xl">
+                    {userName.charAt(0).toUpperCase()}
                   </div>
                   <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white hover:bg-orange-600 transition-colors">
                     <Camera className="size-4" />

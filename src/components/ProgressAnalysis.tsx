@@ -8,12 +8,14 @@ import {
 } from 'lucide-react';
 
 interface ProgressAnalysisProps {
+  userName?: string;
+  setUserName?: (name: string) => void;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
 
-export default function ProgressAnalysis({ navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+export default function ProgressAnalysis({ userName = 'User', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -115,7 +117,9 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 

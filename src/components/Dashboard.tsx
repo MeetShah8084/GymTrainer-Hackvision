@@ -22,6 +22,8 @@ import {
 import type { Exercise } from '../data/exercises';
 
 interface DashboardProps {
+  userName?: string;
+  setUserName?: (name: string) => void;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean; 
   toggleNotifications?: () => void; 
@@ -31,7 +33,9 @@ interface DashboardProps {
   setCompletedExercises?: (exercises: Exercise[]) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ 
+const Dashboard: React.FC<DashboardProps> = ({
+  userName = "Loading...",
+  setUserName, 
   navigateTo, 
   notificationsEnabled = true, 
   toggleNotifications,
@@ -41,7 +45,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   setCompletedExercises 
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [userName, setUserName] = useState<string>('Loading...');
+
+  const now = new Date();
+  const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDateStr);
 
   const handleCompleteExercise = (exerciseId: string) => {
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
@@ -69,9 +76,9 @@ const Dashboard: React.FC<DashboardProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        setUserName(fullName);
+        if (setUserName) setUserName(fullName);
       } else {
-        setUserName('Guest');
+        if (setUserName) setUserName('Guest');
       }
     }
     fetchUser();
@@ -162,14 +169,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
         {/* Mobile Header */}
         <div className="md:hidden flex shrink-0 z-20 items-center p-4 justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10">
-          <div className="flex size-10 shrink-0 items-center overflow-hidden rounded-full border-2 border-primary">
-            <img alt="User Profile" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVrzpsn6_U1odECZkvw4RS520J75eoPMqvh9YQ0JbkGmUJcjso9-P6XoCX8c3Z09xexCRYGXmwGJ8JqZQJtZmNcdG-3j74bfXinTwW9OMizO4NAgHyVwigVwOfsCzlSBl3SNSa50DM9Of5-J8XpJ8rORai6IkrZUllEe9kkDIeaJ8R3R_KcVLZFHoGZzFibHIDxx4x1eMSTtOm_kHt_tHtVb7NESWjUNT1XuA5Fhn9-zzkUw3ZbKTG1M5JI0TAG6kreGxSlJcSlpHt" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary font-bold text-lg shadow-sm">
+            {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col ml-3 flex-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Welcome back</span>
@@ -289,7 +298,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="hidden md:flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary shadow-sm">
               <div>
                 <h3 className="text-xl font-bold dark:text-white">Current Session: {incompleteExercises.length > 0 ? incompleteExercises[0].name : "All Completed"}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {completedExercises.length}/{completedExercises.length + incompleteExercises.length} Exercises completed</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {todayCompletedExercises.length}/{todayCompletedExercises.length + incompleteExercises.length} Exercises completed</p>
               </div>
               <div className="flex gap-3">
                 <button 

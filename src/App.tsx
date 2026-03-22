@@ -13,6 +13,7 @@ import type { Exercise } from './data/exercises'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings'>('login')
+  const [userName, setUserName] = useState<string>("Loading...");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   // Lifted state for exercises
@@ -29,7 +30,9 @@ function App() {
     incompleteExercises,
     setIncompleteExercises,
     completedExercises,
-    setCompletedExercises
+    setCompletedExercises,
+    userName,
+    setUserName
   };
 
   return (

@@ -19,12 +19,16 @@ import {
 } from 'lucide-react';
 
 interface PersonalRecordsProps {
+  userName?: string;
+  setUserName?: (name: string) => void;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
 
-const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
+const PersonalRecords: React.FC<PersonalRecordsProps> = ({
+  userName = "Loading...",
+   navigateTo, notificationsEnabled = true, toggleNotifications }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
@@ -111,7 +115,9 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ navigateTo, notificat
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" data-alt="Profile photo" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCECHIeXWmzuDS303_0JqiiEkCPDENkfygKDk_dk13mFplYxUfDh5ScrrMBc9IXBZ4lZW8KfwL8ZIZEOHHK3VTkAnReecPFna1stIywFaGpsjenjrQPvH1y7V3VqvFWDX-7l82pLCPonToRaFZsF2-_dlLwM-_KHRugP675sdBx75Ah-KSih1c7Ulb-u8X46w0OHJkaQHpFGYdUINmMphffROSm6ueSqc-2QoyFpsYXglqe1tn7QWdQAEHv1fJTVlEdFYQP7HrwwPHr")'}}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
