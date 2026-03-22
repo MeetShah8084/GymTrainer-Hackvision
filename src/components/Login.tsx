@@ -130,23 +130,34 @@ export default function Login({ navigateTo }: LoginProps) {
     setIsSaving(true);
     setError(null);
 
+    // Validate numeric inputs up front to prevent NaN being sent to Supabase
+    const ageVal = Number(profileForm.age);
+    const heightVal = Number(profileForm.height);
+    const weightVal = Number(profileForm.weight);
+
+    if (!profileForm.fullName.trim()) { setError('Full name is required'); setIsSaving(false); return; }
+    if (!profileForm.age || isNaN(ageVal))    { setError('Please enter a valid age');    setIsSaving(false); return; }
+    if (!profileForm.height || isNaN(heightVal)) { setError('Please enter a valid height'); setIsSaving(false); return; }
+    if (!profileForm.weight || isNaN(weightVal)) { setError('Please enter a valid weight'); setIsSaving(false); return; }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Update auth metadata
-      await supabase.auth.updateUser({
+      // Update auth metadata (non-blocking - don't await to avoid session lock)
+      supabase.auth.updateUser({
         data: { full_name: profileForm.fullName, phone: profileForm.phone }
-      });
+      }).catch(console.warn);
 
-      // Update public.profiles
+      // Use plain update — the trigger always creates the row at signup
+      // (upsert would trigger INSERT RLS check even when row exists)
       const { error: dbError } = await supabase
         .from('profiles')
         .update({
           name: profileForm.fullName,
-          age: parseInt(profileForm.age),
-          height: parseInt(profileForm.height),
-          weight: parseFloat(profileForm.weight),
+          age: ageVal,
+          height: heightVal,
+          weight: weightVal,
           phone_number: profileForm.phone,
           body_type: profileForm.bodyType
         })
