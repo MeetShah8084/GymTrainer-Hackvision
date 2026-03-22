@@ -141,29 +141,44 @@ export default function Login({ navigateTo }: LoginProps) {
     if (!profileForm.weight || isNaN(weightVal)) { setError('Please enter a valid weight'); setIsSaving(false); return; }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user || !session?.access_token) throw new Error("Not authenticated or missing token");
 
-      // Update auth metadata (non-blocking - don't await to avoid session lock)
-      supabase.auth.updateUser({
-        data: { full_name: profileForm.fullName, phone: profileForm.phone }
-      }).catch(console.warn);
+      const updatePayload = {
+        name: profileForm.fullName,
+        age: ageVal,
+        height: heightVal,
+        weight: weightVal,
+        phone_number: profileForm.phone,
+        body_type: profileForm.bodyType
+      };
 
-      // Use plain update — the trigger always creates the row at signup
-      // (upsert would trigger INSERT RLS check even when row exists)
-      const { error: dbError } = await supabase
-        .from('profiles')
-        .update({
-          name: profileForm.fullName,
-          age: ageVal,
-          height: heightVal,
-          weight: weightVal,
-          phone_number: profileForm.phone,
-          body_type: profileForm.bodyType
-        })
-        .eq('user_id', user.id);
+      console.log('[Profile Save] Sending authenticated fetch for user:', user.id);
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?user_id=eq.${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updatePayload)
+      });
 
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error('[Profile Save] Server error:', errText);
+        throw new Error(`Profile update failed: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      console.log('[Profile Save] Result data:', responseData);
+
+      if (responseData.length === 0) {
+        throw new Error("Profile not found or access denied. Please verify your session.");
+      }
 
       navigateTo('dashboard');
     } catch (err: any) {
