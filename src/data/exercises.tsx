@@ -5,6 +5,7 @@ export interface Exercise {
   id: string;
   name: string;
   timeInfo: string;
+  date?: string; // Format: YYYY-MM-DD
   sets: number;
   reps: string;
   weight: string;
@@ -13,11 +14,19 @@ export interface Exercise {
   icon: React.ReactNode;
 }
 
+const today = new Date();
+const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+const d0 = new Date(today);
+const d1 = new Date(today); d1.setDate(today.getDate() - 1);
+const d3 = new Date(today); d3.setDate(today.getDate() - 3);
+
 export const initialCompletedExercises: Exercise[] = [
   {
     id: '1',
     name: 'Barbell Bench Press',
     timeInfo: '14:20 • Muscle Pump Gym • Chest',
+    date: formatDate(d0),
     sets: 4,
     reps: '10, 8, 8, 6',
     weight: '85 kg',
@@ -29,6 +38,7 @@ export const initialCompletedExercises: Exercise[] = [
     id: '2',
     name: 'Dumbbell Lateral Raise',
     timeInfo: '12:15 • Muscle Pump Gym • Shoulders',
+    date: formatDate(d0),
     sets: 3,
     reps: '15, 15, 12',
     weight: '12 kg',
@@ -40,6 +50,7 @@ export const initialCompletedExercises: Exercise[] = [
     id: '3',
     name: 'Seated Row',
     timeInfo: '10:30 • Muscle Pump Gym • Back',
+    date: formatDate(d1),
     sets: 4,
     reps: '12, 10, 10, 8',
     weight: '60 kg',
@@ -51,6 +62,7 @@ export const initialCompletedExercises: Exercise[] = [
     id: '4',
     name: 'Cable Tricep Pushdown',
     timeInfo: '08:45 • Home Gym • Triceps',
+    date: formatDate(d3),
     sets: 3,
     reps: '12, 12, 12',
     weight: '25 kg',
