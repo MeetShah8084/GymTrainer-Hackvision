@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle2, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LoginProps {
@@ -16,6 +16,7 @@ export default function Login({ navigateTo }: LoginProps) {
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -54,8 +55,7 @@ export default function Login({ navigateTo }: LoginProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setWaitMode('auth');
-    setStep(2); // Transition to "waiting for auth"
+    setIsAuthenticating(true);
 
     // Simulate or perform Supabase signin depending on configuration
     setTimeout(async () => {
@@ -68,6 +68,7 @@ export default function Login({ navigateTo }: LoginProps) {
         if (error) {
           setError(error.message);
           setStep(1);
+          setIsAuthenticating(false);
         } else {
           navigateTo('dashboard');
         }
@@ -75,6 +76,7 @@ export default function Login({ navigateTo }: LoginProps) {
         console.error('Error during sign in:', err);
         setError(err.message || 'An unexpected error occurred');
         setStep(1);
+        setIsAuthenticating(false);
       }
     }, 1000);
   };
@@ -87,8 +89,7 @@ export default function Login({ navigateTo }: LoginProps) {
       setError("Passwords don't match");
       return;
     }
-    setWaitMode('auth');
-    setStep(2); // Transition to waiting
+    setIsAuthenticating(true);
 
     setTimeout(async () => {
       try {
@@ -100,9 +101,12 @@ export default function Login({ navigateTo }: LoginProps) {
         if (error) {
           setError(error.message);
           setStep(1);
+          setIsAuthenticating(false);
         } else if (data.session === null) {
           // Email confirmation is required
+          setIsAuthenticating(false);
           setWaitMode('email');
+          setStep(2);
         } else {
           // Actually success without confirmation
           navigateTo('dashboard');
@@ -111,6 +115,7 @@ export default function Login({ navigateTo }: LoginProps) {
         console.error('Error during sign up:', err);
         setError(err.message || 'An unexpected error occurred');
         setStep(1);
+        setIsAuthenticating(false);
       }
     }, 1000);
   };
@@ -206,9 +211,13 @@ export default function Login({ navigateTo }: LoginProps) {
                       </button>
                     </div>
                   </div>
-                  <button type="submit"
-                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
-                    <span>Sign In</span><ArrowRight size={16} />
+                  <button type="submit" disabled={isAuthenticating}
+                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                    {isAuthenticating ? (
+                      <><Loader2 size={16} className="animate-spin" /><span>Authenticating...</span></>
+                    ) : (
+                      <><span>Sign In</span><ArrowRight size={16} /></>
+                    )}
                   </button>
                 </form>
 
@@ -258,9 +267,13 @@ export default function Login({ navigateTo }: LoginProps) {
                       value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}
                     />
                   </div>
-                  <button type="submit"
-                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
-                    <span>Create Account</span><ArrowRight size={16} />
+                  <button type="submit" disabled={isAuthenticating}
+                    className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                    {isAuthenticating ? (
+                      <><Loader2 size={16} className="animate-spin" /><span>Creating Account...</span></>
+                    ) : (
+                      <><span>Create Account</span><ArrowRight size={16} /></>
+                    )}
                   </button>
                 </form>
 
