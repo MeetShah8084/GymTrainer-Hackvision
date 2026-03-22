@@ -14,7 +14,7 @@ export default function Login({ navigateTo }: LoginProps) {
   const [waitMode, setWaitMode] = useState<'auth' | 'email'>('auth');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showPass, setShowPass] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -31,21 +31,22 @@ export default function Login({ navigateTo }: LoginProps) {
 
   const checkOnboardingState = async (userId: string) => {
     try {
-      const { data, error } = await supabase.from('profiles').select('height').eq('user_id', userId).single();
-      if (!error && (!data || data.height === null)) {
+      const { data, error } = await supabase.from('profiles').select('height').eq('user_id', userId).maybeSingle();
+      if (error) {
+        console.error("Onboarding check error:", error);
+      }
+      if (!data || data.height === null) {
         setStep(4);
       } else {
         navigateTo('dashboard');
       }
-    } catch {
-        navigateTo('dashboard');
+    } catch (err) {
+      console.error("Onboarding check exception:", err);
+      navigateTo('dashboard');
     }
   };
 
   useEffect(() => {
-    // Check for email verification hash
-    const isVerificationHash = window.location.hash && (window.location.hash.includes('type=signup') || window.location.hash.includes('access_token'));
-
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -54,13 +55,11 @@ export default function Login({ navigateTo }: LoginProps) {
     };
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         if (_event === 'SIGNED_IN') {
            // Small buffer to allow trigger to create DB copy before checking
            setTimeout(() => checkOnboardingState(session.user.id), 500);
-        } else {
-           await checkOnboardingState(session.user.id);
         }
       }
     });
@@ -124,6 +123,44 @@ export default function Login({ navigateTo }: LoginProps) {
         setStep(1);
       }
     }, 1000);
+  };
+
+  const handleBuildProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Update auth metadata
+      await supabase.auth.updateUser({
+        data: { full_name: profileForm.fullName, phone: profileForm.phone }
+      });
+
+      // Update public.profiles
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({
+          name: profileForm.fullName,
+          age: parseInt(profileForm.age),
+          height: parseInt(profileForm.height),
+          weight: parseFloat(profileForm.weight),
+          phone_number: profileForm.phone,
+          body_type: profileForm.bodyType
+        })
+        .eq('user_id', user.id);
+
+      if (dbError) throw dbError;
+
+      navigateTo('dashboard');
+    } catch (err: any) {
+      console.error('Failed to save profile', err);
+      setError(err.message || 'Failed to save profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -413,6 +450,18 @@ export default function Login({ navigateTo }: LoginProps) {
                   <button type="submit" disabled={isSaving}
                     className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-4 bg-[#F97316] hover:bg-[#EA580C] text-white disabled:opacity-50 font-medium transition-colors">
                     <span>{isSaving ? 'Saving...' : 'Start Training'}</span><ArrowRight size={16} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      setStep(1);
+                      setMode('login');
+                    }}
+                    className="w-full mt-4 py-2 text-sm text-[#A3A3A3] hover:text-white transition-colors"
+                  >
+                    Cancel and Sign Out
                   </button>
                 </form>
               </motion.div>
