@@ -65,7 +65,12 @@ const Workouts: React.FC<WorkoutsProps> = ({
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    setCompletedExercises([...completedExercises, exercise]);
+    
+    const now = new Date();
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const completedEx = { ...exercise, date: todayDateStr };
+    
+    setCompletedExercises([...completedExercises, completedEx]);
   };
 
   const handleDeleteIncomplete = (id: string) => {

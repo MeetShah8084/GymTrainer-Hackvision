@@ -47,12 +47,21 @@ const Dashboard: React.FC<DashboardProps> = ({
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise || !setIncompleteExercises || !setCompletedExercises) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    setCompletedExercises([...completedExercises, exercise]);
+    
+    const now = new Date();
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const completedEx = { ...exercise, date: todayDateStr };
+    
+    setCompletedExercises([...completedExercises, completedEx]);
   };
 
   const handleRelog = () => {
     if (setIncompleteExercises) setIncompleteExercises([]);
-    if (setCompletedExercises) setCompletedExercises([]);
+    if (setCompletedExercises) {
+      const now = new Date();
+      const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      setCompletedExercises(completedExercises.filter(ex => ex.date !== todayDateStr));
+    }
   };
 
   useEffect(() => {

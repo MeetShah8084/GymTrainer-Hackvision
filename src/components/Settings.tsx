@@ -236,9 +236,6 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
                     <>
                       <h4 className="text-lg font-bold dark:text-white">{userName}</h4>
                       <p className="text-slate-500 dark:text-slate-400 text-sm">{memberSince}</p>
-                      <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                        PRO TRAINER
-                      </div>
                     </>
                   ) : (
                     <div className="flex flex-col gap-2 max-w-sm">

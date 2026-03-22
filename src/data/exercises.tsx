@@ -15,7 +15,13 @@ export interface Exercise {
 }
 
 const today = new Date();
-const formatDate = (date: Date) => date.toISOString().split('T')[0];
+const formatDate = (date: Date) => {
+  return [
+    date.getFullYear(),
+    ('0' + (date.getMonth() + 1)).slice(-2),
+    ('0' + date.getDate()).slice(-2)
+  ].join('-');
+};
 
 const d0 = new Date(today);
 const d1 = new Date(today); d1.setDate(today.getDate() - 1);
@@ -33,6 +39,30 @@ export const initialCompletedExercises: Exercise[] = [
     imageAlt: 'Close up of a heavy barbell in a gym',
     imageSrc: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop',
     icon: <Dumbbell className="hidden md:block w-7 h-7" />
+  },
+  {
+    id: '1_extra_1',
+    name: 'Pull-up',
+    timeInfo: '15:10 • Muscle Pump Gym • Back',
+    date: formatDate(d0),
+    sets: 3,
+    reps: '12, 10, 8',
+    weight: 'Bodyweight',
+    imageAlt: 'Man doing pull-ups in a gym',
+    imageSrc: 'https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=200&h=200&fit=crop',
+    icon: <Activity className="hidden md:block w-7 h-7" />
+  },
+  {
+    id: '1_extra_2',
+    name: 'Tricep Extension',
+    timeInfo: '15:45 • Muscle Pump Gym • Triceps',
+    date: formatDate(d0),
+    sets: 3,
+    reps: '15, 12, 10',
+    weight: '25 kg',
+    imageAlt: 'Tricep cable extension',
+    imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
+    icon: <Repeat className="hidden md:block w-7 h-7" />
   },
   {
     id: '2',

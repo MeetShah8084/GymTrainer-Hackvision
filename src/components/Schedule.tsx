@@ -3,6 +3,7 @@ import companyIcon from '../assets/company_icon.png';
 import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
 import type { Exercise } from '../data/exercises';
+import { supabase } from '../lib/supabase';
 
 const currentYear = new Date().getFullYear();
 const calendarData = Array.from({ length: 365 }).map((_, i) => {
@@ -26,6 +27,24 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const [monthOffset, setMonthOffset] = useState(0);
+  const [signupDate, setSignupDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 5);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.created_at) {
+        const d = new Date(user.created_at);
+        d.setHours(0, 0, 0, 0);
+        setSignupDate(d);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Dynamic Calendar Setup
   const today = new Date();
@@ -37,16 +56,10 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
   const displayedDate = new Date(currentYearToday, currentMonthToday + monthOffset, 1);
   const currentYearCalendar = displayedDate.getFullYear();
   const currentMonthCalendar = displayedDate.getMonth();
-
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
+
   const firstDayOfMonth = new Date(currentYearCalendar, currentMonthCalendar, 1).getDay();
   const daysInMonth = new Date(currentYearCalendar, currentMonthCalendar + 1, 0).getDate();
-  
-  // Mock signup date (5 days ago)
-  const signupDate = new Date(today);
-  signupDate.setDate(today.getDate() - 5);
-  signupDate.setHours(0, 0, 0, 0);
 
   const displayedMonthAbsolute = currentYearCalendar * 12 + currentMonthCalendar;
   const signupMonthAbsolute = signupDate.getFullYear() * 12 + signupDate.getMonth();
@@ -81,21 +94,22 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
     const isFuture = thisDate > today;
 
     let content = null;
-    if (isToday && !hasWorkout) {
-      content = <div className="w-full h-8 border border-primary border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-primary">PLANNING...</div>;
-    } else if (hasWorkout) {
-      content = <div className="w-full h-8 bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
-    } else if (isBeforeSignup) {
-      // blank content
-    } else if (!isFuture) {
-      content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
+
+    if (!isBeforeSignup) {
+      if (isToday && !hasWorkout) {
+        content = <div className="w-full h-8 mt-auto border border-primary border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-primary">PLANNING...</div>;
+      } else if (hasWorkout) {
+        content = <div className="w-full h-8 mt-auto bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
+      } else if (!isFuture && !isToday) {
+        content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
+      }
     }
 
     desktopCells.push(
       <div 
         key={`day-${d}`} 
-        onClick={() => setSelectedDate(dateStr)}
-        className={`bg-white dark:bg-background-dark min-h-[100px] p-3 flex flex-col items-end relative group cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-dark transition-colors ${isToday ? 'ring-2 ring-primary ring-inset' : ''} ${isBeforeSignup ? 'opacity-30 bg-slate-50 dark:bg-surface-dark cursor-default hover:bg-white dark:hover:bg-background-dark' : ''} ${selectedDate === dateStr && !isBeforeSignup ? 'ring-2 ring-primary ring-inset' : ''}`}>
+        onClick={() => { if (!isBeforeSignup) setSelectedDate(dateStr); }}
+        className={`bg-white dark:bg-background-dark min-h-[100px] p-3 flex flex-col items-end relative group ${!isBeforeSignup ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-dark transition-colors' : ''} ${isToday ? 'ring-2 ring-primary ring-inset' : ''} ${isBeforeSignup ? 'opacity-40 grayscale bg-slate-50 dark:bg-surface-dark cursor-not-allowed' : ''} ${selectedDate === dateStr && !isBeforeSignup ? 'ring-2 ring-primary ring-inset' : ''}`}>
         <span className={`text-sm font-semibold mb-auto ${isToday ? 'font-extrabold text-primary' : (isBeforeSignup ? 'text-slate-400' : 'text-slate-700 dark:text-slate-300')}`}>{d}</span>
         {content}
       </div>
@@ -291,17 +305,33 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
                     const isFuture = thisDate > today;
 
                     let bgClass = '';
-                    if (isToday && !hasWorkout) bgClass = 'border-2 border-primary border-dashed';
-                    else if (hasWorkout) bgClass = 'bg-primary opacity-60';
-                    else if (!isFuture && !isBeforeSignup) bgClass = 'border border-slate-200 dark:border-primary/20';
+                    let textClass = '';
+                    let blurClass = '';
+
+                    if (isToday && !hasWorkout) {
+                      bgClass = 'border-2 border-primary border-dashed';
+                      textClass = 'text-primary';
+                    } else if (hasWorkout) {
+                      bgClass = 'bg-primary opacity-60';
+                      textClass = 'text-white';
+                    } else if (isBeforeSignup) {
+                      textClass = 'text-slate-300 dark:text-slate-600';
+                      blurClass = 'grayscale opacity-40 cursor-not-allowed';
+                    } else if (!isFuture) {
+                      bgClass = 'border border-slate-200 dark:border-primary/20';
+                      textClass = 'text-slate-900 dark:text-slate-100';
+                    } else {
+                      bgClass = 'border border-slate-200 dark:border-primary/20';
+                      textClass = 'text-slate-900 dark:text-slate-100';
+                    }
 
                     return (
                       <div 
                         key={`m-day-${d}`} 
-                        className="aspect-square flex items-center justify-center relative cursor-pointer"
+                        className={`aspect-square flex items-center justify-center relative ${!isBeforeSignup ? 'cursor-pointer' : ''} ${blurClass}`}
                         onClick={() => { if (!isBeforeSignup) setSelectedDate(dateStr); }}
                       >
-                        <span className={`z-10 text-sm font-semibold ${isToday && !hasWorkout ? 'text-primary' : (hasWorkout ? 'text-white' : (isBeforeSignup ? 'text-slate-300 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'))}`}>{d}</span>
+                        <span className={`z-10 text-sm font-semibold ${textClass}`}>{d}</span>
                         {!isBeforeSignup && (
                           <div className={`absolute inset-1 rounded-full ${bgClass} ${selectedDate === dateStr ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background-dark' : ''}`}></div>
                         )}
@@ -548,13 +578,28 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
             {selectedDate && (() => {
               const dayExercises = completedExercises.filter(ex => ex.date === selectedDate);
               if (dayExercises.length === 0) {
-                return (
-                  <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
-                    <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
-                    <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Rest Day</p>
-                    <p className="text-sm text-slate-400">No workouts recorded for this date.</p>
-                  </div>
-                );
+                // Determine if future or past
+                const [y, m, d] = selectedDate.split('-').map(Number);
+                const sd = new Date(y, m - 1, d);
+                const td = new Date(); td.setHours(0,0,0,0);
+                
+                if (sd > td) {
+                  return (
+                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Scheduled</p>
+                      <p className="text-sm text-slate-400">Wait and complete current workout than just planning.</p>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Rest Day</p>
+                      <p className="text-sm text-slate-400">No workouts recorded for this date.</p>
+                    </div>
+                  );
+                }
               }
               return dayExercises.map(ex => (
                 <div key={ex.id} className="p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
