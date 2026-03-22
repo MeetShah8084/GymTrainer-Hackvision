@@ -10,7 +10,8 @@ interface LoginProps {
 
 export default function Login({ navigateTo }: LoginProps) {
   // We mirror the requested flow: 1: Login, 2: Waiting/Auth, 3: Success
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [waitMode, setWaitMode] = useState<'auth' | 'email'>('auth');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
@@ -19,20 +20,33 @@ export default function Login({ navigateTo }: LoginProps) {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
+    const isVerificationHash = typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('access_token');
+
     // Check if we are already logged in when the component mounts
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setStep(3);
-        setTimeout(() => navigateTo('dashboard'), 2000);
+        if (isVerificationHash) {
+          setStep(4);
+          setTimeout(() => window.close(), 3000);
+        } else {
+          setStep(3);
+          setTimeout(() => navigateTo('dashboard'), 2000);
+        }
       }
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && step !== 3) {
-        setStep(3);
-        setTimeout(() => navigateTo('dashboard'), 2000);
+      if (session) {
+        // If we just got signed in via a hash URL in THIS tab
+        if (isVerificationHash) {
+          setStep(4);
+          setTimeout(() => window.close(), 3000);
+        } else if (step !== 3 && step !== 4) {
+          setStep(3);
+          setTimeout(() => navigateTo('dashboard'), 2000);
+        }
       }
     });
 
@@ -42,7 +56,8 @@ export default function Login({ navigateTo }: LoginProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setStep(2); // Transition to "waiting for confirmation page"
+    setWaitMode('auth');
+    setStep(2); // Transition to "waiting for auth"
 
     // Simulate or perform Supabase signin depending on configuration
     setTimeout(async () => {
@@ -75,11 +90,12 @@ export default function Login({ navigateTo }: LoginProps) {
       setError("Passwords don't match");
       return;
     }
+    setWaitMode('auth');
     setStep(2); // Transition to waiting
 
     setTimeout(async () => {
       try {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password || 'dummy-password'
         });
@@ -87,8 +103,11 @@ export default function Login({ navigateTo }: LoginProps) {
         if (error) {
           setError(error.message);
           setStep(1);
+        } else if (data.session === null) {
+          // Email confirmation is required
+          setWaitMode('email');
         } else {
-          // Actually success
+          // Actually success without confirmation
           setStep(3);
           setTimeout(() => navigateTo('dashboard'), 2000);
         }
@@ -258,7 +277,7 @@ export default function Login({ navigateTo }: LoginProps) {
               </motion.div>
             )}
 
-            {/* STEP 2: LOGINPAGE2.JPEG EQUIVALENT (WAITING FOR CONFIRMATION) */}
+            {/* STEP 2: LOGINPAGE2.JPEG EQUIVALENT (WAITING) */}
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="flex flex-col items-center justify-center text-center py-12">
                 <div className="relative mb-8">
@@ -273,10 +292,19 @@ export default function Login({ navigateTo }: LoginProps) {
                   </div>
                 </div>
 
-                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 32, marginBottom: 8 }}>WAITING CONFIRMATION</h2>
+                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 32, marginBottom: 8 }}>
+                  {waitMode === 'email' ? 'CHECK YOUR EMAIL' : 'WAITING CONFIRMATION'}
+                </h2>
                 <p className="text-[#A3A3A3] text-[15px] leading-relaxed max-w-[280px]">
-                  Connecting to Supabase to securely authenticate your session. Please hold on...
+                  {waitMode === 'email'
+                    ? 'A verification link has been sent to your email address. This page will automatically redirect once confirmed.'
+                    : 'Connecting to Supabase to securely authenticate your session. Please hold on...'}
                 </p>
+                {waitMode === 'email' && (
+                  <button onClick={() => setStep(1)} className="mt-8 text-sm font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
+                    Back to login
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -296,6 +324,32 @@ export default function Login({ navigateTo }: LoginProps) {
                 <p className="text-[#A3A3A3] text-sm">
                   Redirecting to your dashboard...
                 </p>
+              </motion.div>
+            )}
+
+            {/* STEP 4: VERIFIED TAB */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center py-12">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="w-20 h-20 rounded-full bg-[#1A0E08] border border-[#F97316]/30 text-[#F97316] flex items-center justify-center mb-8"
+                >
+                  <CheckCircle2 size={40} />
+                </motion.div>
+
+                <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 8 }}>EMAIL VERIFIED</h2>
+                <p className="text-[#A3A3A3] text-sm mb-6 max-w-[280px]">
+                  You can safely close this tab and return to your original window.
+                </p>
+                <button onClick={() => {
+                  window.location.hash = ''; // Clear hash so it doesn't trigger again
+                  setStep(3);
+                  setTimeout(() => navigateTo('dashboard'), 2000);
+                }} className="px-6 py-3 bg-transparent border border-[#F97316] text-[#F97316] rounded-lg font-medium transition-colors hover:bg-[#F97316]/10">
+                  Continue here instead
+                </button>
               </motion.div>
             )}
 

@@ -5,7 +5,7 @@ import {
   Menu, Settings as SettingsIcon, ArrowLeft,
   Bell as BellIcon, BellOff, Mail, Phone,
   Camera, Shield, Edit3, X, Dumbbell, LineChart,
-  LayoutDashboard, CalendarDays, Trophy
+  LayoutDashboard, CalendarDays, Trophy, DoorOpen
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -56,6 +56,11 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
     setTimeout(() => {
       navigateTo(page);
     }, 300);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigateTo('login');
   };
 
   return (
@@ -246,25 +251,34 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
             </section>
 
             {/* Account Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-end mt-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between mt-4">
               <button
-                className="px-8 py-3 rounded-xl border border-slate-200 dark:border-primary/20 font-bold dark:text-white hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors"
-                onClick={() => {
-                  setLocalNotificationsEnabled(notificationsEnabled);
-                  navigateTo('dashboard');
-                }}
+                className="px-6 py-3 rounded-xl flex items-center justify-center gap-2 border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                onClick={handleSignOut}
               >
-                Discard Changes
+                <DoorOpen className="w-5 h-5" />
+                Sign Out
               </button>
-              <button
-                className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
-                onClick={() => {
-                  if (setNotificationsEnabled) setNotificationsEnabled(localNotificationsEnabled);
-                  navigateTo('dashboard');
-                }}
-              >
-                Save Settings
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                <button
+                  className="px-8 py-3 rounded-xl border border-slate-200 dark:border-primary/20 font-bold dark:text-white hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors"
+                  onClick={() => {
+                    setLocalNotificationsEnabled(notificationsEnabled);
+                    navigateTo('dashboard');
+                  }}
+                >
+                  Discard Changes
+                </button>
+                <button
+                  className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
+                  onClick={() => {
+                    if (setNotificationsEnabled) setNotificationsEnabled(localNotificationsEnabled);
+                    navigateTo('dashboard');
+                  }}
+                >
+                  Save Settings
+                </button>
+              </div>
             </div>
 
           </div>
