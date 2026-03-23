@@ -184,7 +184,7 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) 
           className={`fixed left-0 right-0 z-30 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
             !hasStarted 
               ? 'bottom-[50vh] translate-y-1/2 px-4 md:px-8 bg-transparent border-t-0'
-              : 'bottom-0 translate-y-0 pt-4 pb-6 md:pt-6 md:pb-10 px-4 md:px-8 bg-background-dark/95 backdrop-blur-xl border-t border-primary/10'
+              : 'bottom-[72px] md:bottom-0 translate-y-0 pt-4 pb-4 md:pt-6 md:pb-10 px-4 md:px-8 bg-background-dark/95 backdrop-blur-xl border-t border-primary/10'
           }`}
         >
           <div className="mx-auto flex flex-col w-full max-w-[960px]">
@@ -211,7 +211,7 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) 
                 <textarea 
                   ref={textareaRef}
                   className="w-full outline-none resize-none overflow-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-[24px] md:rounded-[36px] border border-primary/20 bg-[#1e1511] pt-[19px] pb-[19px] md:pt-[23px] md:pb-[23px] pl-5 md:pl-6 pr-12 md:pr-16 text-slate-100 text-sm md:text-base placeholder:text-slate-400 focus:border-primary/50 shadow-lg shadow-black/20 min-h-[60px] md:min-h-[72px]"
-                  placeholder="Ask coach for any questions regarding exercises, food to consume and more gym related questions ..."
+                  placeholder="Ask coach..."
                   rows={1}
                   value={inputValue}
                   onChange={(e) => {

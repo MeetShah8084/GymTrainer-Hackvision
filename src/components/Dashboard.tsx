@@ -758,12 +758,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
 
-              {/* Mobile Footer Attribution */}
-              <div className="mt-8 mb-4 text-center">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
-                </span>
-              </div>
+
             </div>
 
           </div>

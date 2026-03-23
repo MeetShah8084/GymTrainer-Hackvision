@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import {
   Dumbbell, LayoutDashboard, LineChart,
-  Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy,
+  Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Trophy,
   Menu,
   X, ArrowLeft, Share2, CalendarDays, MessageSquare
 } from 'lucide-react';
@@ -458,17 +458,7 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
               </div>
             </div>
 
-            {/* --- PREMIUM PROMO INSIGHT (MOBILE) --- */}
-            <div className="md:hidden">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#ff8c52] p-6 shadow-lg shadow-primary/20">
-                <div className="relative z-10">
-                  <h3 className="text-white text-lg font-bold">Smart Recommendations</h3>
-                  <p className="text-white/80 text-sm mt-1 max-w-[240px]">Based on your 1RM, you are ready to increase Squat intensity by 2.5% next week.</p>
-                  <button className="mt-4 px-4 py-2 bg-white text-primary text-xs font-bold rounded-full shadow-sm">View Details</button>
-                </div>
-                <Sparkles className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 rotate-12" />
-              </div>
-            </div>
+
 
             {/* --- EXERCISE DETAILS TABLE (DESKTOP MAINLY) --- */}
             <div className="hidden md:block bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-primary/10 rounded-xl overflow-hidden">
@@ -524,12 +514,7 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
               </div>
             </div>
 
-            {/* Mobile Footer Attribution */}
-            <div className="md:hidden mt-8 mb-4 text-center">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
-              </span>
-            </div>
+
 
           </div>
         </main>
