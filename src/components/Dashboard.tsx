@@ -17,8 +17,250 @@ import {
   X,
   CalendarDays,
   BellOff, // Added BellOff import
-  MessageSquare
+  MessageSquare,
+  ArrowLeft,
+  MoreHorizontal,
+  Trash2
 } from 'lucide-react';
+
+const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
+  Chest: ['Barbell Bench Press', 'Incline Dumbbell Press', 'Chest Flyes', 'Push-ups', 'Cable Crossovers', 'Decline Press'],
+  Back: ['Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row'],
+  Legs: ['Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions'],
+  Arms: ['Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips'],
+  Abs: ['Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts']
+};
+
+interface ExerciseCard {
+  id: string;
+  exerciseName: string;
+  weight: string;
+  sets: string;
+  reps: string;
+  isPR: boolean;
+  showPR: boolean;
+  removing?: boolean;
+}
+
+interface TargetMuscleLoggerProps {
+  muscleGroup: string;
+  onBack: () => void;
+  onSaveSession: (exercises: any[]) => void;
+}
+
+const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession }) => {
+  const exerciseOptions = EXERCISES_BY_MUSCLE[muscleGroup] || ['Custom Exercise'];
+
+  const createCard = (): ExerciseCard => ({
+    id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    exerciseName: exerciseOptions[0],
+    weight: '',
+    sets: '',
+    reps: '',
+    isPR: false,
+    showPR: false,
+  });
+
+  const [cards, setCards] = useState<ExerciseCard[]>([createCard()]);
+  const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
+
+  // Reset when muscle group changes
+  useEffect(() => {
+    setCards([createCard()]);
+    setAnimatingIds(new Set());
+  }, [muscleGroup]);
+
+  const updateCard = (id: string, field: keyof ExerciseCard, value: any) => {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+  };
+
+  const addCard = () => {
+    const newCard = createCard();
+    setCards(prev => [...prev, newCard]);
+    // Trigger slide-in animation
+    setAnimatingIds(prev => new Set(prev).add(newCard.id));
+    setTimeout(() => {
+      setAnimatingIds(prev => {
+        const next = new Set(prev);
+        next.delete(newCard.id);
+        return next;
+      });
+    }, 50);
+  };
+
+  const removeCard = (id: string) => {
+    // Trigger slide-out animation
+    setCards(prev => prev.map(c => c.id === id ? { ...c, removing: true } : c));
+    setTimeout(() => {
+      setCards(prev => prev.filter(c => c.id !== id));
+    }, 400);
+  };
+
+  const handleSaveSession = () => {
+    const validCards = cards.filter(c => !c.removing && c.exerciseName && c.sets && c.reps && c.weight);
+    if (validCards.length === 0) {
+      alert("Please fill in at least one exercise completely.");
+      return;
+    }
+    const exercises = validCards.map(c => ({
+      id: `logged-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: c.exerciseName,
+      timeInfo: `Current Session • ${muscleGroup}`,
+      sets: parseInt(c.sets),
+      reps: c.reps,
+      weight: `${c.weight} kg`,
+      imageAlt: c.exerciseName,
+      imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
+      icon: <Dumbbell className="hidden md:block w-7 h-7" />
+    }));
+    onSaveSession(exercises);
+    onBack();
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+      {/* Logger Header */}
+      <div className="flex shrink-0 items-center justify-start gap-4 px-6 py-4 md:px-8 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full border border-primary/20 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center cursor-pointer shadow-sm">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl md:text-2xl font-black dark:text-primary tracking-tight">{muscleGroup} Workout</h1>
+      </div>
+
+      {/* Logger Main Content */}
+      <main className="flex-1 overflow-y-auto custom-gradient p-4 md:p-8 flex flex-col items-center pb-24 md:pb-8">
+        {/* 3D Model Placeholder */}
+        <div className="w-full max-w-[1000px] aspect-square rounded-[32px] border border-slate-700/50 bg-black/20 flex flex-col items-center justify-center mb-10 shadow-inner relative overflow-hidden">
+          <span className="text-slate-500 font-medium z-10">3d model</span>
+        </div>
+        
+        {/* Log your Progress */}
+        <div className="w-full max-w-[1000px]">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-200 tracking-tight">Log your Progress</h2>
+          <p className="text-primary text-sm font-medium mb-6 mt-1">
+            Record your intensity and volume for {muscleGroup} session.
+          </p>
+          
+          {/* Exercise Cards */}
+          <div className="space-y-6 overflow-hidden">
+            {cards.map((card, index) => (
+              <div 
+                key={card.id} 
+                className={`transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                  card.removing 
+                    ? 'translate-x-full opacity-0 max-h-0 mb-0 overflow-hidden' 
+                    : animatingIds.has(card.id) 
+                      ? 'translate-x-full opacity-0' 
+                      : 'translate-x-0 opacity-100'
+                }`}
+                style={{ transitionProperty: 'transform, opacity, max-height, margin' }}
+              >
+                <div className="border border-primary/50 rounded-[28px] p-6 md:p-8 bg-surface-dark/40 shadow-xl shadow-black/10 relative">
+                  {/* Delete icon for non-first cards */}
+                  {index > 0 && (
+                    <button 
+                      onClick={() => removeCard(card.id)}
+                      className="absolute top-4 right-4 p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+
+                  <div className="flex flex-col gap-6 md:gap-8">
+                    {/* Exercise name */}
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                      <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider w-36 shrink-0">Exercise name:</label>
+                      <select 
+                        value={card.exerciseName}
+                        onChange={(e) => updateCard(card.id, 'exerciseName', e.target.value)}
+                        className="flex-1 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ec5b13'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: `right 16px center`, backgroundRepeat: `no-repeat`, backgroundSize: `20px` }}
+                      >
+                        {exerciseOptions.map(ex => (
+                          <option key={ex} value={ex} className="bg-[#1e1511]">{ex}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Weight & Sets row */}
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
+                      <div className="flex items-center gap-3">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Weight:</label>
+                        <input type="number" 
+                          value={card.weight}
+                          onChange={(e) => updateCard(card.id, 'weight', e.target.value)}
+                          className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                        <span className="text-primary font-bold">kg</span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-2 md:mt-0">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of sets:</label>
+                        <input type="number" 
+                          value={card.sets}
+                          onChange={(e) => updateCard(card.id, 'sets', e.target.value)}
+                          className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                      </div>
+                    </div>
+
+                    {/* Reps per set */}
+                    <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6 relative">
+                      <div className="flex flex-col">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of reps per set:</label>
+                        <span className="text-slate-500 text-[11px] leading-tight mt-1 opacity-80">comma separated entries;<br/>Eg: 10,2,2,4</span>
+                      </div>
+                      <input type="text"
+                        value={card.reps}
+                        onChange={(e) => updateCard(card.id, 'reps', e.target.value)}
+                        className="w-full md:w-40 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary" />
+                      
+                      <div className="absolute right-0 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2">
+                        <button 
+                          onClick={() => updateCard(card.id, 'showPR', !card.showPR)}
+                          className={`p-2 border rounded-[10px] transition-colors cursor-pointer ${card.showPR ? 'border-primary text-primary bg-primary/10' : 'border-slate-600 text-slate-400 hover:text-white hover:border-slate-500'}`}
+                        >
+                          <MoreHorizontal className="w-5 h-5"/>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add to PR - shown only when three dots is clicked */}
+                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-24 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                  <div 
+                    className="border border-slate-700/60 rounded-[20px] px-5 py-4 flex items-center gap-4 bg-surface-dark/20 hover:bg-surface-dark/40 transition-colors cursor-pointer" 
+                    onClick={() => updateCard(card.id, 'isPR', !card.isPR)}
+                  >
+                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
+                      {card.isPR && <CheckCircle className="w-4 h-4 text-white" />}
+                    </div>
+                    <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add exercise button */}
+          <button 
+            className="w-full mt-6 border-[2px] border-dashed border-primary/40 rounded-[24px] py-5 text-primary tracking-wide text-lg font-bold hover:bg-primary/5 hover:border-primary/60 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer" 
+            onClick={addCard}
+          >
+            <span className="text-xl mt-0.5">+</span> Add exercise
+          </button>
+
+          {/* Save Session button */}
+          <button 
+            className="w-full mt-6 border-[2px] border-dashed border-slate-600 rounded-[24px] py-5 text-slate-300 tracking-wide text-lg font-bold hover:bg-slate-700/30 hover:border-slate-500 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer" 
+            onClick={handleSaveSession}
+          >
+            Save session
+          </button>
+          
+        </div>
+      </main>
+    </div>
+  );
+};
 
 import type { Exercise } from '../data/exercises';
 
@@ -46,6 +288,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   setCompletedExercises
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
 
   const now = new Date();
   const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -143,10 +386,13 @@ const Dashboard: React.FC<DashboardProps> = ({
       </aside>
 
       {/* Main Content Area Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
-
-        {/* Desktop Header */}
-        <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+      <div className="flex-1 overflow-hidden relative bg-background-light dark:bg-background-dark">
+        <div className={`w-full h-full flex transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${selectedMuscleGroup ? '-translate-x-full' : 'translate-x-0'}`}>
+          
+          {/* Dashboard View */}
+          <div className="w-full shrink-0 h-full flex flex-col relative min-w-full">
+            {/* Desktop Header */}
+            <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
           <div className="flex items-center gap-4">
             <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-6 h-6" />
@@ -365,7 +611,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   { name: "Arms", count: "10 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz" },
                   { name: "Abs", count: "6 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm" },
                 ].map((group) => (
-                  <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+                  <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md" onClick={() => setSelectedMuscleGroup(group.name)}>
                     <img alt={`${group.name} Muscle Group`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={group.src} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 md:via-transparent to-transparent z-10"></div>
                     <div className="absolute bottom-4 left-4 z-20">
@@ -474,6 +720,23 @@ const Dashboard: React.FC<DashboardProps> = ({
 
           </div>
         </main>
+          </div>
+
+          {/* Logger View */}
+          <div className="w-full shrink-0 h-full flex flex-col relative min-w-full">
+            {selectedMuscleGroup && (
+              <TargetMuscleLogger 
+                muscleGroup={selectedMuscleGroup} 
+                onBack={() => setSelectedMuscleGroup(null)}
+                onSaveSession={(exercises) => {
+                  if (setIncompleteExercises) {
+                    setIncompleteExercises([...incompleteExercises, ...exercises]);
+                  }
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Bottom Navigation Bar (Mobile) */}
