@@ -20,13 +20,21 @@ export interface PRRecord {
   date: string; // e.g. "MAR 10, 2026"
 }
 
-const initialPRs: PRRecord[] = [
-  { id: 'pr-1', exerciseName: 'Bench Press', weight: 110, improvement: 5, date: 'MAR 10, 2026' },
-  { id: 'pr-2', exerciseName: 'Squat', weight: 145, improvement: 5, date: 'FEB 28, 2026' },
-  { id: 'pr-3', exerciseName: 'Deadlift', weight: 170, improvement: 5, date: 'MAR 05, 2026' },
-  { id: 'pr-4', exerciseName: 'Overhead Press', weight: 70, improvement: 5, date: 'FEB 15, 2026' },
-  { id: 'pr-5', exerciseName: 'Barbell Row', weight: 95, improvement: 5, date: 'MAR 01, 2026' },
+const ALL_EXERCISES = [
+  'Barbell Bench Press', 'Incline Dumbbell Press', 'Chest Flyes', 'Push-ups', 'Cable Crossovers', 'Decline Press',
+  'Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row',
+  'Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions',
+  'Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips',
+  'Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts'
 ];
+
+const initialPRs: PRRecord[] = ALL_EXERCISES.map((name, i) => ({
+  id: `pr-default-${i}`,
+  exerciseName: name,
+  weight: 0,
+  improvement: 0,
+  date: 'NOT SET',
+}));
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat'>('dashboard')

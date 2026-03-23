@@ -40,15 +40,19 @@ interface ExerciseCard {
   isPR: boolean;
   showPR: boolean;
   removing?: boolean;
+  prChecking?: boolean;
+  prError?: string;
 }
 
 interface TargetMuscleLoggerProps {
   muscleGroup: string;
   onBack: () => void;
   onSaveSession: (exercises: any[]) => void;
+  onAddPRs?: (prs: { exerciseName: string; weight: number }[]) => void;
+  personalRecords?: PRRecord[];
 }
 
-const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession }) => {
+const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession, onAddPRs, personalRecords = [] }) => {
   const exerciseOptions = EXERCISES_BY_MUSCLE[muscleGroup] || ['Custom Exercise'];
 
   const createCard = (): ExerciseCard => ({
@@ -114,6 +118,11 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       icon: <Dumbbell className="hidden md:block w-7 h-7" />
     }));
     onSaveSession(exercises);
+    // Push PR-flagged exercises
+    const prCards = validCards.filter(c => c.isPR);
+    if (prCards.length > 0 && onAddPRs) {
+      onAddPRs(prCards.map(c => ({ exerciseName: c.exerciseName, weight: parseFloat(c.weight) })));
+    }
     onBack();
   };
 
@@ -225,15 +234,49 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                 </div>
 
                 {/* Add to PR - shown only when three dots is clicked */}
-                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-24 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-32 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
                   <div 
-                    className="border border-slate-700/60 rounded-[20px] px-5 py-4 flex items-center gap-4 bg-surface-dark/20 hover:bg-surface-dark/40 transition-colors cursor-pointer" 
-                    onClick={() => updateCard(card.id, 'isPR', !card.isPR)}
+                    className={`border rounded-[20px] px-5 py-4 flex items-center gap-4 transition-colors cursor-pointer ${card.isPR ? 'border-primary/60 bg-primary/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
+                    onClick={() => {
+                      if (card.isPR) {
+                        updateCard(card.id, 'isPR', false);
+                        updateCard(card.id, 'prError', '');
+                        return;
+                      }
+                      const w = parseFloat(card.weight);
+                      if (!w || w <= 0) {
+                        updateCard(card.id, 'prError', 'Enter a valid weight first');
+                        setTimeout(() => updateCard(card.id, 'prError', ''), 2000);
+                        return;
+                      }
+                      // Start spinner
+                      updateCard(card.id, 'prChecking', true);
+                      updateCard(card.id, 'prError', '');
+                      setTimeout(() => {
+                        const existing = personalRecords.find(pr => pr.exerciseName === card.exerciseName);
+                        const currentPR = existing ? existing.weight : 0;
+                        if (w > currentPR) {
+                          updateCard(card.id, 'isPR', true);
+                          updateCard(card.id, 'prChecking', false);
+                        } else {
+                          updateCard(card.id, 'prChecking', false);
+                          updateCard(card.id, 'prError', `Weight must exceed current PR (${currentPR} kg)`);
+                          setTimeout(() => updateCard(card.id, 'prError', ''), 3000);
+                        }
+                      }, 1000);
+                    }}
                   >
-                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
-                      {card.isPR && <CheckCircle className="w-4 h-4 text-white" />}
+                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.prChecking ? '' : card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
+                      {card.prChecking ? (
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : card.isPR ? (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      ) : null}
                     </div>
-                    <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
+                    <div className="flex flex-col">
+                      <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
+                      {card.prError && <span className="text-red-400 text-xs mt-0.5">{card.prError}</span>}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -263,6 +306,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
 };
 
 import type { Exercise } from '../data/exercises';
+import type { PRRecord } from '../App';
 
 interface DashboardProps {
   userName?: string;
@@ -274,6 +318,8 @@ interface DashboardProps {
   setIncompleteExercises?: (exercises: Exercise[]) => void;
   completedExercises?: Exercise[];
   setCompletedExercises?: (exercises: Exercise[]) => void;
+  personalRecords?: PRRecord[];
+  setPersonalRecords?: (records: PRRecord[]) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -285,7 +331,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   incompleteExercises = [],
   setIncompleteExercises,
   completedExercises = [],
-  setCompletedExercises
+  setCompletedExercises,
+  personalRecords = [],
+  setPersonalRecords
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
@@ -728,9 +776,39 @@ const Dashboard: React.FC<DashboardProps> = ({
               <TargetMuscleLogger 
                 muscleGroup={selectedMuscleGroup} 
                 onBack={() => setSelectedMuscleGroup(null)}
+                personalRecords={personalRecords}
                 onSaveSession={(exercises) => {
                   if (setIncompleteExercises) {
                     setIncompleteExercises([...incompleteExercises, ...exercises]);
+                  }
+                }}
+                onAddPRs={(prs) => {
+                  if (setPersonalRecords) {
+                    const now = new Date();
+                    const dateStr = `${now.toLocaleString('en-US', { month: 'short' }).toUpperCase()} ${String(now.getDate()).padStart(2, '0')}, ${now.getFullYear()}`;
+                    const updated = personalRecords.map(existing => {
+                      const match = prs.find(p => p.exerciseName === existing.exerciseName);
+                      if (match && match.weight > existing.weight) {
+                        return {
+                          ...existing,
+                          improvement: match.weight - existing.weight,
+                          weight: match.weight,
+                          date: dateStr
+                        };
+                      }
+                      return existing;
+                    });
+                    // Add any exercises not already in the list
+                    const newOnes = prs
+                      .filter(p => !personalRecords.some(e => e.exerciseName === p.exerciseName))
+                      .map(p => ({
+                        id: `pr-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+                        exerciseName: p.exerciseName,
+                        weight: p.weight,
+                        improvement: p.weight,
+                        date: dateStr
+                      }));
+                    setPersonalRecords([...updated, ...newOnes]);
                   }
                 }}
               />
