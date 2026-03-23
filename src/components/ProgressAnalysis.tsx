@@ -2,23 +2,25 @@ import { useState, useRef, useCallback } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import {
   Dumbbell, LayoutDashboard, LineChart,
-  Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy,
+  Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Trophy,
   Menu,
-  X, ArrowLeft, Share2, CalendarDays
+  X, ArrowLeft, Share2, CalendarDays, MessageSquare
 } from 'lucide-react';
 
 interface ProgressAnalysisProps {
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  userName?: string;
+  setUserName?: (name: string) => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
 
-export default function ProgressAnalysis({ navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+export default function ProgressAnalysis({ userName = 'User', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -80,6 +82,9 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
           </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
+          </a>
         </nav>
 
       </aside>
@@ -115,7 +120,9 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
@@ -451,17 +458,7 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
               </div>
             </div>
 
-            {/* --- PREMIUM PROMO INSIGHT (MOBILE) --- */}
-            <div className="md:hidden">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#ff8c52] p-6 shadow-lg shadow-primary/20">
-                <div className="relative z-10">
-                  <h3 className="text-white text-lg font-bold">Smart Recommendations</h3>
-                  <p className="text-white/80 text-sm mt-1 max-w-[240px]">Based on your 1RM, you are ready to increase Squat intensity by 2.5% next week.</p>
-                  <button className="mt-4 px-4 py-2 bg-white text-primary text-xs font-bold rounded-full shadow-sm">View Details</button>
-                </div>
-                <Sparkles className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 rotate-12" />
-              </div>
-            </div>
+
 
             {/* --- EXERCISE DETAILS TABLE (DESKTOP MAINLY) --- */}
             <div className="hidden md:block bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-primary/10 rounded-xl overflow-hidden">
@@ -517,12 +514,7 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
               </div>
             </div>
 
-            {/* Mobile Footer Attribution */}
-            <div className="md:hidden mt-8 mb-4 text-center">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
-              </span>
-            </div>
+
 
           </div>
         </main>
@@ -554,6 +546,10 @@ export default function ProgressAnalysis({ navigateTo, notificationsEnabled = tr
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

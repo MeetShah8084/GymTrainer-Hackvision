@@ -16,43 +16,351 @@ import {
   Menu,
   X,
   CalendarDays,
-  BellOff // Added BellOff import
+  BellOff, // Added BellOff import
+  MessageSquare,
+  ArrowLeft,
+  MoreHorizontal,
+  Trash2
 } from 'lucide-react';
 
+const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
+  Chest: ['Barbell Bench Press', 'Incline Dumbbell Press', 'Chest Flyes', 'Push-ups', 'Cable Crossovers', 'Decline Press'],
+  Back: ['Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row'],
+  Legs: ['Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions'],
+  Arms: ['Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips'],
+  Abs: ['Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts']
+};
+
+interface ExerciseCard {
+  id: string;
+  exerciseName: string;
+  weight: string;
+  sets: string;
+  reps: string;
+  isPR: boolean;
+  showPR: boolean;
+  removing?: boolean;
+  prChecking?: boolean;
+  prError?: string;
+}
+
+interface TargetMuscleLoggerProps {
+  muscleGroup: string;
+  onBack: () => void;
+  onSaveSession: (exercises: any[]) => void;
+  onAddPRs?: (prs: { exerciseName: string; weight: number }[]) => void;
+  personalRecords?: PRRecord[];
+}
+
+const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession, onAddPRs, personalRecords = [] }) => {
+  const exerciseOptions = EXERCISES_BY_MUSCLE[muscleGroup] || ['Custom Exercise'];
+
+  const createCard = (): ExerciseCard => ({
+    id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    exerciseName: exerciseOptions[0],
+    weight: '',
+    sets: '',
+    reps: '',
+    isPR: false,
+    showPR: false,
+  });
+
+  const [cards, setCards] = useState<ExerciseCard[]>([createCard()]);
+  const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
+
+  // Reset when muscle group changes
+  useEffect(() => {
+    setCards([createCard()]);
+    setAnimatingIds(new Set());
+  }, [muscleGroup]);
+
+  const updateCard = (id: string, field: keyof ExerciseCard, value: any) => {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+  };
+
+  const addCard = () => {
+    const newCard = createCard();
+    setCards(prev => [...prev, newCard]);
+    // Trigger slide-in animation
+    setAnimatingIds(prev => new Set(prev).add(newCard.id));
+    setTimeout(() => {
+      setAnimatingIds(prev => {
+        const next = new Set(prev);
+        next.delete(newCard.id);
+        return next;
+      });
+    }, 50);
+  };
+
+  const removeCard = (id: string) => {
+    // Trigger slide-out animation
+    setCards(prev => prev.map(c => c.id === id ? { ...c, removing: true } : c));
+    setTimeout(() => {
+      setCards(prev => prev.filter(c => c.id !== id));
+    }, 400);
+  };
+
+  const handleSaveSession = () => {
+    const validCards = cards.filter(c => !c.removing && c.exerciseName && c.sets && c.reps && c.weight);
+    if (validCards.length === 0) {
+      alert("Please fill in at least one exercise completely.");
+      return;
+    }
+    const exercises = validCards.map(c => ({
+      id: `logged-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: c.exerciseName,
+      timeInfo: `Current Session • ${muscleGroup}`,
+      sets: parseInt(c.sets),
+      reps: c.reps,
+      weight: `${c.weight} kg`,
+      imageAlt: c.exerciseName,
+      imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
+      icon: <Dumbbell className="hidden md:block w-7 h-7" />
+    }));
+    onSaveSession(exercises);
+    // Push PR-flagged exercises
+    const prCards = validCards.filter(c => c.isPR);
+    if (prCards.length > 0 && onAddPRs) {
+      onAddPRs(prCards.map(c => ({ exerciseName: c.exerciseName, weight: parseFloat(c.weight) })));
+    }
+    onBack();
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+      {/* Logger Header */}
+      <div className="flex shrink-0 items-center justify-start gap-4 px-6 py-4 md:px-8 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full border border-primary/20 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center cursor-pointer shadow-sm">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl md:text-2xl font-black dark:text-primary tracking-tight">{muscleGroup} Workout</h1>
+      </div>
+
+      {/* Logger Main Content */}
+      <main className="flex-1 overflow-y-auto custom-gradient p-4 md:p-8 flex flex-col items-center pb-24 md:pb-8">
+        {/* 3D Model Placeholder */}
+        <div className="w-full max-w-[1000px] aspect-square rounded-[32px] border border-slate-700/50 bg-black/20 flex flex-col items-center justify-center mb-10 shadow-inner relative overflow-hidden">
+          <span className="text-slate-500 font-medium z-10">3d model</span>
+        </div>
+        
+        {/* Log your Progress */}
+        <div className="w-full max-w-[1000px]">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-200 tracking-tight">Log your Progress</h2>
+          <p className="text-primary text-sm font-medium mb-6 mt-1">
+            Record your intensity and volume for {muscleGroup} session.
+          </p>
+          
+          {/* Exercise Cards */}
+          <div className="space-y-6 overflow-hidden">
+            {cards.map((card, index) => (
+              <div 
+                key={card.id} 
+                className={`transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                  card.removing 
+                    ? 'translate-x-full opacity-0 max-h-0 mb-0 overflow-hidden' 
+                    : animatingIds.has(card.id) 
+                      ? 'translate-x-full opacity-0' 
+                      : 'translate-x-0 opacity-100'
+                }`}
+                style={{ transitionProperty: 'transform, opacity, max-height, margin' }}
+              >
+                <div className="border border-primary/50 rounded-[28px] p-6 md:p-8 bg-surface-dark/40 shadow-xl shadow-black/10 relative">
+                  {/* Delete icon for non-first cards */}
+                  {index > 0 && (
+                    <button 
+                      onClick={() => removeCard(card.id)}
+                      className="absolute top-4 right-4 p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+
+                  <div className="flex flex-col gap-6 md:gap-8">
+                    {/* Exercise name */}
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                      <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider w-36 shrink-0">Exercise name:</label>
+                      <select 
+                        value={card.exerciseName}
+                        onChange={(e) => updateCard(card.id, 'exerciseName', e.target.value)}
+                        className="flex-1 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ec5b13'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: `right 16px center`, backgroundRepeat: `no-repeat`, backgroundSize: `20px` }}
+                      >
+                        {exerciseOptions.map(ex => (
+                          <option key={ex} value={ex} className="bg-[#1e1511]">{ex}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Weight & Sets row */}
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
+                      <div className="flex items-center gap-3">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Weight:</label>
+                        <input type="number" 
+                          value={card.weight}
+                          onChange={(e) => updateCard(card.id, 'weight', e.target.value)}
+                          className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                        <span className="text-primary font-bold">kg</span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-2 md:mt-0">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of sets:</label>
+                        <input type="number" 
+                          value={card.sets}
+                          onChange={(e) => updateCard(card.id, 'sets', e.target.value)}
+                          className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                      </div>
+                    </div>
+
+                    {/* Reps per set */}
+                    <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6 relative">
+                      <div className="flex flex-col">
+                        <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of reps per set:</label>
+                        <span className="text-slate-500 text-[11px] leading-tight mt-1 opacity-80">comma separated entries;<br/>Eg: 10,2,2,4</span>
+                      </div>
+                      <input type="text"
+                        value={card.reps}
+                        onChange={(e) => updateCard(card.id, 'reps', e.target.value)}
+                        className="w-full md:w-40 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary" />
+                      
+                      <div className="absolute right-0 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2">
+                        <button 
+                          onClick={() => updateCard(card.id, 'showPR', !card.showPR)}
+                          className={`p-2 border rounded-[10px] transition-colors cursor-pointer ${card.showPR ? 'border-primary text-primary bg-primary/10' : 'border-slate-600 text-slate-400 hover:text-white hover:border-slate-500'}`}
+                        >
+                          <MoreHorizontal className="w-5 h-5"/>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add to PR - shown only when three dots is clicked */}
+                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-32 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                  <div 
+                    className={`border rounded-[20px] px-5 py-4 flex items-center gap-4 transition-colors cursor-pointer ${card.isPR ? 'border-primary/60 bg-primary/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
+                    onClick={() => {
+                      if (card.isPR) {
+                        updateCard(card.id, 'isPR', false);
+                        updateCard(card.id, 'prError', '');
+                        return;
+                      }
+                      const w = parseFloat(card.weight);
+                      if (!w || w <= 0) {
+                        updateCard(card.id, 'prError', 'Enter a valid weight first');
+                        setTimeout(() => updateCard(card.id, 'prError', ''), 2000);
+                        return;
+                      }
+                      // Start spinner
+                      updateCard(card.id, 'prChecking', true);
+                      updateCard(card.id, 'prError', '');
+                      setTimeout(() => {
+                        const existing = personalRecords.find(pr => pr.exerciseName === card.exerciseName);
+                        const currentPR = existing ? existing.weight : 0;
+                        if (w > currentPR) {
+                          updateCard(card.id, 'isPR', true);
+                          updateCard(card.id, 'prChecking', false);
+                        } else {
+                          updateCard(card.id, 'prChecking', false);
+                          updateCard(card.id, 'prError', `Weight must exceed current PR (${currentPR} kg)`);
+                          setTimeout(() => updateCard(card.id, 'prError', ''), 3000);
+                        }
+                      }, 1000);
+                    }}
+                  >
+                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.prChecking ? '' : card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
+                      {card.prChecking ? (
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : card.isPR ? (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      ) : null}
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
+                      {card.prError && <span className="text-red-400 text-xs mt-0.5">{card.prError}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add exercise button */}
+          <button 
+            className="w-full mt-6 border-[2px] border-dashed border-primary/40 rounded-[24px] py-5 text-primary tracking-wide text-lg font-bold hover:bg-primary/5 hover:border-primary/60 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer" 
+            onClick={addCard}
+          >
+            <span className="text-xl mt-0.5">+</span> Add exercise
+          </button>
+
+          {/* Save Session button */}
+          <button 
+            className="w-full mt-6 border-[2px] border-dashed border-slate-600 rounded-[24px] py-5 text-slate-300 tracking-wide text-lg font-bold hover:bg-slate-700/30 hover:border-slate-500 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer" 
+            onClick={handleSaveSession}
+          >
+            Save session
+          </button>
+          
+        </div>
+      </main>
+    </div>
+  );
+};
+
 import type { Exercise } from '../data/exercises';
+import type { PRRecord } from '../App';
 
 interface DashboardProps {
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
-  notificationsEnabled?: boolean; 
-  toggleNotifications?: () => void; 
+  userName?: string;
+  setUserName?: (name: string) => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  notificationsEnabled?: boolean;
+  toggleNotifications?: () => void;
   incompleteExercises?: Exercise[];
   setIncompleteExercises?: (exercises: Exercise[]) => void;
   completedExercises?: Exercise[];
   setCompletedExercises?: (exercises: Exercise[]) => void;
+  personalRecords?: PRRecord[];
+  setPersonalRecords?: (records: PRRecord[]) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ 
-  navigateTo, 
-  notificationsEnabled = true, 
+const Dashboard: React.FC<DashboardProps> = ({
+  userName = "Loading...",
+  setUserName,
+  navigateTo,
+  notificationsEnabled = true,
   toggleNotifications,
   incompleteExercises = [],
   setIncompleteExercises,
   completedExercises = [],
-  setCompletedExercises 
+  setCompletedExercises,
+  personalRecords = [],
+  setPersonalRecords
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [userName, setUserName] = useState<string>('Loading...');
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
+
+  const now = new Date();
+  const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDateStr);
 
   const handleCompleteExercise = (exerciseId: string) => {
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise || !setIncompleteExercises || !setCompletedExercises) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    setCompletedExercises([...completedExercises, exercise]);
+
+    const now = new Date();
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const completedEx = { ...exercise, date: todayDateStr };
+
+    setCompletedExercises([...completedExercises, completedEx]);
   };
 
   const handleRelog = () => {
     if (setIncompleteExercises) setIncompleteExercises([]);
-    if (setCompletedExercises) setCompletedExercises([]);
+    if (setCompletedExercises) {
+      const now = new Date();
+      const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      setCompletedExercises(completedExercises.filter(ex => ex.date !== todayDateStr));
+    }
   };
 
   useEffect(() => {
@@ -60,15 +368,15 @@ const Dashboard: React.FC<DashboardProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        setUserName(fullName);
+        if (setUserName) setUserName(fullName);
       } else {
-        setUserName('Guest');
+        if (setUserName) setUserName('Guest');
       }
     }
     fetchUser();
   }, []);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -118,15 +426,21 @@ const Dashboard: React.FC<DashboardProps> = ({
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
           </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
+          </a>
         </nav>
 
       </aside>
 
       {/* Main Content Area Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
-
-        {/* Desktop Header */}
-        <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+      <div className="flex-1 overflow-hidden relative bg-background-light dark:bg-background-dark">
+        <div className={`w-full h-full flex transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${selectedMuscleGroup ? '-translate-x-full' : 'translate-x-0'}`}>
+          
+          {/* Dashboard View */}
+          <div className="w-full shrink-0 h-full flex flex-col relative min-w-full">
+            {/* Desktop Header */}
+            <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
           <div className="flex items-center gap-4">
             <button className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-primary/20 hover:text-primary transition-all cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-6 h-6" />
@@ -138,7 +452,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={toggleNotifications}
                 className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
                 style={{
@@ -153,31 +467,33 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
         {/* Mobile Header */}
         <div className="md:hidden flex shrink-0 z-20 items-center p-4 justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10">
-          <div className="flex size-10 shrink-0 items-center overflow-hidden rounded-full border-2 border-primary">
-            <img alt="User Profile" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVrzpsn6_U1odECZkvw4RS520J75eoPMqvh9YQ0JbkGmUJcjso9-P6XoCX8c3Z09xexCRYGXmwGJ8JqZQJtZmNcdG-3j74bfXinTwW9OMizO4NAgHyVwigVwOfsCzlSBl3SNSa50DM9Of5-J8XpJ8rORai6IkrZUllEe9kkDIeaJ8R3R_KcVLZFHoGZzFibHIDxx4x1eMSTtOm_kHt_tHtVb7NESWjUNT1XuA5Fhn9-zzkUw3ZbKTG1M5JI0TAG6kreGxSlJcSlpHt" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary font-bold text-lg shadow-sm">
+            {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col ml-3 flex-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Welcome back</span>
             <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">{userName}</h2>
           </div>
           <div className="flex items-center gap-2">
-              <button 
-                onClick={toggleNotifications}
-                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
-                style={{
-                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
-                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
-                }}
-                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
-              >
-                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              </button>
+            <button
+              onClick={toggleNotifications}
+              className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+              style={{
+                backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+              }}
+              title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+            >
+              {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            </button>
             <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors" onClick={() => navigateTo('settings')}>
               <Settings className="w-5 h-5" />
             </button>
@@ -260,14 +576,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 
             {/* Quick Actions (Mobile) */}
             <div className="md:hidden grid grid-cols-2 gap-3">
-              <button 
+              <button
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95"
                 onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
               >
                 <CheckCircle className="w-[18px] h-[18px]" />
                 <span>Complete</span>
               </button>
-              <button 
+              <button
                 className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95"
                 onClick={handleRelog}
               >
@@ -280,17 +596,17 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="hidden md:flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-surface-dark p-6 rounded-xl border-l-4 border-primary shadow-sm">
               <div>
                 <h3 className="text-xl font-bold dark:text-white">Current Session: {incompleteExercises.length > 0 ? incompleteExercises[0].name : "All Completed"}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {completedExercises.length}/{completedExercises.length + incompleteExercises.length} Exercises completed</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {todayCompletedExercises.length}/{todayCompletedExercises.length + incompleteExercises.length} Exercises completed</p>
               </div>
               <div className="flex gap-3">
-                <button 
+                <button
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
                   onClick={handleRelog}
                 >
                   <RotateCcw className="w-5 h-5" />
                   Relog
                 </button>
-                <button 
+                <button
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
                   onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
                 >
@@ -316,7 +632,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       className="w-full md:w-auto mt-2 md:mt-0 px-4 py-2 border-2 border-primary/20 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
                       onClick={() => handleCompleteExercise(exercise.id)}
                     >
@@ -343,7 +659,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   { name: "Arms", count: "10 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz" },
                   { name: "Abs", count: "6 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm" },
                 ].map((group) => (
-                  <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md">
+                  <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md" onClick={() => setSelectedMuscleGroup(group.name)}>
                     <img alt={`${group.name} Muscle Group`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={group.src} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 md:via-transparent to-transparent z-10"></div>
                     <div className="absolute bottom-4 left-4 z-20">
@@ -442,16 +758,58 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
 
-              {/* Mobile Footer Attribution */}
-              <div className="mt-8 mb-4 text-center">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  <a href="https://www.flaticon.com/free-icons/trainer" title="trainer icons" className="hover:text-primary transition-colors underline">Trainer icons created by Freepik - Flaticon</a>
-                </span>
-              </div>
+
             </div>
 
           </div>
         </main>
+          </div>
+
+          {/* Logger View */}
+          <div className="w-full shrink-0 h-full flex flex-col relative min-w-full">
+            {selectedMuscleGroup && (
+              <TargetMuscleLogger 
+                muscleGroup={selectedMuscleGroup} 
+                onBack={() => setSelectedMuscleGroup(null)}
+                personalRecords={personalRecords}
+                onSaveSession={(exercises) => {
+                  if (setIncompleteExercises) {
+                    setIncompleteExercises([...incompleteExercises, ...exercises]);
+                  }
+                }}
+                onAddPRs={(prs) => {
+                  if (setPersonalRecords) {
+                    const now = new Date();
+                    const dateStr = `${now.toLocaleString('en-US', { month: 'short' }).toUpperCase()} ${String(now.getDate()).padStart(2, '0')}, ${now.getFullYear()}`;
+                    const updated = personalRecords.map(existing => {
+                      const match = prs.find(p => p.exerciseName === existing.exerciseName);
+                      if (match && match.weight > existing.weight) {
+                        return {
+                          ...existing,
+                          improvement: match.weight - existing.weight,
+                          weight: match.weight,
+                          date: dateStr
+                        };
+                      }
+                      return existing;
+                    });
+                    // Add any exercises not already in the list
+                    const newOnes = prs
+                      .filter(p => !personalRecords.some(e => e.exerciseName === p.exerciseName))
+                      .map(p => ({
+                        id: `pr-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+                        exerciseName: p.exerciseName,
+                        weight: p.weight,
+                        improvement: p.weight,
+                        date: dateStr
+                      }));
+                    setPersonalRecords([...updated, ...newOnes]);
+                  }
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Bottom Navigation Bar (Mobile) */}
@@ -480,6 +838,10 @@ const Dashboard: React.FC<DashboardProps> = ({
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

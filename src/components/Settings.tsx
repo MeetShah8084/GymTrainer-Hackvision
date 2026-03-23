@@ -5,19 +5,20 @@ import {
   Menu, Settings as SettingsIcon, ArrowLeft,
   Bell as BellIcon, BellOff, Mail, Phone,
   Camera, Shield, Edit3, X, Dumbbell, LineChart,
-  LayoutDashboard, CalendarDays, Trophy, DoorOpen
+  LayoutDashboard, CalendarDays, Trophy, DoorOpen, MessageSquare
 } from 'lucide-react';
 
 interface SettingsProps {
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  userName?: string;
+  setUserName?: (name: string) => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   setNotificationsEnabled?: (value: boolean) => void;
 }
 
-export default function Settings({ navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
+export default function Settings({ userName = 'User', setUserName, navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('Loading...');
-  const [userName, setUserName] = useState<string>('Loading User...');
   const [memberSince, setMemberSince] = useState<string>('');
 
   // Editing state
@@ -43,7 +44,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
 
         // Use full_name from raw_user_meta_data if available, fallback to email prefix
         const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        setUserName(fullName);
+        if (setUserName) setUserName(fullName);
         setEditName(fullName);
         setEditEmail(user.email || '');
 
@@ -65,7 +66,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -106,7 +107,7 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
           })
         }).catch(err => console.warn("Failed to ping n8n webhook", err));
 
-        setUserName(editName);
+        if (setUserName) setUserName(editName);
         setUserEmail(editEmail);
       } catch (err) {
         console.error('Failed to update profile:', err);
@@ -164,6 +165,9 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
           <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
           </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
+          </a>
         </nav>
       </aside>
 
@@ -182,7 +186,9 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
@@ -225,7 +231,8 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
               
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                 <div className="relative shrink-0">
-                  <div className="size-24 rounded-full bg-center bg-cover border-4 border-primary/20 shadow-inner" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFDkJI0jzsmz1D56ZtQRV3r3c3LEhm3MWnBqR8rRXRFxal1BdHMBCg61NNDi5F84CNZfNhugcc4Ka1af_zJ5acLbRX2a2eH4G_DJ26Hdx1iIFS1BrQF19eRJlIPZ5TsYI5SS065AGZqYqPXsSAVSOZnnpsEQg05ifKwR2LPMutUiiaCxDJaSoaZ-n5R73naO6fAmruAgKL1myZb0HDObaLiqBwOfwGO8HsDEbDPYkPnqEFFXaUlOLzI4oVf1OmaT1UQF0Es80IHX-8')" }}>
+                  <div className="size-24 rounded-full border-4 border-primary/20 bg-primary/10 shadow-inner flex items-center justify-center text-primary font-bold text-5xl">
+                    {userName.charAt(0).toUpperCase()}
                   </div>
                   <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white hover:bg-orange-600 transition-colors">
                     <Camera className="size-4" />
@@ -236,9 +243,6 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
                     <>
                       <h4 className="text-lg font-bold dark:text-white">{userName}</h4>
                       <p className="text-slate-500 dark:text-slate-400 text-sm">{memberSince}</p>
-                      <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                        PRO TRAINER
-                      </div>
                     </>
                   ) : (
                     <div className="flex flex-col gap-2 max-w-sm">
@@ -397,6 +401,10 @@ export default function Settings({ navigateTo, notificationsEnabled = true, setN
           <a className="flex flex-1 flex-col items-center gap-1 text-primary cursor-pointer" onClick={() => navigateTo('settings')}>
             <SettingsIcon className="w-5 h-5 stroke-[3px]" />
             <span className="text-[9px] font-bold uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

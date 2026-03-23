@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
+import type { Exercise } from '../data/exercises';
+import { supabase } from '../lib/supabase';
 
 const currentYear = new Date().getFullYear();
 const calendarData = Array.from({ length: 365 }).map((_, i) => {
@@ -14,15 +16,39 @@ const calendarData = Array.from({ length: 365 }).map((_, i) => {
 });
 
 interface ScheduleProps {
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  userName?: string;
+  setUserName?: (name: string) => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
+  completedExercises: Exercise[];
 }
 
-const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = true, toggleNotifications }) => {
+const Schedule: React.FC<ScheduleProps> = ({
+  userName = "Loading...",
+   navigateTo, notificationsEnabled = true, toggleNotifications, completedExercises }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const [monthOffset, setMonthOffset] = useState(0);
+  const [signupDate, setSignupDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 5);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.created_at) {
+        const d = new Date(user.created_at);
+        d.setHours(0, 0, 0, 0);
+        setSignupDate(d);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Dynamic Calendar Setup
   const today = new Date();
@@ -34,16 +60,10 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
   const displayedDate = new Date(currentYearToday, currentMonthToday + monthOffset, 1);
   const currentYearCalendar = displayedDate.getFullYear();
   const currentMonthCalendar = displayedDate.getMonth();
-
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
+
   const firstDayOfMonth = new Date(currentYearCalendar, currentMonthCalendar, 1).getDay();
   const daysInMonth = new Date(currentYearCalendar, currentMonthCalendar + 1, 0).getDate();
-  
-  // Mock signup date (5 days ago)
-  const signupDate = new Date(today);
-  signupDate.setDate(today.getDate() - 5);
-  signupDate.setHours(0, 0, 0, 0);
 
   const displayedMonthAbsolute = currentYearCalendar * 12 + currentMonthCalendar;
   const signupMonthAbsolute = signupDate.getFullYear() * 12 + signupDate.getMonth();
@@ -64,39 +84,43 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
   for (let d = 1; d <= daysInMonth; d++) {
     const thisDate = new Date(currentYearCalendar, currentMonthCalendar, d);
     thisDate.setHours(0, 0, 0, 0);
+    // use local format string for YYYY-MM-DD
+    const dateStr = [
+      thisDate.getFullYear(),
+      ('0' + (thisDate.getMonth() + 1)).slice(-2),
+      ('0' + thisDate.getDate()).slice(-2)
+    ].join('-');
+    const dayExercises = completedExercises.filter(ex => ex.date === dateStr);
+    const hasWorkout = dayExercises.length > 0;
 
     const isToday = currentYearCalendar === currentYearToday && currentMonthCalendar === currentMonthToday && d === currentDateCalendar;
     const isBeforeSignup = thisDate < signupDate;
     const isFuture = thisDate > today;
 
     let content = null;
-    if (isToday) {
-      content = <div className="w-full h-8 border border-primary border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-primary">PLANNING...</div>;
-    } else if (isBeforeSignup) {
-      // blank content
-    } else if (!isFuture) {
-      const rand = (d * 7) % 3;
-      if (rand === 0) content = <div className="w-full h-8 bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
-      else if (rand === 1) content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
-      else content = (
-        <>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <X className="w-8 h-8 text-slate-400" />
-          </div>
-          <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Skipped</span>
-        </>
-      );
+
+    if (!isBeforeSignup) {
+      if (isToday && !hasWorkout) {
+        content = <div className="w-full h-8 mt-auto border border-primary border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-primary">PLANNING...</div>;
+      } else if (hasWorkout) {
+        content = <div className="w-full h-8 mt-auto bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
+      } else if (!isFuture && !isToday) {
+        content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
+      }
     }
 
     desktopCells.push(
-      <div key={`day-${d}`} className={`bg-white dark:bg-background-dark min-h-[100px] p-3 flex flex-col items-end relative group ${isToday ? 'ring-2 ring-primary ring-inset' : ''} ${isBeforeSignup ? 'opacity-30 bg-slate-50 dark:bg-surface-dark' : ''}`}>
+      <div 
+        key={`day-${d}`} 
+        onClick={() => { if (!isBeforeSignup) setSelectedDate(dateStr); }}
+        className={`bg-white dark:bg-background-dark min-h-[100px] p-3 flex flex-col items-end relative group ${!isBeforeSignup ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-dark transition-colors' : ''} ${isToday ? 'ring-2 ring-primary ring-inset' : ''} ${isBeforeSignup ? 'opacity-40 grayscale bg-slate-50 dark:bg-surface-dark cursor-not-allowed' : ''} ${selectedDate === dateStr && !isBeforeSignup ? 'ring-2 ring-primary ring-inset' : ''}`}>
         <span className={`text-sm font-semibold mb-auto ${isToday ? 'font-extrabold text-primary' : (isBeforeSignup ? 'text-slate-400' : 'text-slate-700 dark:text-slate-300')}`}>{d}</span>
         {content}
       </div>
     );
   }
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -146,6 +170,9 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
           </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
+          </a>
         </nav>
       </aside>
 
@@ -180,7 +207,9 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
@@ -271,36 +300,52 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
                     const d = i + 1;
                     const thisDate = new Date(currentYearCalendar, currentMonthCalendar, d);
                     thisDate.setHours(0, 0, 0, 0);
+                    // use local format string for YYYY-MM-DD
+                    const dateStr = [
+                      thisDate.getFullYear(),
+                      ('0' + (thisDate.getMonth() + 1)).slice(-2),
+                      ('0' + thisDate.getDate()).slice(-2)
+                    ].join('-');
+                    const dayExercises = completedExercises.filter(ex => ex.date === dateStr);
+                    const hasWorkout = dayExercises.length > 0;
+
                     const isToday = currentYearCalendar === currentYearToday && currentMonthCalendar === currentMonthToday && d === currentDateCalendar;
                     const isBeforeSignup = thisDate < signupDate;
                     const isFuture = thisDate > today;
 
-                    if (isToday) {
-                      return (
-                        <div key={`m-day-${d}`} className="aspect-square flex items-center justify-center relative">
-                          <span className="z-10 text-sm font-semibold text-white">{d}</span>
-                          <div className="absolute inset-1 bg-primary rounded-full"></div>
-                        </div>
-                      );
+                    let bgClass = '';
+                    let textClass = '';
+                    let blurClass = '';
+
+                    if (isToday && !hasWorkout) {
+                      bgClass = 'border-2 border-primary border-dashed';
+                      textClass = 'text-primary';
+                    } else if (hasWorkout) {
+                      bgClass = 'bg-primary opacity-60';
+                      textClass = 'text-white';
                     } else if (isBeforeSignup) {
-                      return (
-                        <div key={`m-day-${d}`} className="aspect-square flex items-center justify-center text-slate-300 dark:text-slate-600 text-sm">{d}</div>
-                      );
+                      textClass = 'text-slate-300 dark:text-slate-600';
+                      blurClass = 'grayscale opacity-40 cursor-not-allowed';
                     } else if (!isFuture) {
-                      return (
-                        <div key={`m-day-${d}`} className="aspect-square flex items-center justify-center relative">
-                          <span className="z-10 text-sm font-semibold">{d}</span>
-                          <div className="absolute inset-1 bg-primary rounded-full opacity-60"></div>
-                        </div>
-                      );
+                      bgClass = 'border border-slate-200 dark:border-primary/20';
+                      textClass = 'text-slate-900 dark:text-slate-100';
                     } else {
-                      return (
-                        <div key={`m-day-${d}`} className="aspect-square flex items-center justify-center relative">
-                          <span className="z-10 text-sm font-semibold">{d}</span>
-                          <div className="absolute inset-1 border-2 border-primary rounded-full"></div>
-                        </div>
-                      );
+                      bgClass = 'border border-slate-200 dark:border-primary/20';
+                      textClass = 'text-slate-900 dark:text-slate-100';
                     }
+
+                    return (
+                      <div 
+                        key={`m-day-${d}`} 
+                        className={`aspect-square flex items-center justify-center relative ${!isBeforeSignup ? 'cursor-pointer' : ''} ${blurClass}`}
+                        onClick={() => { if (!isBeforeSignup) setSelectedDate(dateStr); }}
+                      >
+                        <span className={`z-10 text-sm font-semibold ${textClass}`}>{d}</span>
+                        {!isBeforeSignup && (
+                          <div className={`absolute inset-1 rounded-full ${bgClass} ${selectedDate === dateStr ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background-dark' : ''}`}></div>
+                        )}
+                      </div>
+                    );
                   })}
                 </div>
                 
@@ -507,8 +552,80 @@ const Schedule: React.FC<ScheduleProps> = ({ navigateTo, notificationsEnabled = 
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
           </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
+          </a>
         </div>
       </nav>
+
+      {/* Exercise Details Sidebar Overlay */}
+      {selectedDate && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] transition-opacity"
+          onClick={() => setSelectedDate(null)}
+        />
+      )}
+
+      {/* Exercise Details Sidebar */}
+      <aside className={`fixed inset-y-0 right-0 z-[70] flex flex-col w-full max-w-md bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-2xl transform transition-transform duration-300 ease-in-out ${selectedDate ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Sidebar Header */}
+        <div className="p-6 flex items-center gap-4 border-b border-primary/30">
+          <div className="flex items-center justify-center border border-primary/50 bg-primary/10 px-3 py-1 font-mono text-xl text-primary rounded shadow-sm">
+            {selectedDate ? selectedDate.split('-')[2] : '00'}
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight">Workout summary</h2>
+          <button className="ml-auto text-slate-400 hover:text-primary transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Sidebar Middle Header */}
+        <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
+          <p className="text-lg font-medium text-slate-700 dark:text-slate-200">List of exercises done:</p>
+        </div>
+        
+        {/* Sidebar Content */}
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-6">
+          <div className="flex flex-col">
+            {selectedDate && (() => {
+              const dayExercises = completedExercises.filter(ex => ex.date === selectedDate);
+              if (dayExercises.length === 0) {
+                // Determine if future or past
+                const [y, m, d] = selectedDate.split('-').map(Number);
+                const sd = new Date(y, m - 1, d);
+                const td = new Date(); td.setHours(0,0,0,0);
+                
+                if (sd > td) {
+                  return (
+                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Scheduled</p>
+                      <p className="text-sm text-slate-400">Wait and complete current workout than just planning.</p>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Rest Day</p>
+                      <p className="text-sm text-slate-400">No workouts recorded for this date.</p>
+                    </div>
+                  );
+                }
+              }
+              return dayExercises.map(ex => (
+                <div key={ex.id} className="p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+                  <h3 className="text-xl md:text-2xl font-bold text-center tracking-tight">{ex.name}</h3>
+                  <p className="text-primary font-medium tracking-wide text-center text-sm md:text-base">
+                    number of sets: {ex.sets}, reps per set: {ex.reps.split(',')[0].trim()}, weight: {ex.weight}
+                  </p>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      </aside>
 
     </div>
   );

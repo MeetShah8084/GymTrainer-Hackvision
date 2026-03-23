@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity } from 'lucide-react';
+import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity, MessageSquare } from 'lucide-react';
 
 import { CheckCircle } from 'lucide-react';
-import type { Exercise } from '../data/exercises';
+import { type Exercise, formatDate } from '../data/exercises';
 
 interface WorkoutsProps {
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  userName?: string;
+  setUserName?: (name: string) => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   incompleteExercises: Exercise[];
@@ -16,6 +18,8 @@ interface WorkoutsProps {
 }
 
 const Workouts: React.FC<WorkoutsProps> = ({
+  userName = "Loading...",
+  
   navigateTo,
   notificationsEnabled = true,
   toggleNotifications,
@@ -25,8 +29,10 @@ const Workouts: React.FC<WorkoutsProps> = ({
   setCompletedExercises
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const todayDate = formatDate(new Date());
+  const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDate);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -65,7 +71,12 @@ const Workouts: React.FC<WorkoutsProps> = ({
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    setCompletedExercises([...completedExercises, exercise]);
+    
+    const now = new Date();
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const completedEx = { ...exercise, date: todayDateStr };
+    
+    setCompletedExercises([...completedExercises, completedEx]);
   };
 
   const handleDeleteIncomplete = (id: string) => {
@@ -157,7 +168,9 @@ const Workouts: React.FC<WorkoutsProps> = ({
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="size-10 rounded-full bg-cover bg-center border-2 border-primary" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuKnEGAJLw_uJw2VMxs25mta_OgaPiA2mKgyRXMjPTdj-GR8mCXyew3b4Bi75YnziIODw-afQkW_1qetLtJXYBrObwTtimIbmQ9MnIlF4T6I4TJIr5_nZ7MsNB9_MVfud6sa_5IZj5twfAl7jx56RxN3_kNq5WhkXFEp-CQjEh4P9njY3kdlm8ceNFFBcFCGsI1qZOcma-uXn57vTN-yfJ1LOW5eP7tyWnJ1btFqnVbkJA4t2FCRtsLvvfm8n6ztpZC_GM9J-iEK99')" }}></div>
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
@@ -341,10 +354,10 @@ const Workouts: React.FC<WorkoutsProps> = ({
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-2">
                 <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Completed Exercises</h3>
-                <span className="text-xs font-medium md:font-bold px-3 py-1 bg-slate-100 dark:bg-primary/10 rounded-full text-slate-600 dark:text-primary">{completedExercises.length} Sessions Total</span>
+                <span className="text-xs font-medium md:font-bold px-3 py-1 bg-slate-100 dark:bg-primary/10 rounded-full text-slate-600 dark:text-primary">{todayCompletedExercises.length} Sessions Total</span>
               </div>
 
-              {completedExercises.length === 0 && incompleteExercises.length === 0 && (
+              {todayCompletedExercises.length === 0 && incompleteExercises.length === 0 && (
                 <div className="mt-8 border border-dashed border-yellow-500/50 dark:border-yellow-500/40 rounded-3xl p-12 flex flex-col items-center justify-center text-center bg-yellow-500/5">
                   <div className="size-32 border border-yellow-500/30 dark:border-yellow-500/20 rounded-xl flex items-center justify-center mb-6">
                     <div className="flex items-center justify-center gap-2 text-yellow-500">
@@ -358,7 +371,7 @@ const Workouts: React.FC<WorkoutsProps> = ({
               )}
 
               <div className="space-y-4">
-                {completedExercises.map((exercise) => {
+                {todayCompletedExercises.map((exercise) => {
                   if (deletingId === exercise.id) {
                     return (
                       <div key={exercise.id} className="group relative overflow-hidden rounded-xl bg-red-50 dark:bg-red-950/20 border-2 md:border md:border-red-500/30 border-red-200 dark:border-red-900/40 p-4 md:p-0 md:bg-white md:dark:bg-surface-dark shadow-sm">
@@ -555,6 +568,10 @@ const Workouts: React.FC<WorkoutsProps> = ({
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>
