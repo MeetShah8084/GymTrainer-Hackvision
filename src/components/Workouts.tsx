@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity } from 'lucide-react';
+import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity, MessageSquare } from 'lucide-react';
 
 import { CheckCircle } from 'lucide-react';
 import { type Exercise, formatDate } from '../data/exercises';
@@ -8,7 +8,7 @@ import { type Exercise, formatDate } from '../data/exercises';
 interface WorkoutsProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   incompleteExercises: Exercise[];
@@ -32,7 +32,7 @@ const Workouts: React.FC<WorkoutsProps> = ({
   const todayDate = formatDate(new Date());
   const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDate);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -568,6 +568,10 @@ const Workouts: React.FC<WorkoutsProps> = ({
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

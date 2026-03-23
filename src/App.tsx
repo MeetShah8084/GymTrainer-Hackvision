@@ -4,6 +4,7 @@ import Workouts from './components/Workouts'
 import ProgressAnalysis from './components/ProgressAnalysis'
 import PersonalRecords from './components/PersonalRecords'
 import Schedule from './components/Schedule'
+import AIChat from './components/AIChat'
 import Settings from './components/Settings'
 import Login from './components/Login'
 import './index.css'
@@ -12,7 +13,7 @@ import { initialCompletedExercises, initialIncompleteExercises } from './data/ex
 import type { Exercise } from './data/exercises'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings'>('login')
+  const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat'>('dashboard')
   const [userName, setUserName] = useState<string>("Loading...");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -44,6 +45,7 @@ function App() {
       {currentPage === 'records' && <PersonalRecords {...commonProps} />}
       {currentPage === 'schedule' && <Schedule {...commonProps} />}
       {currentPage === 'settings' && <Settings {...commonProps} />}
+      {currentPage === 'aichat' && <AIChat {...commonProps} />}
     </>
   )
 }

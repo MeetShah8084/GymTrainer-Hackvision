@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   CalendarDays,
-  BellOff // Added BellOff import
+  BellOff, // Added BellOff import
+  MessageSquare
 } from 'lucide-react';
 
 import type { Exercise } from '../data/exercises';
@@ -24,9 +25,9 @@ import type { Exercise } from '../data/exercises';
 interface DashboardProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
-  notificationsEnabled?: boolean; 
-  toggleNotifications?: () => void; 
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  notificationsEnabled?: boolean;
+  toggleNotifications?: () => void;
   incompleteExercises?: Exercise[];
   setIncompleteExercises?: (exercises: Exercise[]) => void;
   completedExercises?: Exercise[];
@@ -35,14 +36,14 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({
   userName = "Loading...",
-  setUserName, 
-  navigateTo, 
-  notificationsEnabled = true, 
+  setUserName,
+  navigateTo,
+  notificationsEnabled = true,
   toggleNotifications,
   incompleteExercises = [],
   setIncompleteExercises,
   completedExercises = [],
-  setCompletedExercises 
+  setCompletedExercises
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -54,11 +55,11 @@ const Dashboard: React.FC<DashboardProps> = ({
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise || !setIncompleteExercises || !setCompletedExercises) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    
+
     const now = new Date();
     const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const completedEx = { ...exercise, date: todayDateStr };
-    
+
     setCompletedExercises([...completedExercises, completedEx]);
   };
 
@@ -84,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     fetchUser();
   }, []);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -134,6 +135,9 @@ const Dashboard: React.FC<DashboardProps> = ({
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
           </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
+          </a>
         </nav>
 
       </aside>
@@ -154,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={toggleNotifications}
                 className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
                 style={{
@@ -185,17 +189,17 @@ const Dashboard: React.FC<DashboardProps> = ({
             <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">{userName}</h2>
           </div>
           <div className="flex items-center gap-2">
-              <button 
-                onClick={toggleNotifications}
-                className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
-                style={{
-                  backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
-                  color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
-                }}
-                title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
-              >
-                {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-              </button>
+            <button
+              onClick={toggleNotifications}
+              className="flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors shrink-0"
+              style={{
+                backgroundColor: notificationsEnabled ? 'rgba(236, 91, 19, 0.12)' : '#BFC9D1',
+                color: notificationsEnabled ? 'rgb(236, 91, 19)' : '#4b5563',
+              }}
+              title={notificationsEnabled ? 'Mute notifications' : 'Unmute notifications'}
+            >
+              {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            </button>
             <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-200 dark:bg-primary/10 text-slate-900 dark:text-primary transition-colors" onClick={() => navigateTo('settings')}>
               <Settings className="w-5 h-5" />
             </button>
@@ -278,14 +282,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 
             {/* Quick Actions (Mobile) */}
             <div className="md:hidden grid grid-cols-2 gap-3">
-              <button 
+              <button
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 font-bold text-white shadow-md transition-transform active:scale-95"
                 onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
               >
                 <CheckCircle className="w-[18px] h-[18px]" />
                 <span>Complete</span>
               </button>
-              <button 
+              <button
                 className="flex items-center justify-center gap-2 rounded-xl bg-slate-200 dark:bg-primary/20 py-3 px-4 font-bold text-slate-900 dark:text-primary transition-transform active:scale-95"
                 onClick={handleRelog}
               >
@@ -301,14 +305,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <p className="text-slate-500 dark:text-slate-400 text-sm">Started 45 minutes ago • {todayCompletedExercises.length}/{todayCompletedExercises.length + incompleteExercises.length} Exercises completed</p>
               </div>
               <div className="flex gap-3">
-                <button 
+                <button
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
                   onClick={handleRelog}
                 >
                   <RotateCcw className="w-5 h-5" />
                   Relog
                 </button>
-                <button 
+                <button
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
                   onClick={() => incompleteExercises.length > 0 && handleCompleteExercise(incompleteExercises[0].id)}
                 >
@@ -334,7 +338,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       className="w-full md:w-auto mt-2 md:mt-0 px-4 py-2 border-2 border-primary/20 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
                       onClick={() => handleCompleteExercise(exercise.id)}
                     >
@@ -498,6 +502,10 @@ const Dashboard: React.FC<DashboardProps> = ({
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

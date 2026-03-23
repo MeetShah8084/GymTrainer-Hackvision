@@ -5,13 +5,13 @@ import {
   Menu, Settings as SettingsIcon, ArrowLeft,
   Bell as BellIcon, BellOff, Mail, Phone,
   Camera, Shield, Edit3, X, Dumbbell, LineChart,
-  LayoutDashboard, CalendarDays, Trophy, DoorOpen
+  LayoutDashboard, CalendarDays, Trophy, DoorOpen, MessageSquare
 } from 'lucide-react';
 
 interface SettingsProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   setNotificationsEnabled?: (value: boolean) => void;
 }
@@ -66,7 +66,7 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -164,6 +164,9 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
           </a>
           <a className="flex items-center px-4 py-3 rounded-xl bg-primary text-white font-semibold cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
           </a>
         </nav>
       </aside>
@@ -398,6 +401,10 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
           <a className="flex flex-1 flex-col items-center gap-1 text-primary cursor-pointer" onClick={() => navigateTo('settings')}>
             <SettingsIcon className="w-5 h-5 stroke-[3px]" />
             <span className="text-[9px] font-bold uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

@@ -24,3 +24,11 @@
 @utility custom-gradient {
   background: linear-gradient(135deg, rgba(236, 91, 19, 0.1) 0%, rgba(26, 18, 14, 0) 100%);
 }
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

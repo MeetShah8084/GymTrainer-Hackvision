@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
 import type { Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
@@ -18,7 +18,7 @@ const calendarData = Array.from({ length: 365 }).map((_, i) => {
 interface ScheduleProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   completedExercises: Exercise[];
@@ -120,7 +120,7 @@ const Schedule: React.FC<ScheduleProps> = ({
     );
   }
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -169,6 +169,9 @@ const Schedule: React.FC<ScheduleProps> = ({
           </a>
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
           </a>
         </nav>
       </aside>
@@ -548,6 +551,10 @@ const Schedule: React.FC<ScheduleProps> = ({
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>

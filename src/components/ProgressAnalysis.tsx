@@ -4,13 +4,13 @@ import {
   Dumbbell, LayoutDashboard, LineChart,
   Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Sparkles, Trophy,
   Menu,
-  X, ArrowLeft, Share2, CalendarDays
+  X, ArrowLeft, Share2, CalendarDays, MessageSquare
 } from 'lucide-react';
 
 interface ProgressAnalysisProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => void;
+  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
@@ -20,7 +20,7 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings') => {
+  const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
     setTimeout(() => {
       navigateTo(page);
@@ -81,6 +81,9 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
           </a>
           <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('settings')}>
             <span>Settings</span>
+          </a>
+          <a className="flex items-center px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all cursor-pointer" onClick={() => handleNavigation('aichat')}>
+            <span>AI Chat</span>
           </a>
         </nav>
 
@@ -558,6 +561,10 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
           <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('settings')}>
             <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium uppercase tracking-widest">Settings</span>
+          </a>
+          <a className="flex flex-1 flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer" onClick={() => navigateTo('aichat')}>
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-[9px] font-medium uppercase tracking-widest">AI Chat</span>
           </a>
         </div>
       </nav>
