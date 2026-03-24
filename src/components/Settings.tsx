@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { supabase } from '../lib/supabase';
+import { updateProfile } from '../lib/n8nApi';
 import {
   Menu, Settings as SettingsIcon, ArrowLeft,
   Bell as BellIcon, BellOff, Mail, Phone,
@@ -91,21 +92,14 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
           data: { full_name: editName, phone: editPhone }
         });
 
-        const n8nWebhookUrl = 'http://localhost:5678/webhook/update-profile';
         const { data: { user } } = await supabase.auth.getUser();
 
-        await fetch(n8nWebhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            user_id: user?.id,
-            name: editName,
-            email: editEmail,
-            phone: editPhone
-          })
-        }).catch(err => console.warn("Failed to ping n8n webhook", err));
+        updateProfile(
+          user?.id || '',
+          editName,
+          editEmail,
+          editPhone
+        ).catch(err => console.warn("Failed to ping n8n webhook", err));
 
         if (setUserName) setUserName(editName);
         setUserEmail(editEmail);
