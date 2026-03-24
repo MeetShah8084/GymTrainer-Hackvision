@@ -206,10 +206,10 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
               <div
                 key={card.id}
                 className={`transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.removing
-                    ? 'translate-x-full opacity-0 max-h-0 mb-0 overflow-hidden'
-                    : animatingIds.has(card.id)
-                      ? 'translate-x-full opacity-0'
-                      : 'translate-x-0 opacity-100'
+                  ? 'translate-x-full opacity-0 max-h-0 mb-0 overflow-hidden'
+                  : animatingIds.has(card.id)
+                    ? 'translate-x-full opacity-0'
+                    : 'translate-x-0 opacity-100'
                   }`}
                 style={{ transitionProperty: 'transform, opacity, max-height, margin' }}
               >
