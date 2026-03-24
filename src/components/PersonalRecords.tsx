@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import type { PRRecord } from '../App';
-import { 
-  Dumbbell, 
-  LayoutDashboard, 
-  LineChart, 
+import { syncPersonalRecords } from '../lib/n8nApi';
+import {
+  Dumbbell,
+  LayoutDashboard,
+  LineChart,
   Trophy,
   TrendingUp,
   Bell,
@@ -21,6 +22,7 @@ import {
 interface PersonalRecordsProps {
   userName?: string;
   setUserName?: (name: string) => void;
+  userId?: string;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
@@ -28,11 +30,50 @@ interface PersonalRecordsProps {
   setPersonalRecords?: (records: PRRecord[]) => void;
 }
 
+// All exercises across all muscle groups
+const ALL_EXERCISES = [
+  'Barbell Bench Press', 'Incline Dumbbell Press', 'Chest Flyes', 'Push-ups', 'Cable Crossovers', 'Decline Press',
+  'Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row',
+  'Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions',
+  'Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips',
+  'Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts'
+];
+
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({
   userName = "Loading...",
+  userId = '',
   navigateTo, notificationsEnabled = true, toggleNotifications,
-  personalRecords = [] }) => {
+  personalRecords = [], setPersonalRecords }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  // Fetch personal records via n8n on mount
+  useEffect(() => {
+    if (userId && setPersonalRecords) {
+      syncPersonalRecords(userId)
+        .then((response: any) => {
+          let data = [];
+          if (Array.isArray(response) && response[0]?.data) {
+            data = response[0].data;
+          } else if (response?.data) {
+            data = response.data;
+          } else if (Array.isArray(response)) {
+            data = response;
+          }
+
+          if (data && data.length > 0) {
+            const records: PRRecord[] = data.map((r: any) => ({
+              id: r.id,
+              exerciseName: r.exercise_name,
+              weight: parseFloat(r.max_weight) || 0,
+              improvement: 0,
+              date: r.updated_at ? new Date(r.updated_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase() : 'NOT SET'
+            }));
+            setPersonalRecords(records);
+          }
+        })
+        .catch(err => console.error('Failed to fetch PRs from webhook:', err));
+    }
+  }, [userId]);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
@@ -41,15 +82,27 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({
     }, 300);
   };
 
-  const sorted = [...personalRecords].sort((a, b) => b.weight - a.weight);
-  const top3 = sorted.slice(0, 3);
-  const gold = top3[0];
-  const silver = top3[1];
-  const bronze = top3[2];
+  // Merge ALL exercises with actual PR data — show 0kg for missing exercises
+  const allPRs: PRRecord[] = ALL_EXERCISES.map(name => {
+    const existing = personalRecords.find(pr => pr.exerciseName === name);
+    if (existing) return existing;
+    return {
+      id: `default-${name}`,
+      exerciseName: name,
+      weight: 0,
+      improvement: 0,
+      date: 'NOT SET'
+    };
+  });
+
+  const sorted = [...allPRs].sort((a, b) => b.weight - a.weight);
+  const gold = sorted[0];
+  const silver = sorted[1];
+  const bronze = sorted[2];
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
-      
+
       {/* Overlay */}
       {isSidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsSidebarOpen(false)} />
@@ -81,7 +134,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({
 
       {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-light dark:bg-background-dark relative">
-        
+
         {/* Desktop Header */}
         <header className="hidden md:flex shrink-0 z-20 items-center justify-between px-8 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
           <div className="flex items-center gap-4">
@@ -129,35 +182,36 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full custom-gradient relative pb-24 md:pb-8">
           <div className="max-w-[1200px] mx-auto w-full px-4 lg:px-10 py-8">
-            {/* Podium */}
-            {top3.length >= 3 && (
-              <div className="flex items-end justify-center gap-3 md:gap-6 mb-12 mt-4">
-                {/* Silver */}
-                <div className="flex flex-col items-center w-1/3 max-w-[280px]">
-                  <span className="text-3xl md:text-4xl mb-2">🥈</span>
-                  <div className="w-full rounded-xl border border-slate-600 bg-surface-dark/60 p-4 md:p-5 text-center">
-                    <p className="text-slate-300 text-sm font-bold truncate">{silver.exerciseName}</p>
-                    <p className="text-slate-100 text-xl md:text-2xl font-black mt-1">{silver.weight} kg</p>
-                  </div>
-                </div>
-                {/* Gold */}
-                <div className="flex flex-col items-center w-1/3 max-w-[300px] -mb-2">
-                  <span className="text-4xl md:text-5xl mb-2">🏆</span>
-                  <div className="w-full rounded-xl border-2 border-amber-500 bg-surface-dark/80 p-5 md:p-6 text-center shadow-lg shadow-amber-500/10">
-                    <p className="text-amber-400 text-sm md:text-base font-bold truncate">{gold.exerciseName}</p>
-                    <p className="text-white text-2xl md:text-3xl font-black mt-1">{gold.weight} kg</p>
-                  </div>
-                </div>
-                {/* Bronze */}
-                <div className="flex flex-col items-center w-1/3 max-w-[260px]">
-                  <span className="text-2xl md:text-3xl mb-2">🥉</span>
-                  <div className="w-full rounded-xl border border-primary/50 bg-surface-dark/60 p-3 md:p-4 text-center">
-                    <p className="text-primary/80 text-sm font-bold truncate">{bronze.exerciseName}</p>
-                    <p className="text-slate-100 text-lg md:text-xl font-black mt-1">{bronze.weight} kg</p>
-                  </div>
+            {/* Podium - always shown */}
+            <div className="flex items-end justify-center gap-3 md:gap-6 mb-12 mt-4">
+              {/* Silver - 2nd */}
+              <div className="flex flex-col items-center w-1/3 max-w-[280px]">
+                <span className="text-3xl md:text-4xl mb-2">🥈</span>
+                <div className="w-full rounded-xl border border-slate-600 bg-surface-dark/60 p-4 md:p-5 text-center">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">2nd Place</p>
+                  <p className="text-slate-300 text-sm font-bold truncate">{silver?.exerciseName || '—'}</p>
+                  <p className="text-slate-100 text-xl md:text-2xl font-black mt-1">{silver?.weight || 0} kg</p>
                 </div>
               </div>
-            )}
+              {/* Gold - 1st */}
+              <div className="flex flex-col items-center w-1/3 max-w-[300px] -mb-2">
+                <span className="text-4xl md:text-5xl mb-2">🏆</span>
+                <div className="w-full rounded-xl border-2 border-amber-500 bg-surface-dark/80 p-5 md:p-6 text-center shadow-lg shadow-amber-500/10">
+                  <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1">1st Place</p>
+                  <p className="text-amber-400 text-sm md:text-base font-bold truncate">{gold?.exerciseName || '—'}</p>
+                  <p className="text-white text-2xl md:text-3xl font-black mt-1">{gold?.weight || 0} kg</p>
+                </div>
+              </div>
+              {/* Bronze - 3rd */}
+              <div className="flex flex-col items-center w-1/3 max-w-[260px]">
+                <span className="text-2xl md:text-3xl mb-2">🥉</span>
+                <div className="w-full rounded-xl border border-primary/50 bg-surface-dark/60 p-3 md:p-4 text-center">
+                  <p className="text-[10px] text-primary/60 font-bold uppercase tracking-widest mb-1">3rd Place</p>
+                  <p className="text-primary/80 text-sm font-bold truncate">{bronze?.exerciseName || '—'}</p>
+                  <p className="text-slate-100 text-lg md:text-xl font-black mt-1">{bronze?.weight || 0} kg</p>
+                </div>
+              </div>
+            </div>
             {/* PR Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {sorted.map((pr) => (

@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
+import { getProgressAnalytics } from '../lib/n8nApi';
 import {
   Dumbbell, LayoutDashboard, LineChart,
   Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Trophy,
@@ -10,15 +11,31 @@ import {
 interface ProgressAnalysisProps {
   userName?: string;
   setUserName?: (name: string) => void;
+  userId?: string;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
 
-export default function ProgressAnalysis({ userName = 'User', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+export default function ProgressAnalysis({ userName = 'User', userId = '', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+
+
+  useEffect(() => {
+    if (userId) {
+      setAnalyticsLoading(true);
+      getProgressAnalytics(userId)
+        .then(data => setAnalyticsData(data))
+        .catch(err => console.error('Failed to fetch analytics:', err))
+        .finally(() => setAnalyticsLoading(false));
+    } else {
+      setAnalyticsLoading(false);
+    }
+  }, [userId]);
 
   const handleNavigation = (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => {
     setIsSidebarOpen(false);
@@ -162,33 +179,39 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
                   <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Total Volume Load</p>
-                  <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="font-bold text-[10px] lg:text-xs">+12.5%</span>
+                  <div className={`flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded ${analyticsData?.key_metrics?.volume_load_change >= 0 ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'}`}>
+                    {analyticsData?.key_metrics?.volume_load_change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    <span className="font-bold text-[10px] lg:text-xs">{analyticsData ? `${analyticsData.key_metrics.volume_load_change > 0 ? '+' : ''}${analyticsData.key_metrics.volume_load_change}%` : '+12.5%'}</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">124,500 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
+                    {analyticsData ? `${(analyticsData.key_metrics.total_volume_load / 1000).toFixed(1)}k` : (analyticsLoading ? '...' : '0')}
+                    <span className="text-[10px] md:text-sm font-normal text-slate-500"> kg</span>
+                  </h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-[75%] rounded-full"></div>
+                  <div className="h-full bg-primary rounded-full" style={{width: '75%'}}></div>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
-                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max Squat <span className="hidden lg:inline">(1RM)</span></p>
-                  <div className="flex items-center gap-1 shrink-0 text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingDown className="w-3 h-3" />
-                    <span className="font-bold text-[10px] lg:text-xs">-2.1%</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max Squat <span className="hidden lg:inline">(PR)</span></p>
+                  <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <Trophy className="w-3 h-3" />
+                    <span className="font-bold text-[10px] lg:text-xs">PR</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">185 <span className="text-[10px] md:text-sm font-normal text-slate-500">kg</span></h3>
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
+                    {analyticsData ? analyticsData.key_metrics.max_squat : (analyticsLoading ? '...' : '0')}
+                    <span className="text-[10px] md:text-sm font-normal text-slate-500"> kg</span>
+                  </h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-[92%] rounded-full"></div>
+                  <div className="h-full bg-primary" style={{width: '92%'}}></div>
                 </div>
               </div>
 
@@ -202,10 +225,13 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">84 <span className="text-[10px] md:text-sm font-normal text-slate-500">%</span></h3>
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
+                    {analyticsData ? analyticsData.key_metrics.avg_intensity : (analyticsLoading ? '...' : '84')}
+                    <span className="text-[10px] md:text-sm font-normal text-slate-500"> %</span>
+                  </h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-[84%] rounded-full"></div>
+                  <div className="h-full bg-primary rounded-full" style={{width: `${analyticsData?.key_metrics?.avg_intensity ?? 84}%`}}></div>
                 </div>
               </div>
 
@@ -218,10 +244,13 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">24 <span className="hidden md:inline text-[10px] md:text-sm font-normal text-slate-500">/ 30</span></h3>
+                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
+                    {analyticsData ? analyticsData.key_metrics.sessions_completed : (analyticsLoading ? '...' : '0')}
+                    <span className="hidden md:inline text-[10px] md:text-sm font-normal text-slate-500"> / {analyticsData?.key_metrics?.sessions_target ?? 30}</span>
+                  </h3>
                 </div>
                 <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-[80%] rounded-full"></div>
+                  <div className="h-full bg-primary rounded-full" style={{width: `${analyticsData ? Math.min((analyticsData.key_metrics.sessions_completed / analyticsData.key_metrics.sessions_target) * 100, 100) : 0}%`}}></div>
                 </div>
               </div>
             </div>
@@ -474,41 +503,48 @@ export default function ProgressAnalysis({ userName = 'User', navigateTo, notifi
                   <thead>
                     <tr className="text-slate-500 text-xs font-black uppercase tracking-widest border-b border-slate-200 dark:border-primary/10">
                       <th className="px-6 py-4">Exercise</th>
-                      <th className="px-6 py-4">Prev 1RM</th>
-                      <th className="px-6 py-4">Current 1RM</th>
+                      <th className="px-6 py-4">Prev PR</th>
+                      <th className="px-6 py-4">Current PR</th>
                       <th className="px-6 py-4">Change</th>
                       <th className="px-6 py-4">Trend</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-slate-200 dark:divide-primary/10">
-                    <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                      <td className="px-6 py-4 font-bold">Low Bar Back Squat</td>
-                      <td className="px-6 py-4 text-slate-400">175.0 kg</td>
-                      <td className="px-6 py-4">185.0 kg</td>
-                      <td className="px-6 py-4 text-emerald-500 font-bold">+5.7%</td>
-                      <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
-                    </tr>
-                    <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                      <td className="px-6 py-4 font-bold">Conventional Deadlift</td>
-                      <td className="px-6 py-4 text-slate-400">210.0 kg</td>
-                      <td className="px-6 py-4">225.0 kg</td>
-                      <td className="px-6 py-4 text-emerald-500 font-bold">+7.1%</td>
-                      <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
-                    </tr>
-                    <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                      <td className="px-6 py-4 font-bold">Bench Press</td>
-                      <td className="px-6 py-4 text-slate-400">125.0 kg</td>
-                      <td className="px-6 py-4">122.5 kg</td>
-                      <td className="px-6 py-4 text-rose-500 font-bold">-2.0%</td>
-                      <td className="px-6 py-4"><TrendingDown className="w-5 h-5 text-rose-500" /></td>
-                    </tr>
-                    <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                      <td className="px-6 py-4 font-bold">Overhead Press</td>
-                      <td className="px-6 py-4 text-slate-400">80.0 kg</td>
-                      <td className="px-6 py-4">85.0 kg</td>
-                      <td className="px-6 py-4 text-emerald-500 font-bold">+6.2%</td>
-                      <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
-                    </tr>
+                    {analyticsData?.detailed_strength?.length > 0 ? (
+                      analyticsData.detailed_strength.map((s: any, i: number) => (
+                        <tr key={i} className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
+                          <td className="px-6 py-4 font-bold">{s.exercise}</td>
+                          <td className="px-6 py-4 text-slate-400">{s.last} kg</td>
+                          <td className="px-6 py-4">{s.current} kg</td>
+                          <td className={`px-6 py-4 font-bold ${s.change >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{s.change >= 0 ? '+' : ''}{s.change}%</td>
+                          <td className="px-6 py-4">{s.trend === 'up' ? <LineChart className="w-5 h-5 text-emerald-500" /> : <TrendingDown className="w-5 h-5 text-rose-500" />}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <>                      
+                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
+                          <td className="px-6 py-4 font-bold">Low Bar Back Squat</td>
+                          <td className="px-6 py-4 text-slate-400">175.0 kg</td>
+                          <td className="px-6 py-4">185.0 kg</td>
+                          <td className="px-6 py-4 text-emerald-500 font-bold">+5.7%</td>
+                          <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
+                        </tr>
+                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
+                          <td className="px-6 py-4 font-bold">Conventional Deadlift</td>
+                          <td className="px-6 py-4 text-slate-400">210.0 kg</td>
+                          <td className="px-6 py-4">225.0 kg</td>
+                          <td className="px-6 py-4 text-emerald-500 font-bold">+7.1%</td>
+                          <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
+                        </tr>
+                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
+                          <td className="px-6 py-4 font-bold">Bench Press</td>
+                          <td className="px-6 py-4 text-slate-400">125.0 kg</td>
+                          <td className="px-6 py-4">122.5 kg</td>
+                          <td className="px-6 py-4 text-rose-500 font-bold">-2.0%</td>
+                          <td className="px-6 py-4"><TrendingDown className="w-5 h-5 text-rose-500" /></td>
+                        </tr>
+                      </>
+                    )}
                   </tbody>
                 </table>
               </div>

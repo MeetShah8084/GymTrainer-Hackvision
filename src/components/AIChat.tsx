@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
+import { sendTrainerAIMessage } from '../lib/n8nApi';
+import ReactMarkdown from 'react-markdown';
 import { 
   LayoutDashboard, Settings, Dumbbell, LineChart, Trophy, CalendarDays, 
   Menu, X, MessageSquare, Plus, Mic, Send, Bot 
@@ -7,15 +9,18 @@ import {
 
 interface AIChatProps {
   userName?: string;
+  userId?: string;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
 }
 
-const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) => {
+const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '', navigateTo }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<{sender: 'user' | 'ai', text: string}[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const sessionIdRef = useRef(`session-${Date.now()}`);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -31,19 +36,25 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) 
     navigateTo(page);
   };
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isTyping) return;
     
-    // Add user message and set to started state
-    const newMessages = [...messages, { sender: 'user' as const, text: inputValue }];
-    setMessages(newMessages);
+    const userMsg = inputValue.trim();
+    setMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
     setInputValue("");
     setHasStarted(true);
+    setIsTyping(true);
 
-    // AI response dummy mock after short delay
-    setTimeout(() => {
-      setMessages(prev => [...prev, { sender: 'ai' as const, text: "Hello? How can I help you" }]);
-    }, 600);
+    try {
+      const response = await sendTrainerAIMessage(userMsg, sessionIdRef.current, userId);
+      const aiText = typeof response === 'string' ? response : (response?.output || response?.text || response?.message || JSON.stringify(response));
+      setMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
+    } catch (err) {
+      console.error('AI Chat error:', err);
+      setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, I'm having trouble connecting right now. Please try again." }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -161,9 +172,37 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) 
                         ? 'rounded-2xl rounded-br-none bg-primary text-white border-primary shadow-lg shadow-primary/20' 
                         : 'rounded-2xl rounded-tl-none md:bg-surface-dark border-slate-700/50 md:border-accent-muted/30 bg-slate-800/50 md:bg-surface-dark text-slate-200'
                     }`}>
-                      <p className="text-sm md:text-base leading-relaxed">
-                        {msg.text}
-                      </p>
+                      {msg.sender === 'ai' ? (
+                        <div className="prose prose-invert prose-sm md:prose-base max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              p: ({children}: any) => <p className="text-sm md:text-base leading-relaxed mb-2 last:mb-0">{children}</p>,
+                              strong: ({children}: any) => <strong className="text-primary font-bold">{children}</strong>,
+                              em: ({children}: any) => <em className="text-slate-300 italic">{children}</em>,
+                              ul: ({children}: any) => <ul className="list-disc list-inside space-y-1 mb-2 last:mb-0 text-sm md:text-base">{children}</ul>,
+                              ol: ({children}: any) => <ol className="list-decimal list-inside space-y-1 mb-2 last:mb-0 text-sm md:text-base">{children}</ol>,
+                              li: ({children}: any) => <li className="text-slate-200 leading-relaxed">{children}</li>,
+                              h1: ({children}: any) => <h1 className="text-lg font-bold text-primary mb-2">{children}</h1>,
+                              h2: ({children}: any) => <h2 className="text-base font-bold text-primary mb-2">{children}</h2>,
+                              h3: ({children}: any) => <h3 className="text-sm font-bold text-primary mb-1">{children}</h3>,
+                              code: ({children, className}: any) => {
+                                const isInline = !className;
+                                return isInline 
+                                  ? <code className="bg-black/30 text-primary px-1.5 py-0.5 rounded text-xs font-mono">{children}</code>
+                                  : <code className="block bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-2">{children}</code>;
+                              },
+                              a: ({children, href}: any) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">{children}</a>,
+                              blockquote: ({children}: any) => <blockquote className="border-l-2 border-primary/50 pl-3 italic text-slate-400 mb-2">{children}</blockquote>,
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-sm md:text-base leading-relaxed">
+                          {msg.text}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -175,6 +214,25 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", navigateTo }) 
                 </div>
               ))}
             </div>
+
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="flex items-end gap-3 w-full items-start justify-start">
+                <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/20 border border-primary/30">
+                  <Bot className="w-4 h-4 md:w-5 md:h-5" />
+                </div>
+                <div className="flex flex-col gap-1.5 items-start">
+                  <p className="text-[11px] md:text-[13px] font-semibold uppercase tracking-wider text-primary ml-1 md:ml-0">Progressive AI</p>
+                  <div className="px-4 py-3 md:px-5 md:py-4 shadow-sm border rounded-2xl rounded-tl-none bg-slate-800/50 md:bg-surface-dark border-slate-700/50 text-slate-200">
+                    <div className="flex gap-1.5 items-center h-5">
+                      <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         </main>

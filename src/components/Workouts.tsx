@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Settings, Bell, BellOff, Weight, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Timer, Trophy, Menu, X, CircleAlert, Dumbbell, Flame, Activity, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Settings, Bell, BellOff, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Trophy, Menu, X, CircleAlert, Dumbbell, MessageSquare } from 'lucide-react';
 
 import { CheckCircle } from 'lucide-react';
+import type { PRRecord } from '../App';
 import { type Exercise, formatDate } from '../data/exercises';
+import { updateSet, deleteExercise } from '../lib/n8nApi';
 
 interface WorkoutsProps {
   userName?: string;
@@ -15,6 +17,7 @@ interface WorkoutsProps {
   setIncompleteExercises: (exercises: Exercise[]) => void;
   completedExercises: Exercise[];
   setCompletedExercises: (exercises: Exercise[]) => void;
+  personalRecords?: PRRecord[];
 }
 
 const Workouts: React.FC<WorkoutsProps> = ({
@@ -26,7 +29,8 @@ const Workouts: React.FC<WorkoutsProps> = ({
   incompleteExercises,
   setIncompleteExercises,
   completedExercises,
-  setCompletedExercises
+  setCompletedExercises,
+  personalRecords = []
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const todayDate = formatDate(new Date());
@@ -84,9 +88,14 @@ const Workouts: React.FC<WorkoutsProps> = ({
     setDeletingId(null);
   };
 
-  const handleDeleteCompleted = (id: string) => {
+  const handleDeleteCompleted = async (id: string) => {
     setCompletedExercises(completedExercises.filter(e => e.id !== id));
     setDeletingId(null);
+    try {
+      await deleteExercise(id);
+    } catch (err) {
+      console.error("Failed to delete exercise on backend:", err);
+    }
   };
 
   return (
@@ -194,57 +203,6 @@ const Workouts: React.FC<WorkoutsProps> = ({
         <main className="flex-1 overflow-y-auto w-full custom-gradient relative md:pb-8">
           <div className="max-w-6xl mx-auto w-full p-4 md:p-10 pb-28 md:pb-10 space-y-6 md:space-y-8">
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-              <div className="col-span-1 md:col-span-1 flex flex-col gap-1 md:gap-2 rounded-xl md:rounded-2xl p-4 md:p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group">
-                <div className="hidden md:block absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Weight className="w-12 h-12" />
-                </div>
-                <p className="text-slate-500 dark:text-primary/70 text-xs md:text-sm font-semibold uppercase tracking-wider">Total Volume</p>
-                <div className="flex items-baseline gap-1 md:gap-2">
-                  <p className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 leading-tight">12,450</p>
-                  <p className="text-xs md:text-base font-medium md:font-bold text-slate-400">kg</p>
-                </div>
-                <div className="hidden md:flex items-center gap-1 text-emerald-500 font-bold text-sm mt-2">
-                  <Activity className="w-4 h-4" />
-                  <span>+12% vs yesterday</span>
-                </div>
-              </div>
-
-              <div className="col-span-1 md:col-span-1 flex flex-col gap-1 md:gap-2 rounded-xl md:rounded-2xl p-4 md:p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm relative overflow-hidden group hidden sm:flex">
-                <div className="hidden md:block absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Flame className="w-12 h-12" />
-                </div>
-                <p className="text-slate-500 dark:text-primary/70 text-xs md:text-sm font-semibold uppercase tracking-wider">Calories</p>
-                <div className="flex items-baseline gap-1 md:gap-2">
-                  <p className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 leading-tight">420</p>
-                  <p className="text-xs md:text-base font-medium md:font-bold text-slate-400">kcal</p>
-                </div>
-                <div className="hidden md:flex items-center gap-1 text-emerald-500 font-bold text-sm mt-2">
-                  <Activity className="w-4 h-4" />
-                  <span>+5% intensity</span>
-                </div>
-              </div>
-
-              <div className="col-span-1 sm:hidden flex flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm">
-                <p className="text-slate-500 dark:text-primary/70 text-xs font-semibold uppercase tracking-wider">Exercises</p>
-                <p className="text-2xl font-black leading-tight">14</p>
-              </div>
-
-              <div className="col-span-2 sm:col-span-1 flex flex-col gap-1 md:gap-2 rounded-xl md:rounded-2xl p-4 md:p-6 bg-primary text-white shadow-lg shadow-primary/20 relative overflow-hidden group">
-                <div className="hidden md:block absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Timer className="w-12 h-12" />
-                </div>
-                <p className="text-white/80 md:text-white/90 text-xs md:text-sm font-semibold uppercase tracking-wider">Avg Intensity</p>
-                <div className="flex items-baseline gap-1 md:gap-2">
-                  <p className="text-2xl md:text-3xl font-black text-white leading-tight">85%</p>
-                </div>
-                <div className="hidden md:flex items-center gap-1 text-white/80 font-bold text-sm mt-2">
-                  <CalendarDays className="w-4 h-4" />
-                  <span>Target: 60 min</span>
-                </div>
-              </div>
-            </div>
 
             {/* Incomplete Exercises Section */}
             {incompleteExercises.length > 0 && (
@@ -421,15 +379,43 @@ const Workouts: React.FC<WorkoutsProps> = ({
                             </div>
                           </div>
 
-                          <form className="mt-1 md:mt-0 flex-1 md:flex-initial" onSubmit={(e) => {
+                          <form className="mt-1 md:mt-0 flex-1 md:flex-initial" onSubmit={async (e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
                             const sets = Number(formData.get('sets'));
-                            const reps = String(formData.get('reps'));
+                            const repsStr = String(formData.get('reps'));
                             const weightStr = String(formData.get('weight'));
+                            const weightVal = parseFloat(weightStr) || 0;
                             const weight = weightStr.includes('kg') ? weightStr : `${weightStr} kg`;
-                            setCompletedExercises(completedExercises.map(ex => ex.id === exercise.id ? { ...ex, sets, reps, weight } : ex));
+
+                            const repsArr = repsStr.includes(',') ? repsStr.split(',').map(r => parseInt(r.trim(), 10)) : Array(sets).fill(parseInt(repsStr, 10));
+                            if (repsArr.length !== sets) {
+                              alert(`Please enter exactly ${sets} rep values separated by commas, or a single number.`);
+                              return;
+                            }
+
+                            setCompletedExercises(completedExercises.map(ex => ex.id === exercise.id ? { ...ex, sets, reps: repsStr, weight } : ex));
                             setEditingId(null);
+
+                            if (weightVal > 0) {
+                              const existingPR = personalRecords?.find(pr => pr.exerciseName === exercise.name);
+                              if (!existingPR || weightVal > existingPR.weight) {
+                                alert(`🎉 New Personal Record for ${exercise.name}: ${weightVal} kg!`);
+                              }
+                            }
+
+                            if (exercise.setIds && exercise.setIds.length > 0) {
+                              try {
+                                await Promise.all(
+                                  exercise.setIds.slice(0, sets).map((setId, index) => {
+                                    const r = repsArr[index] || repsArr[0] || 0;
+                                    return updateSet(setId, r, weightVal);
+                                  })
+                                );
+                              } catch (err) {
+                                console.error("Failed to update sets on backend:", err);
+                              }
+                            }
                           }}>
                             <div className="flex items-center gap-2 md:gap-4 md:ml-0 md:w-[350px] w-full mt-2 md:mt-0">
                               <div className="flex flex-col flex-1">

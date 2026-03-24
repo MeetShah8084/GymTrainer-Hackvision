@@ -1,23 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
 import type { Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
-
-const currentYear = new Date().getFullYear();
-const calendarData = Array.from({ length: 365 }).map((_, i) => {
-  const d = new Date(`${currentYear}-12-31`);
-  d.setDate(d.getDate() - i);
-  return {
-    day: d.toISOString().split('T')[0],
-    value: Math.floor(Math.random() * 100)
-  };
-});
+import { getCalendarData } from '../lib/n8nApi';
 
 interface ScheduleProps {
   userName?: string;
   setUserName?: (name: string) => void;
+  userId?: string;
   navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
@@ -26,9 +18,28 @@ interface ScheduleProps {
 
 const Schedule: React.FC<ScheduleProps> = ({
   userName = "Loading...",
+  userId = '',
    navigateTo, notificationsEnabled = true, toggleNotifications, completedExercises }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [calendarData, setCalendarData] = useState<{day: string; value: number}[]>([]);
+  const currentYear = new Date().getFullYear();
+
+  // Merge API calendar data with locally completed exercises for the heatmap
+  const mergedCalendarData = React.useMemo(() => {
+    const map = new Map<string, number>();
+    // Add API data
+    calendarData.forEach(d => {
+      map.set(d.day, (map.get(d.day) || 0) + d.value);
+    });
+    // Add locally completed exercises
+    completedExercises.forEach(ex => {
+      if (ex.date) {
+        map.set(ex.date, (map.get(ex.date) || 0) + 1);
+      }
+    });
+    return Array.from(map.entries()).map(([day, value]) => ({ day, value }));
+  }, [calendarData, completedExercises]);
 
   const [monthOffset, setMonthOffset] = useState(0);
   const [signupDate, setSignupDate] = useState<Date>(() => {
@@ -37,6 +48,49 @@ const Schedule: React.FC<ScheduleProps> = ({
     d.setHours(0, 0, 0, 0);
     return d;
   });
+
+  // Fetch calendar data from n8n API
+  useEffect(() => {
+    if (userId) {
+      getCalendarData(userId)
+        .then((response: any) => {
+          console.log('Calendar data raw response:', response);
+          // Handle various response formats from n8n
+          let rows: any[] = [];
+          if (Array.isArray(response)) {
+            rows = response;
+          } else if (response && typeof response === 'object') {
+            // n8n might wrap in { data: [...] } or similar
+            const possibleArrays = ['data', 'rows', 'items', 'result'];
+            for (const key of possibleArrays) {
+              if (Array.isArray(response[key])) {
+                rows = response[key];
+                break;
+              }
+            }
+            // If still empty, the response itself might be a single item
+            if (rows.length === 0 && (response.session_date || response.day || response.date)) {
+              rows = [response];
+            }
+          }
+
+          if (rows.length > 0) {
+            const mapped = rows
+              .map((d: any) => {
+                // Try various field naming conventions
+                const day = d.day || d.date || d.session_date || d.workout_date;
+                const value = d.value || d.count || d.exercise_count || d.total || 1;
+                if (!day) return null;
+                return { day: String(day).split('T')[0], value: Number(value) || 1 };
+              })
+              .filter(Boolean) as { day: string; value: number }[];
+            console.log('Calendar data mapped:', mapped);
+            setCalendarData(mapped);
+          }
+        })
+        .catch(err => console.error('Failed to fetch calendar data:', err));
+    }
+  }, [userId]);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -416,7 +470,7 @@ const Schedule: React.FC<ScheduleProps> = ({
               <h3 className="text-lg font-bold mb-6">Yearly Consistency</h3>
               <div className="h-[200px] w-full" style={{ color: 'black' }}>
                 <ResponsiveTimeRange
-                  data={calendarData}
+                  data={mergedCalendarData}
                   from={`${currentYear}-01-01`}
                   to={`${currentYear}-12-31`}
                   emptyColor="rgba(200, 200, 200, 0.1)"
@@ -457,7 +511,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                     <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{quarter.title}</h4>
                     <div className="h-[120px] w-full" style={{ color: 'black' }}>
                       <ResponsiveTimeRange
-                        data={calendarData}
+                        data={mergedCalendarData}
                         from={quarter.from}
                         to={quarter.to}
                         emptyColor="rgba(200, 200, 200, 0.1)"
