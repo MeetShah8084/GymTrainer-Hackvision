@@ -43,8 +43,8 @@ interface DetailedStrength {
 interface KeyMetrics {
   total_volume_load: number;
   volume_load_change: number;
-  max_squat: number;
-  avg_intensity: number;
+  fav_exercise_name: string;
+  max_fav_exercise: number;
   sessions_completed: number;
   sessions_target: number;
 }
@@ -247,7 +247,7 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
-                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max Squat <span className="hidden lg:inline">(PR)</span></p>
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Max {analyticsData?.key_metrics?.fav_exercise_name || 'Squat'} <span className="hidden lg:inline">(PR)</span></p>
                   <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                     <Trophy className="w-3 h-3" />
                     <span className="font-bold text-[10px] lg:text-xs">PR</span>
@@ -255,7 +255,7 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
                   <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
-                    {analyticsData ? analyticsData.key_metrics.max_squat : (analyticsLoading ? '...' : '0')}
+                    {analyticsData ? analyticsData.key_metrics.max_fav_exercise : (analyticsLoading ? '...' : '0')}
                     <span className="text-[10px] md:text-sm font-normal text-slate-500"> kg</span>
                   </h3>
                 </div>

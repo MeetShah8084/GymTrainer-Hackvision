@@ -20,7 +20,8 @@ import {
   MessageSquare,
   ArrowLeft,
   MoreHorizontal,
-  Trash2
+  Trash2,
+  Star
 } from 'lucide-react';
 
 const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
@@ -38,6 +39,7 @@ interface ExerciseCard {
   sets: string;
   reps: string;
   isPR: boolean;
+  isFavorite: boolean;
   showPR: boolean;
   removing?: boolean;
   prChecking?: boolean;
@@ -63,6 +65,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     sets: '',
     reps: '',
     isPR: false,
+    isFavorite: false,
     showPR: false,
   });
 
@@ -173,6 +176,19 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     if (prCards.length > 0 && onAddPRs) {
       onAddPRs(prCards.map(c => ({ exerciseName: c.exerciseName, weight: parseFloat(c.weight) })));
     }
+
+    // Upsert favorite exercise to user_preferences
+    const favCard = validCards.find(c => c.isFavorite);
+    if (favCard && userId) {
+      supabase
+        .from('user_preferences')
+        .upsert(
+          { user_id: userId, preference_key: 'fav_exercise', preference_value: favCard.exerciseName, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,preference_key' }
+        )
+        .then(({ error }) => { if (error) console.error('Failed to save favorite:', error); });
+    }
+
     onBack();
   };
 
@@ -297,8 +313,9 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                   )}
                 </div>
 
-                {/* Add to PR - shown only when three dots is clicked */}
-                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-32 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                {/* Add to PR & Favorite - shown only when three dots is clicked */}
+                <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                  {/* Add to PR */}
                   <div
                     className={`border rounded-[20px] px-5 py-4 flex items-center gap-4 transition-colors cursor-pointer ${card.isPR ? 'border-primary/60 bg-primary/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
                     onClick={() => {
@@ -341,6 +358,24 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                       <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
                       {card.prError && <span className="text-red-400 text-xs mt-0.5">{card.prError}</span>}
                     </div>
+                  </div>
+
+                  {/* Add to Favorite */}
+                  <div
+                    className={`border rounded-[20px] px-5 py-4 mt-3 flex items-center gap-4 transition-colors cursor-pointer ${card.isFavorite ? 'border-amber-400/60 bg-amber-400/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
+                    onClick={() => {
+                      if (card.isFavorite) {
+                        updateCard(card.id, 'isFavorite', false);
+                      } else {
+                        // Deselect all others, then select this one
+                        setCards(prev => prev.map(c => ({ ...c, isFavorite: c.id === card.id })));
+                      }
+                    }}
+                  >
+                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.isFavorite ? 'bg-amber-400 border-amber-400' : 'border border-slate-600 bg-transparent'}`}>
+                      {card.isFavorite ? <Star className="w-4 h-4 text-white fill-white" /> : null}
+                    </div>
+                    <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to Favorite</label>
                   </div>
                 </div>
               </div>
