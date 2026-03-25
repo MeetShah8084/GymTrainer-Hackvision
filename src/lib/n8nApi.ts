@@ -49,6 +49,14 @@ export async function logWorkout(
   });
 }
 
+export interface RecentPR {
+  exercise_name: string;
+  reps: number;
+  new_weight: number;
+  prev_weight: number;
+  achieved_at: string;
+}
+
 export interface DashboardMetrics {
   consistency: number;
   consistency_diff: number;
@@ -57,13 +65,13 @@ export interface DashboardMetrics {
   volume_monthly: number;
   volume_diff: number;
   streak: number;
-  // New fields
   volume_today: number;
   volume_diff_yesterday: number;
   calories_today: number;
   calories_diff_yesterday: number;
   avg_intensity: number;
   target_minutes: number;
+  recent_prs: RecentPR[];
 }
 
 export const getDashboardMetrics = async (userId: string): Promise<DashboardMetrics> => {

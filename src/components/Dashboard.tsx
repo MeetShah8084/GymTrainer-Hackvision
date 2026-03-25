@@ -824,77 +824,53 @@ const Dashboard: React.FC<DashboardProps> = ({
                       </div>
                     ))}
                   </div>
-                </div>
-
-                {/* Recent Activity (Desktop only layout) */}
-                <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
-                  <div className="lg:col-span-2 space-y-6">
-                    <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
-                        <div className="flex items-center gap-4">
-                          <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                            <TrendingUp className="w-6 h-6 stroke-[3px]" />
-                          </div>
-                          <div>
-                            <p className="font-bold dark:text-white">Deadlift</p>
-                            <p className="text-sm text-slate-500">New 1RM: 180kg</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary">+15kg</p>
-                          <p className="text-xs text-slate-400">2 days ago</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
-                        <div className="flex items-center gap-4">
-                          <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                            <TrendingUp className="w-6 h-6 stroke-[3px]" />
-                          </div>
-                          <div>
-                            <p className="font-bold dark:text-white">Bench Press</p>
-                            <p className="text-sm text-slate-500">New 5RM: 100kg</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary">+5kg</p>
-                          <p className="text-xs text-slate-400">Yesterday</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                           {/* Recent Activity (Desktop only layout) */}
+                <div className="hidden md:block pb-8">
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-black dark:text-white">Nutrition</h2>
-                    <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-primary/5 shadow-sm space-y-6">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-3xl font-black text-slate-900 dark:text-white">2,450</p>
-                          <p className="text-sm text-slate-500 uppercase tracking-widest font-bold">Calories In</p>
+                    <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {metrics?.recent_prs && metrics.recent_prs.length > 0 ? (
+                        metrics.recent_prs.map((pr, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+                            <div className="flex items-center gap-4">
+                              <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                                <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                              </div>
+                              <div>
+                                <p className="font-bold dark:text-white">{pr.exercise_name}</p>
+                                <p className="text-sm text-slate-500">New {pr.reps}RM: {pr.new_weight}kg</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-primary">+{ (Number(pr.new_weight) - Number(pr.prev_weight)).toFixed(1).replace(/\.0$/, '') }kg</p>
+                              <p className="text-xs text-slate-400">
+                                {(() => {
+                                  const date = new Date(pr.achieved_at);
+                                  const now = new Date();
+                                  now.setHours(0, 0, 0, 0);
+                                  const d = new Date(date);
+                                  d.setHours(0, 0, 0, 0);
+                                  const diffTime = now.getTime() - d.getTime();
+                                  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                  if (diffDays === 0) return 'Today';
+                                  if (diffDays === 1) return 'Yesterday';
+                                  if (diffDays < 0) return 'Just now';
+                                  return `${diffDays} days ago`;
+                                })()}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-dashed border-slate-700/50 col-span-full">
+                          <Trophy className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
+                          <p className="text-slate-500 font-medium font-['Poppins']">No recent PRs. Keep crushing it!</p>
                         </div>
-                        <div className="size-16 border-4 border-primary border-t-transparent rounded-full flex items-center justify-center">
-                          <p className="text-xs font-bold text-primary">85%</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                          <span className="text-slate-500">Protein</span>
-                          <span className="dark:text-white">180g / 200g</span>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
-                          <div className="bg-primary h-full rounded-full" style={{ width: '90%' }}></div>
-                        </div>
-                        <div className="flex justify-between text-xs font-bold uppercase tracking-wider pt-2">
-                          <span className="text-slate-500">Carbs</span>
-                          <span className="dark:text-white">210g / 300g</span>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full">
-                          <div className="bg-orange-300 h-full rounded-full" style={{ width: '70%' }}></div>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
+      </div>
 
                 {/* Mobile Weekly Summary */}
                 <div className="md:hidden mt-4">
