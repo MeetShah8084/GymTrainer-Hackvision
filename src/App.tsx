@@ -23,8 +23,9 @@ export interface PRRecord {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat'>('dashboard')
-  const [userName, setUserName] = useState<string>("Loading...");
+  const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat'>('login')
+  const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>("User");
   const [userId, setUserId] = useState<string>('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -102,18 +103,48 @@ function App() {
         } catch (err) {
           console.error("Failed to load historical sessions:", err);
         }
+      } else {
+        // Handle log out/no user
+        setUserId('');
+        setUserName('User');
+        setCompletedExercises([]);
+        setPersonalRecords([]);
+        setCurrentPage('login');
       }
     };
 
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      fetchUserData(user);
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUserId(session.user.id);
+          setCurrentPage('dashboard');
+          await fetchUserData(session.user);
+        } else {
+          setCurrentPage('login');
+        }
+      } catch (err) {
+        console.error("Auth initialization error:", err);
+        setCurrentPage('login');
+      } finally {
+        setIsLoading(false);
+      }
     };
-    getUser();
+
+    initAuth();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      fetchUserData(session?.user);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth Event:", event, session?.user?.id);
+      if (session) {
+        setUserId(session.user.id);
+        if (event === 'SIGNED_IN') {
+          setCurrentPage(prev => (prev === 'login' ? 'dashboard' : prev));
+        }
+        fetchUserData(session.user);
+      } else {
+        fetchUserData(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -137,16 +168,27 @@ function App() {
     setPersonalRecords
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <p className="text-slate-500 font-medium animate-pulse">Loading Trainer...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {currentPage === 'login' && <Login navigateTo={setCurrentPage} />}
-      {currentPage === 'dashboard' && <Dashboard {...commonProps} />}
-      {currentPage === 'workouts' && <Workouts {...commonProps} />}
-      {currentPage === 'analysis' && <ProgressAnalysis {...commonProps} />}
-      {currentPage === 'records' && <PersonalRecords {...commonProps} />}
-      {currentPage === 'schedule' && <Schedule {...commonProps} />}
-      {currentPage === 'settings' && <Settings {...commonProps} />}
-      {currentPage === 'aichat' && <AIChat {...commonProps} />}
+      {currentPage === 'dashboard' && userId && <Dashboard {...commonProps} />}
+      {currentPage === 'workouts' && userId && <Workouts {...commonProps} />}
+      {currentPage === 'analysis' && userId && <ProgressAnalysis {...commonProps} />}
+      {currentPage === 'records' && userId && <PersonalRecords {...commonProps} />}
+      {currentPage === 'schedule' && userId && <Schedule {...commonProps} />}
+      {currentPage === 'settings' && userId && <Settings {...commonProps} />}
+      {currentPage === 'aichat' && userId && <AIChat {...commonProps} />}
     </>
   )
 }
