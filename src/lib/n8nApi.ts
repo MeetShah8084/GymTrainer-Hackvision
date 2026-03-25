@@ -133,6 +133,24 @@ export async function getCalendarData(userId: string) {
   return n8nFetch('calendar-data', { p_user_id: userId });
 }
 
+export interface WorkoutCalendarMetrics {
+  current_streak: number;
+  completion_rate: number;
+  total_workouts: number;
+}
+
+export async function getWorkoutCalendarMetrics(userId: string): Promise<WorkoutCalendarMetrics> {
+  try {
+    const data = await n8nFetch('workout-calendar-metrics', {
+      user_id: userId
+    });
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error('Error fetching workout calendar metrics:', error);
+    throw error;
+  }
+}
+
 // ─── Trainer AI ────────────────────────────────────────────────
 
 export async function sendTrainerAIMessage(

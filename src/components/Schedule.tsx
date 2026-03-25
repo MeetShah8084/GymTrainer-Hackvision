@@ -4,7 +4,7 @@ import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Be
 import { ResponsiveTimeRange } from '@nivo/calendar';
 import type { Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
-import { getCalendarData } from '../lib/n8nApi';
+import { getCalendarData, getWorkoutCalendarMetrics, type WorkoutCalendarMetrics } from '../lib/n8nApi';
 
 interface ScheduleProps {
   userName?: string;
@@ -23,6 +23,7 @@ const Schedule: React.FC<ScheduleProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [calendarData, setCalendarData] = useState<{day: string; value: number}[]>([]);
+  const [metrics, setMetrics] = useState<WorkoutCalendarMetrics | null>(null);
   const currentYear = new Date().getFullYear();
 
   // Merge API calendar data with locally completed exercises for the heatmap
@@ -54,13 +55,10 @@ const Schedule: React.FC<ScheduleProps> = ({
     if (userId) {
       getCalendarData(userId)
         .then((response: any) => {
-          console.log('Calendar data raw response:', response);
-          // Handle various response formats from n8n
           let rows: any[] = [];
           if (Array.isArray(response)) {
             rows = response;
           } else if (response && typeof response === 'object') {
-            // n8n might wrap in { data: [...] } or similar
             const possibleArrays = ['data', 'rows', 'items', 'result'];
             for (const key of possibleArrays) {
               if (Array.isArray(response[key])) {
@@ -68,7 +66,6 @@ const Schedule: React.FC<ScheduleProps> = ({
                 break;
               }
             }
-            // If still empty, the response itself might be a single item
             if (rows.length === 0 && (response.session_date || response.day || response.date)) {
               rows = [response];
             }
@@ -77,18 +74,20 @@ const Schedule: React.FC<ScheduleProps> = ({
           if (rows.length > 0) {
             const mapped = rows
               .map((d: any) => {
-                // Try various field naming conventions
                 const day = d.day || d.date || d.session_date || d.workout_date;
                 const value = d.value || d.count || d.exercise_count || d.total || 1;
                 if (!day) return null;
                 return { day: String(day).split('T')[0], value: Number(value) || 1 };
               })
               .filter(Boolean) as { day: string; value: number }[];
-            console.log('Calendar data mapped:', mapped);
             setCalendarData(mapped);
           }
         })
         .catch(err => console.error('Failed to fetch calendar data:', err));
+
+      getWorkoutCalendarMetrics(userId)
+        .then(data => setMetrics(data))
+        .catch(err => console.error('Failed to fetch calendar metrics:', err));
     }
   }, [userId]);
 
@@ -294,7 +293,7 @@ const Schedule: React.FC<ScheduleProps> = ({
               <div className="flex min-w-[140px] md:min-w-0 flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider md:mb-1">Current Streak</p>
-                  <p className="text-primary tracking-tight text-xl md:text-3xl font-black">12 Days</p>
+                  <p className="text-primary tracking-tight text-xl md:text-3xl font-black">{metrics?.current_streak || 0} Days</p>
                   <div className="flex items-center gap-1 md:hidden mt-1">
                     <span className="text-emerald-500 font-bold">+2%</span>
                   </div>
@@ -308,7 +307,7 @@ const Schedule: React.FC<ScheduleProps> = ({
               <div className="flex min-w-[140px] md:min-w-0 flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider md:mb-1">Completion</p>
-                  <p className="text-slate-900 dark:text-slate-100 tracking-tight text-xl md:text-3xl font-black">85%</p>
+                  <p className="text-slate-900 dark:text-slate-100 tracking-tight text-xl md:text-3xl font-black">{metrics?.completion_rate || 0}%</p>
                   <div className="flex items-center gap-1 md:hidden mt-1">
                     <span className="text-emerald-500 font-bold">+5%</span>
                   </div>
@@ -322,9 +321,15 @@ const Schedule: React.FC<ScheduleProps> = ({
               <div className="flex min-w-[140px] md:min-w-0 flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider md:mb-1"><span className="md:hidden">Monthly Total</span><span className="hidden md:inline">Total Workouts</span></p>
-                  <p className="text-slate-900 dark:text-slate-100 tracking-tight text-xl md:text-3xl font-black"><span className="md:hidden">24</span><span className="hidden md:inline">156</span></p>
+                  <p className="text-slate-900 dark:text-slate-100 tracking-tight text-xl md:text-3xl font-black">
+                    <span className="md:hidden">{calendarData.filter(d => {
+                      const date = new Date(d.day);
+                      return date.getMonth() === currentMonthToday && date.getFullYear() === currentYearToday;
+                    }).length}</span>
+                    <span className="hidden md:inline">{metrics?.total_workouts || 0}</span>
+                  </p>
                   <div className="flex items-center gap-1 text-primary md:hidden mt-1">
-                    <p className="text-xs font-medium">Goal: 28</p>
+                    <p className="text-xs font-medium">Goal: {daysInMonth}</p>
                   </div>
                 </div>
                 <div className="hidden md:flex w-12 h-12 bg-blue-500/10 rounded-lg items-center justify-center text-blue-400">
@@ -425,7 +430,10 @@ const Schedule: React.FC<ScheduleProps> = ({
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-bold flex items-center space-x-2">
                   <span>{monthNames[currentMonthCalendar]} {currentYearCalendar}</span>
-                  <span className="text-slate-400 font-medium">/ 12 Workouts</span>
+                  <span className="text-slate-400 font-medium">/ {calendarData.filter(d => {
+                    const date = new Date(d.day);
+                    return date.getMonth() === currentMonthCalendar && date.getFullYear() === currentYearCalendar;
+                  }).length} Workouts</span>
                 </h2>
                 <div className="flex items-center space-x-2">
                   <button onClick={handlePrevMonth} disabled={!canGoPrev} className={`p-2 bg-slate-100 dark:bg-background-dark border border-slate-200 dark:border-primary/10 rounded-lg transition-colors ${canGoPrev ? 'hover:bg-slate-200 dark:hover:bg-primary/10 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}>

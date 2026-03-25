@@ -408,6 +408,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const now = new Date();
   const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDateStr);
 
   const handleCompleteExercise = (exerciseId: string) => {
@@ -717,11 +718,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Sessions (Month)</p>
                       </div>
                     </div>
-                    <p className="text-3xl font-black text-slate-900 dark:text-white">{metrics ? metrics.workouts_diff >= 0 ? metrics.workouts_total : metrics.workouts_total : '...'}</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{metrics ? metrics.workouts_total : '...'}</p>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-4">
-                      <div className="bg-primary h-full rounded-full" style={{ width: `${metrics ? Math.min((metrics.workouts_total / 30) * 100, 100) : 0}%` }}></div>
+                      <div className="bg-primary h-full rounded-full" style={{ width: `${metrics ? Math.min((metrics.workouts_total / daysInMonth) * 100, 100) : 0}%` }}></div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Goal: 30 / month</p>
+                    <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest">Goal: {daysInMonth} / month</p>
                   </div>
                 </div>
 
