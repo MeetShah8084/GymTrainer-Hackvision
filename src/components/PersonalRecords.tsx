@@ -214,7 +214,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({
             </div>
             {/* PR Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {sorted.map((pr) => (
+              {sorted.slice(3).map((pr) => (
                 <div key={pr.id} className="bg-surface-dark border border-slate-700/50 rounded-2xl p-5 md:p-6 hover:border-primary/30 transition-all">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-slate-200 text-base font-bold">{pr.exerciseName}</h3>
