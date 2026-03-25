@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { sendTrainerAIMessage } from '../lib/n8nApi';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { 
   LayoutDashboard, Settings, Dumbbell, LineChart, Trophy, CalendarDays, 
   Menu, X, MessageSquare, Plus, Mic, Send, Bot 
@@ -175,24 +176,36 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '', n
                       {msg.sender === 'ai' ? (
                         <div className="prose prose-invert prose-sm md:prose-base max-w-none">
                           <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({children}: any) => <p className="text-sm md:text-base leading-relaxed mb-2 last:mb-0">{children}</p>,
+                              p: ({children}: any) => <p className="text-sm md:text-base leading-relaxed mb-4 last:mb-0">{children}</p>,
                               strong: ({children}: any) => <strong className="text-primary font-bold">{children}</strong>,
                               em: ({children}: any) => <em className="text-slate-300 italic">{children}</em>,
-                              ul: ({children}: any) => <ul className="list-disc list-inside space-y-1 mb-2 last:mb-0 text-sm md:text-base">{children}</ul>,
-                              ol: ({children}: any) => <ol className="list-decimal list-inside space-y-1 mb-2 last:mb-0 text-sm md:text-base">{children}</ol>,
+                              ul: ({children}: any) => <ul className="list-disc list-inside space-y-2 mb-4 last:mb-0 text-sm md:text-base marker:text-primary">{children}</ul>,
+                              ol: ({children}: any) => <ol className="list-decimal list-inside space-y-2 mb-4 last:mb-0 text-sm md:text-base marker:text-primary">{children}</ol>,
                               li: ({children}: any) => <li className="text-slate-200 leading-relaxed">{children}</li>,
-                              h1: ({children}: any) => <h1 className="text-lg font-bold text-primary mb-2">{children}</h1>,
-                              h2: ({children}: any) => <h2 className="text-base font-bold text-primary mb-2">{children}</h2>,
-                              h3: ({children}: any) => <h3 className="text-sm font-bold text-primary mb-1">{children}</h3>,
+                              h1: ({children}: any) => <h1 className="text-xl font-black text-primary mb-4 mt-6 first:mt-0">{children}</h1>,
+                              h2: ({children}: any) => <h2 className="text-lg font-bold text-primary mb-3 mt-5 first:mt-0">{children}</h2>,
+                              h3: ({children}: any) => <h3 className="text-base font-bold text-primary mb-2 mt-4 first:mt-0">{children}</h3>,
                               code: ({children, className}: any) => {
                                 const isInline = !className;
                                 return isInline 
-                                  ? <code className="bg-black/30 text-primary px-1.5 py-0.5 rounded text-xs font-mono">{children}</code>
-                                  : <code className="block bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-2">{children}</code>;
+                                  ? <code className="bg-black/40 text-primary px-1.5 py-0.5 rounded text-xs font-mono border border-primary/10">{children}</code>
+                                  : <code className="block bg-black/40 p-4 rounded-xl text-xs font-mono overflow-x-auto mb-4 border border-primary/10 shadow-inner">{children}</code>;
                               },
-                              a: ({children, href}: any) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">{children}</a>,
-                              blockquote: ({children}: any) => <blockquote className="border-l-2 border-primary/50 pl-3 italic text-slate-400 mb-2">{children}</blockquote>,
+                              table: ({children}: any) => (
+                                <div className="overflow-x-auto mb-6 rounded-xl border border-primary/20 shadow-lg shadow-black/20">
+                                  <table className="w-full text-left border-collapse min-w-[400px]">
+                                    {children}
+                                  </table>
+                                </div>
+                              ),
+                              thead: ({children}: any) => <thead className="bg-[#1e1511] border-b border-primary/20">{children}</thead>,
+                              th: ({children}: any) => <th className="px-4 py-3 text-xs font-black uppercase tracking-wider text-primary">{children}</th>,
+                              td: ({children}: any) => <td className="px-4 py-3 text-sm text-slate-300 border-b border-white/5">{children}</td>,
+                              tr: ({children}: any) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
+                              a: ({children, href}: any) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium hover:text-primary/80 transition-colors">{children}</a>,
+                              blockquote: ({children}: any) => <blockquote className="border-l-4 border-primary/30 pl-4 py-1 italic text-slate-400 mb-4 bg-primary/5 rounded-r-lg">{children}</blockquote>,
                             }}
                           >
                             {msg.text}
