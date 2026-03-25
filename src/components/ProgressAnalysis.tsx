@@ -63,13 +63,22 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [currentStrengthExerciseIndex, setCurrentStrengthExerciseIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredStrength = (analyticsData?.detailed_strength ?? []).filter(s =>
+    s.exercise.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
 
   useEffect(() => {
     if (userId) {
       setAnalyticsLoading(true);
       getProgressAnalytics(userId)
-        .then(data => setAnalyticsData(data))
+        .then(data => {
+          // n8n returns Supabase RPC result - may be wrapped in an array
+          const parsed = Array.isArray(data) ? data[0] : data;
+          setAnalyticsData(parsed);
+        })
         .catch(err => console.error('Failed to fetch analytics:', err))
         .finally(() => setAnalyticsLoading(false));
     } else {
@@ -529,8 +538,8 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
             <div className="md:hidden space-y-4">
               <h2 className="text-slate-900 dark:text-white text-lg font-bold tracking-tight mb-4">Strength Breakdown</h2>
 
-              {(analyticsData?.detailed_strength?.length ?? 0) > 0 ? (
-                analyticsData?.detailed_strength?.map((s, i) => (
+              {filteredStrength.length > 0 ? (
+                filteredStrength.map((s, i) => (
                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10">
                     <div className="flex items-center gap-3">
                       <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -551,7 +560,7 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                 ))
               ) : (
                 <div className="p-8 text-center bg-white dark:bg-primary/5 rounded-xl border border-dashed border-slate-300 dark:border-primary/20">
-                  <p className="text-slate-500 text-sm">No strength milestones recorded yet.</p>
+                  <p className="text-slate-500 text-sm">{searchQuery ? 'No exercises match your search.' : 'No strength milestones recorded yet.'}</p>
                 </div>
               )}
             </div>
@@ -564,7 +573,7 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                 <h4 className="text-xl font-bold">Main Lift Performance</h4>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-                  <input className="bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/10 rounded-lg pl-10 pr-4 py-2 text-sm w-full md:w-64 focus:ring-1 focus:ring-primary text-slate-900 dark:text-slate-200 placeholder-slate-500" placeholder="Search exercises..." type="text" />
+                  <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/10 rounded-lg pl-10 pr-4 py-2 text-sm w-full md:w-64 focus:ring-1 focus:ring-primary text-slate-900 dark:text-slate-200 placeholder-slate-500" placeholder="Search exercises..." type="text" />
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -579,8 +588,8 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-slate-200 dark:divide-primary/10">
-                    {(analyticsData?.detailed_strength?.length ?? 0) > 0 ? (
-                      analyticsData?.detailed_strength?.map((s, i) => (
+                    {filteredStrength.length > 0 ? (
+                      filteredStrength.map((s, i) => (
                         <tr key={i} className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
                           <td className="px-6 py-4 font-bold">{s.exercise}</td>
                           <td className="px-6 py-4 text-slate-400">{s.last} kg</td>
@@ -592,7 +601,7 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                     ) : (
                       <tr>
                         <td colSpan={5} className="px-6 py-12 text-center text-slate-500 italic font-medium">
-                          No exercise performance data available for the current period.
+                          {searchQuery ? 'No exercises match your search.' : 'No exercise performance data available for the current period.'}
                         </td>
                       </tr>
                     )}

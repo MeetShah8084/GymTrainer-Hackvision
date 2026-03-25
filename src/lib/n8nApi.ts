@@ -126,7 +126,7 @@ export async function relogWorkout(userId: string, date: string) {
 // ─── Progress Analytics ────────────────────────────────────────
 
 export async function getProgressAnalytics(userId: string) {
-  return n8nFetch('progress-analytics', { p_user_id: userId });
+  return n8nFetch('progress-analytics', { user_id: userId });
 }
 
 // ─── Personal Records ──────────────────────────────────────────
