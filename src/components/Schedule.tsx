@@ -27,15 +27,16 @@ const Schedule: React.FC<ScheduleProps> = ({
   const currentYear = new Date().getFullYear();
 
   // Merge API calendar data with locally completed exercises for the heatmap
+  // Only add local exercises for dates NOT already covered by API data
   const mergedCalendarData = React.useMemo(() => {
     const map = new Map<string, number>();
-    // Add API data
+    // Add API data first (this is the source of truth from the backend)
     calendarData.forEach(d => {
-      map.set(d.day, (map.get(d.day) || 0) + d.value);
+      map.set(d.day, d.value);
     });
-    // Add locally completed exercises
+    // Only add locally completed exercises for dates that have NO API data
     completedExercises.forEach(ex => {
-      if (ex.date) {
+      if (ex.date && !map.has(ex.date)) {
         map.set(ex.date, (map.get(ex.date) || 0) + 1);
       }
     });

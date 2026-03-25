@@ -5,7 +5,7 @@ import {
   Dumbbell, LayoutDashboard, LineChart,
   Bell, BellOff, Settings, TrendingUp, TrendingDown, Search, Trophy,
   Menu,
-  X, ArrowLeft, Share2, CalendarDays, MessageSquare
+  X, ArrowLeft, ArrowRight, Share2, CalendarDays, MessageSquare
 } from 'lucide-react';
 
 interface ProgressAnalysisProps {
@@ -17,12 +17,52 @@ interface ProgressAnalysisProps {
   toggleNotifications?: () => void;
 }
 
+interface VolumeData {
+  date: string;
+  volume: number;
+}
+
+interface StrengthHistoryEntry {
+  date: string;
+  '1rm': number;
+}
+
+interface StrengthProgression {
+  exercise: string;
+  history: StrengthHistoryEntry[];
+}
+
+interface DetailedStrength {
+  exercise: string;
+  last: number;
+  current: number;
+  change: number;
+  trend: 'up' | 'down';
+}
+
+interface KeyMetrics {
+  total_volume_load: number;
+  volume_load_change: number;
+  max_squat: number;
+  avg_intensity: number;
+  sessions_completed: number;
+  sessions_target: number;
+}
+
+interface AnalyticsData {
+  volume_progression: VolumeData[];
+  strength_progression: StrengthProgression[];
+  detailed_strength: DetailedStrength[];
+  key_metrics: KeyMetrics;
+}
+
 export default function ProgressAnalysis({ userName = 'User', userId = '', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [currentStrengthExerciseIndex, setCurrentStrengthExerciseIndex] = useState(0);
 
 
   useEffect(() => {
@@ -174,14 +214,14 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
             </div>
 
             {/* --- COMMON KEY METRICS GRID --- */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
                 <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
                   <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Total Volume Load</p>
-                  <div className={`flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded ${analyticsData?.key_metrics?.volume_load_change >= 0 ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'}`}>
-                    {analyticsData?.key_metrics?.volume_load_change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    <span className="font-bold text-[10px] lg:text-xs">{analyticsData ? `${analyticsData.key_metrics.volume_load_change > 0 ? '+' : ''}${analyticsData.key_metrics.volume_load_change}%` : '+12.5%'}</span>
+                  <div className={`flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded ${(analyticsData?.key_metrics?.volume_load_change ?? 0) >= 0 ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'}`}>
+                    {(analyticsData?.key_metrics?.volume_load_change ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    <span className="font-bold text-[10px] lg:text-xs">{analyticsData ? `${(analyticsData.key_metrics.volume_load_change ?? 0) > 0 ? '+' : ''}${analyticsData.key_metrics.volume_load_change ?? 0}%` : '+12.5%'}</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 z-10 relative">
@@ -215,25 +255,6 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
-                <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
-                <div className="flex flex-row items-start justify-between gap-2 mb-1 md:mb-2 z-10 relative">
-                  <p className="text-slate-500 dark:text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider leading-tight">Avg Intensity</p>
-                  <div className="flex items-center gap-1 shrink-0 text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="font-bold text-[10px] lg:text-xs">+4.3%</span>
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2 z-10 relative">
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
-                    {analyticsData ? analyticsData.key_metrics.avg_intensity : (analyticsLoading ? '...' : '84')}
-                    <span className="text-[10px] md:text-sm font-normal text-slate-500"> %</span>
-                  </h3>
-                </div>
-                <div className="hidden md:block mt-4 h-1 bg-slate-200 dark:bg-primary/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{width: `${analyticsData?.key_metrics?.avg_intensity ?? 84}%`}}></div>
-                </div>
-              </div>
 
               <div className="bg-white dark:bg-primary/5 md:bg-slate-100 md:dark:bg-surface-dark border border-slate-200 dark:border-primary/20 md:border-slate-200 md:dark:border-primary/10 rounded-xl p-4 md:p-6 relative overflow-hidden group shadow-sm flex flex-col md:block gap-1">
                 <div className="hidden md:block absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
@@ -270,19 +291,21 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                   <div className="bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl p-4 flex flex-col h-[400px]">
                     <div className="flex justify-between items-start mb-4">
                       <h4 className="text-lg font-bold text-slate-900 dark:text-white">Volume Progression</h4>
-                      <span className="text-xs font-semibold text-primary whitespace-nowrap">Last 6 Months</span>
+                      <span className="text-xs font-semibold text-primary whitespace-nowrap">Current Month</span>
                     </div>
-                    <div className="flex-1 w-full flex items-end justify-between gap-1 relative aspect-[16/9] mt-2">
-                      <div className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[30%]" title="Day 1: 4,200kg"></div>
-                      <div className="flex-1 bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[45%]" title="Day 2: 5,100kg"></div>
-                      <div className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[25%]" title="Day 3: 3,800kg"></div>
-                      <div className="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[60%]" title="Day 4: 7,200kg"></div>
-                      <div className="flex-1 bg-primary/50 hover:bg-primary/60 transition-all rounded-t-sm h-[55%]" title="Day 5: 6,800kg"></div>
-                      <div className="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[70%]" title="Day 6: 8,400kg"></div>
-                      <div className="flex-1 bg-primary/60 hover:bg-primary/70 transition-all rounded-t-sm h-[85%]" title="Day 7: 10,200kg"></div>
+                    <p className="text-slate-400 text-[10px] mb-2">Cumulative weight moved per session</p>
+                    <div className="flex-1 w-full flex items-end justify-between gap-0.5 relative aspect-[16/9] mt-2">
+                      {analyticsData?.volume_progression?.map((d, i) => (
+                        <div 
+                          key={i} 
+                          className="flex-1 bg-primary/30 hover:bg-primary/50 transition-all rounded-t-[1px]" 
+                          style={{ height: `${Math.max(((d.volume ?? 0) / Math.max(...(analyticsData?.volume_progression?.map(v => v.volume || 1) ?? [1]))) * 100, 2)}%` }}
+                          title={`${d.date}: ${d.volume}kg`}
+                        ></div>
+                      ))}
                     </div>
                     <div className="flex justify-between mt-2 px-1 text-[8px] text-slate-500 font-medium uppercase">
-                      <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                      <span>Start</span><span>Mid</span><span>End</span>
                     </div>
                   </div>
                 </div>
@@ -290,45 +313,89 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                 {/* Card 2: Strength Progression */}
                 <div className="snap-center shrink-0 w-full px-1">
                   <div className="bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl p-4 flex flex-col h-[400px]">
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="text-lg font-bold text-slate-900 dark:text-white">Strength Progression</h4>
-                      <div className="flex gap-3">
-                        <div className="flex items-center gap-1.5">
-                          <div className="size-2 rounded-full bg-primary shadow-sm shadow-primary/40"></div>
-                          <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Squat</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 opacity-40">
-                          <div className="size-2 rounded-full bg-slate-400"></div>
-                          <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Deadlift</span>
-                        </div>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                          {analyticsData?.strength_progression?.[currentStrengthExerciseIndex]?.exercise || 'Strength Progression'}
+                        </h4>
+                        <p className="text-slate-400 text-[10px]">1RM progress for selected exercise</p>
                       </div>
+                      {(analyticsData?.strength_progression?.length ?? 0) > 1 && (
+                        <div className="flex gap-1 ml-2">
+                          <button 
+                            onClick={() => setCurrentStrengthExerciseIndex(prev => (prev > 0 ? prev - 1 : (analyticsData?.strength_progression?.length ?? 1) - 1))}
+                            className="p-1 rounded-full bg-primary/10 text-primary"
+                          >
+                            <ArrowLeft className="w-3 h-3" />
+                          </button>
+                          <button 
+                            onClick={() => setCurrentStrengthExerciseIndex(prev => (prev < (analyticsData?.strength_progression?.length ?? 1) - 1 ? prev + 1 : 0))}
+                            className="p-1 rounded-full bg-primary/10 text-primary"
+                          >
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 relative flex items-center justify-center">
-                      <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 200">
-                        <defs>
-                          <linearGradient id="strengthGradientMobile" x1="0%" x2="0%" y1="0%" y2="100%">
-                            <stop offset="0%" stopColor="#ec5b13" stopOpacity="0.2"></stop>
-                            <stop offset="100%" stopColor="#ec5b13" stopOpacity="0"></stop>
-                          </linearGradient>
-                        </defs>
-                        <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="40" y2="40" className="dark:stroke-primary/10"></line>
-                        <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="80" y2="80" className="dark:stroke-primary/10"></line>
-                        <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="120" y2="120" className="dark:stroke-primary/10"></line>
-                        <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="160" y2="160" className="dark:stroke-primary/10"></line>
-                        <path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55 L400,200 L0,200 Z" fill="url(#strengthGradientMobile)"></path>
-                        <path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55" fill="none" stroke="#ec5b13" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
-                        <circle cx="0" cy="150" fill="#ec5b13" r="4"></circle>
-                        <circle cx="100" cy="145" fill="#ec5b13" r="4"></circle>
-                        <circle cx="200" cy="100" fill="#ec5b13" r="4"></circle>
-                        <circle cx="300" cy="85" fill="#ec5b13" r="4"></circle>
-                        <circle cx="400" cy="55" fill="#ec5b13" r="4"></circle>
-                      </svg>
-                      <div className="absolute top-[25%] right-0 translate-x-1/2 -translate-y-full bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-xl">
-                        185kg (PR)
-                      </div>
+                    
+                    <div className="flex-1 relative flex items-center justify-center mt-4">
+                      {(analyticsData?.strength_progression?.[currentStrengthExerciseIndex]?.history?.length ?? 0) > 0 ? (
+                        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 200">
+                          <defs>
+                            <linearGradient id="strengthGradientMobile" x1="0%" x2="0%" y1="0%" y2="100%">
+                              <stop offset="0%" stopColor="#ec5b13" stopOpacity="0.2"></stop>
+                              <stop offset="100%" stopColor="#ec5b13" stopOpacity="0"></stop>
+                            </linearGradient>
+                          </defs>
+                          {/* Grid lines */}
+                          {[40, 80, 120, 160].map(y => (
+                            <line key={y} stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1={y} y2={y} className="dark:stroke-primary/10" />
+                          ))}
+                          
+                          {(() => {
+                            const strengthProg = analyticsData?.strength_progression?.[currentStrengthExerciseIndex];
+                            if (!strengthProg || !strengthProg.history || strengthProg.history.length === 0) return null;
+                            
+                            const history = strengthProg.history;
+                            const max1rm = Math.max(...history.map(h => h['1rm']));
+                            const min1rm = Math.min(...history.map(h => h['1rm']));
+                            const range = max1rm - min1rm || 1;
+                            const points = history.map((h, idx) => {
+                              const x = (idx / (history.length - 1 || 1)) * 400;
+                              const y = 160 - ((h['1rm'] - min1rm) / range) * 120; // Use middle 120px for better vertical range
+                              return { x, y, val: h['1rm'], date: h.date };
+                            });
+
+                            const pathData = `M${points.map(p => `${p.x},${p.y}`).join(' L')}`;
+                            const areaData = `${pathData} L${points[points.length-1].x},200 L0,200 Z`;
+
+                            return (
+                              <>
+                                <path d={areaData} fill="url(#strengthGradientMobile)" />
+                                <path d={pathData} fill="none" stroke="#ec5b13" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                                {points.map((p, idx) => (
+                                  <circle key={idx} cx={p.x} cy={p.y} fill="#ec5b13" r="4" />
+                                ))}
+                                {/* PR Label on last point */}
+                                <g transform={`translate(${points[points.length-1].x}, ${points[points.length-1].y - 15})`}>
+                                  <rect x="-35" y="-12" width="70" height="20" rx="4" fill="#ec5b13" />
+                                  <text x="0" y="2" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">
+                                    {points[points.length-1].val}kg (PR)
+                                  </text>
+                                </g>
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-400 text-center">
+                          <LineChart className="w-12 h-12 mb-2 opacity-20" />
+                          <p className="text-sm">No strength data for this exercise today</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between mt-2 px-1 text-[8px] text-slate-500 font-medium">
-                      <span>JAN 01</span><span>JAN 08</span><span>JAN 15</span><span>JAN 22</span><span>JAN 29</span>
+                    <div className="flex justify-between mt-4 px-1 text-[8px] text-slate-500 font-medium">
+                      <span>START OF MONTH</span><span>END OF MONTH</span>
                     </div>
                   </div>
                 </div>
@@ -349,43 +416,32 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
               </div>
             </div>
 
-            {/* DESKTOP: Grid Layout */}
             <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* VOLUME PROGRESSION CHART */}
               <div className="bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-primary/10 rounded-xl p-8 flex flex-col h-[450px]">
                 <div className="flex justify-between items-start mb-8">
                   <div>
                     <h4 className="text-xl font-bold text-slate-900 dark:text-white">Volume Progression</h4>
-                    <p className="text-slate-400 text-sm">Cumulative weight moved per session (30-day view)</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-xs text-slate-400"><span className="size-2 rounded-full bg-primary"></span> Volume</span>
-                    <span className="flex items-center gap-1 text-xs text-slate-400"><span className="size-2 rounded-full bg-slate-300 dark:bg-slate-600 border border-primary/30"></span> Baseline</span>
+                    <p className="text-slate-400 text-sm">Cumulative weight moved per session</p>
                   </div>
                 </div>
-                <div className="flex-1 w-full flex items-end justify-between gap-2 relative">
+                <div className="flex-1 w-full flex items-end justify-between gap-1 relative">
                   <div className="flex absolute inset-0 flex-col justify-between pointer-events-none py-2">
-                    <div className="w-full border-t border-slate-200 dark:border-primary/10"></div>
-                    <div className="w-full border-t border-slate-200 dark:border-primary/10"></div>
-                    <div className="w-full border-t border-slate-200 dark:border-primary/10"></div>
-                    <div className="w-full border-t border-slate-200 dark:border-primary/10"></div>
-                    <div className="w-full border-t border-slate-200 dark:border-primary/10"></div>
+                    {[0, 1, 2, 3, 4].map(y => (
+                      <div key={y} className="w-full border-t border-slate-200 dark:border-primary/10"></div>
+                    ))}
                   </div>
-                  <div className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[30%]" title="Day 1: 4,200kg"></div>
-                  <div className="flex-1 bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[45%]" title="Day 2: 5,100kg"></div>
-                  <div className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all rounded-t-sm h-[25%]" title="Day 3: 3,800kg"></div>
-                  <div className="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[60%]" title="Day 4: 7,200kg"></div>
-                  <div className="flex-1 bg-primary/50 hover:bg-primary/60 transition-all rounded-t-sm h-[55%]" title="Day 5: 6,800kg"></div>
-                  <div className="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[70%]" title="Day 6: 8,400kg"></div>
-                  <div className="flex-1 bg-primary/60 hover:bg-primary/70 transition-all rounded-t-sm h-[85%]" title="Day 7: 10,200kg"></div>
-                  <div className="flex-1 bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[40%]" title="Day 8: 4,900kg"></div>
-                  <div className="flex-1 bg-primary/50 hover:bg-primary/60 transition-all rounded-t-sm h-[65%]" title="Day 9: 7,800kg"></div>
-                  <div className="flex-1 bg-primary/70 hover:bg-primary/80 transition-all rounded-t-sm h-[95%]" title="Day 10: 11,500kg"></div>
-                  <div className="flex-1 bg-primary/40 hover:bg-primary/50 transition-all rounded-t-sm h-[50%]" title="Day 11: 6,100kg"></div>
-                  <div className="flex-1 bg-primary/60 hover:bg-primary/70 transition-all rounded-t-sm h-[80%]" title="Day 12: 9,600kg"></div>
+                  {analyticsData?.volume_progression?.map((d, i) => (
+                    <div 
+                      key={i} 
+                      className="flex-1 bg-primary/30 hover:bg-primary/50 transition-all rounded-t-sm" 
+                      style={{ height: `${Math.max(((d.volume ?? 0) / Math.max(...(analyticsData?.volume_progression?.map(v => v.volume || 1) ?? [1]))) * 100, 2)}%` }}
+                      title={`${d.date}: ${d.volume}kg`}
+                    ></div>
+                  ))}
                 </div>
                 <div className="flex justify-between mt-4 px-2 text-[10px] text-slate-500 font-bold uppercase">
-                  <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
+                  <span>Start of Month</span><span>Mid Month</span><span>End of Month</span>
                 </div>
               </div>
 
@@ -393,98 +449,111 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
               <div className="bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-primary/10 rounded-xl p-8 flex flex-col h-[450px]">
                 <div className="flex justify-between items-start mb-8">
                   <div>
-                    <h4 className="text-xl font-bold">Strength Progression</h4>
-                    <p className="text-slate-400 text-sm">Estimated 1RM for main lifts</p>
+                    <h4 className="text-xl font-bold">{analyticsData?.strength_progression?.[currentStrengthExerciseIndex]?.exercise || 'Strength Progression'}</h4>
+                    <p className="text-slate-400 text-sm">1RM progress for selected exercise</p>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-2 rounded-full bg-primary shadow-sm shadow-primary/40"></div>
-                      <span className="text-xs font-semibold">Squat</span>
+                  {(analyticsData?.strength_progression?.length ?? 0) > 1 && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCurrentStrengthExerciseIndex(prev => (prev > 0 ? prev - 1 : (analyticsData?.strength_progression?.length ?? 1) - 1))}
+                        className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => setCurrentStrengthExerciseIndex(prev => (prev < (analyticsData?.strength_progression?.length ?? 1) - 1 ? prev + 1 : 0))}
+                        className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
                     </div>
-                    <div className="flex items-center gap-1.5 opacity-40">
-                      <div className="size-2 rounded-full bg-slate-400"></div>
-                      <span className="text-xs font-semibold">Deadlift</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
                 <div className="flex-1 relative flex items-center justify-center">
-                  <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 200">
-                    <defs>
-                      <linearGradient id="strengthGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-                        <stop offset="0%" stopColor="#ec5b13" stopOpacity="0.2"></stop>
-                        <stop offset="100%" stopColor="#ec5b13" stopOpacity="0"></stop>
-                      </linearGradient>
-                    </defs>
-                    <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="40" y2="40" className="dark:stroke-primary/10"></line>
-                    <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="80" y2="80" className="dark:stroke-primary/10"></line>
-                    <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="120" y2="120" className="dark:stroke-primary/10"></line>
-                    <line stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1="160" y2="160" className="dark:stroke-primary/10"></line>
-                    <path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55 L400,200 L0,200 Z" fill="url(#strengthGradient)"></path>
-                    <path d="M0,150 L50,140 L100,145 L150,120 L200,100 L250,105 L300,85 L350,60 L400,55" fill="none" stroke="#ec5b13" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
-                    <circle cx="0" cy="150" fill="#ec5b13" r="4"></circle>
-                    <circle cx="100" cy="145" fill="#ec5b13" r="4"></circle>
-                    <circle cx="200" cy="100" fill="#ec5b13" r="4"></circle>
-                    <circle cx="300" cy="85" fill="#ec5b13" r="4"></circle>
-                    <circle cx="400" cy="55" fill="#ec5b13" r="4"></circle>
-                  </svg>
-                  <div className="absolute top-[55px] right-0 translate-x-1/2 -translate-y-full bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-xl">
-                    185kg (PR)
-                  </div>
+                  {(analyticsData?.strength_progression?.[currentStrengthExerciseIndex]?.history?.length ?? 0) > 0 ? (
+                    <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 200">
+                      <defs>
+                        <linearGradient id="strengthGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                          <stop offset="0%" stopColor="#ec5b13" stopOpacity="0.2"></stop>
+                          <stop offset="100%" stopColor="#ec5b13" stopOpacity="0"></stop>
+                        </linearGradient>
+                      </defs>
+                      {[40, 80, 120, 160].map(y => (
+                        <line key={y} stroke="#e2e8f0" strokeWidth="0.5" x1="0" x2="400" y1={y} y2={y} className="dark:stroke-primary/10" />
+                      ))}
+                      
+                      {(() => {
+                        const strengthProg = analyticsData?.strength_progression?.[currentStrengthExerciseIndex];
+                        if (!strengthProg || !strengthProg.history || strengthProg.history.length === 0) return null;
+
+                        const history = strengthProg.history;
+                        const max1rm = Math.max(...history.map(h => h['1rm']));
+                        const min1rm = Math.min(...history.map(h => h['1rm']));
+                        const range = max1rm - min1rm || 1;
+                        const points = history.map((h, idx) => {
+                          const x = (idx / (history.length - 1 || 1)) * 400;
+                          const y = 160 - ((h['1rm'] - min1rm) / range) * 120;
+                          return { x, y, val: h['1rm'] };
+                        });
+
+                        const pathData = `M${points.map(p => `${p.x},${p.y}`).join(' L')}`;
+                        const areaData = `${pathData} L${points[points.length-1].x},200 L0,200 Z`;
+
+                        return (
+                          <>
+                            <path d={areaData} fill="url(#strengthGradient)" />
+                            <path d={pathData} fill="none" stroke="#ec5b13" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                            {points.map((p, idx) => (
+                              <circle key={idx} cx={p.x} cy={p.y} fill="#ec5b13" r="4" />
+                            ))}
+                            <g transform={`translate(${points[points.length-1].x}, ${points[points.length-1].y - 15})`}>
+                              <rect x="-35" y="-12" width="70" height="20" rx="4" fill="#ec5b13" />
+                              <text x="0" y="2" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">
+                                {points[points.length-1].val}kg (PR)
+                              </text>
+                            </g>
+                          </>
+                        );
+                      })()}
+                    </svg>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 text-center">
+                      <TrendingUp className="w-16 h-16 mb-4 opacity-20" />
+                      <p className="text-lg font-medium">No strength data for this exercise today</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* --- DETAILED STRENGTH STATS (MOBILE) --- */}
             <div className="md:hidden space-y-4">
               <h2 className="text-slate-900 dark:text-white text-lg font-bold tracking-tight mb-4">Strength Breakdown</h2>
 
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Dumbbell className="w-5 h-5 text-primary" />
+              {(analyticsData?.detailed_strength?.length ?? 0) > 0 ? (
+                analyticsData?.detailed_strength?.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10">
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Dumbbell className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{s.exercise}</p>
+                        <p className="text-xs text-slate-500">Last: {s.last} kg</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">{s.current} kg <span className="text-[10px] text-primary">1RM</span></p>
+                      <p className={`text-[10px] font-bold uppercase ${s.change >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {s.change >= 0 ? '+' : ''}{s.change}%
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Deadlift</p>
-                    <p className="text-xs text-slate-500">Last: 210 kg</p>
-                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center bg-white dark:bg-primary/5 rounded-xl border border-dashed border-slate-300 dark:border-primary/20">
+                  <p className="text-slate-500 text-sm">No strength milestones recorded yet.</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">225 kg <span className="text-[10px] text-primary">1RM</span></p>
-                  <p className="text-[10px] text-emerald-500 font-bold uppercase">+8.5%</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Dumbbell className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Bench Press</p>
-                    <p className="text-xs text-slate-500">Last: 120 kg</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">130 kg <span className="text-[10px] text-primary">1RM</span></p>
-                  <p className="text-[10px] text-emerald-500 font-bold uppercase">+2.1%</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Dumbbell className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Overhead Press</p>
-                    <p className="text-xs text-slate-500">Last: 75 kg</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">82 kg <span className="text-[10px] text-primary">1RM</span></p>
-                  <p className="text-[10px] text-amber-500 font-bold uppercase">+0.0%</p>
-                </div>
-              </div>
+              )}
             </div>
 
 
@@ -510,8 +579,8 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-slate-200 dark:divide-primary/10">
-                    {analyticsData?.detailed_strength?.length > 0 ? (
-                      analyticsData.detailed_strength.map((s: any, i: number) => (
+                    {(analyticsData?.detailed_strength?.length ?? 0) > 0 ? (
+                      analyticsData?.detailed_strength?.map((s, i) => (
                         <tr key={i} className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
                           <td className="px-6 py-4 font-bold">{s.exercise}</td>
                           <td className="px-6 py-4 text-slate-400">{s.last} kg</td>
@@ -521,29 +590,11 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', navig
                         </tr>
                       ))
                     ) : (
-                      <>                      
-                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                          <td className="px-6 py-4 font-bold">Low Bar Back Squat</td>
-                          <td className="px-6 py-4 text-slate-400">175.0 kg</td>
-                          <td className="px-6 py-4">185.0 kg</td>
-                          <td className="px-6 py-4 text-emerald-500 font-bold">+5.7%</td>
-                          <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
-                        </tr>
-                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                          <td className="px-6 py-4 font-bold">Conventional Deadlift</td>
-                          <td className="px-6 py-4 text-slate-400">210.0 kg</td>
-                          <td className="px-6 py-4">225.0 kg</td>
-                          <td className="px-6 py-4 text-emerald-500 font-bold">+7.1%</td>
-                          <td className="px-6 py-4"><LineChart className="w-5 h-5 text-emerald-500" /></td>
-                        </tr>
-                        <tr className="hover:bg-slate-200/50 dark:hover:bg-primary/5 transition-colors">
-                          <td className="px-6 py-4 font-bold">Bench Press</td>
-                          <td className="px-6 py-4 text-slate-400">125.0 kg</td>
-                          <td className="px-6 py-4">122.5 kg</td>
-                          <td className="px-6 py-4 text-rose-500 font-bold">-2.0%</td>
-                          <td className="px-6 py-4"><TrendingDown className="w-5 h-5 text-rose-500" /></td>
-                        </tr>
-                      </>
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500 italic font-medium">
+                          No exercise performance data available for the current period.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
