@@ -824,8 +824,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                       </div>
                     ))}
                   </div>
-                           {/* Recent Activity (Desktop only layout) */}
-                <div className="hidden md:block pb-8">
+                           {/* Recent Activity */}
+                <div className="pb-8 mt-10 md:mt-12">
                   <div className="space-y-6">
                     <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
