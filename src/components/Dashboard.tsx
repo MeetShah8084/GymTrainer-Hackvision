@@ -872,22 +872,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
       </div>
 
-                {/* Mobile Weekly Summary */}
-                <div className="md:hidden mt-4">
-                  <div className="rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-primary/5 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                        <BarChart className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <p className="text-slate-900 dark:text-slate-100 font-bold">Weekly Performance</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">You are 8% ahead of last week</p>
-                      </div>
-                    </div>
-                  </div>
-
-
-                </div>
 
               </div>
             </main>

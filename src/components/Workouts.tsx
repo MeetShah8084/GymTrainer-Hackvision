@@ -497,29 +497,6 @@ const Workouts: React.FC<WorkoutsProps> = ({
               </div>
             </div>
 
-            {/* Desktop Progress Chart Placeholder */}
-            <div className="hidden md:block mt-8 p-8 rounded-3xl bg-[linear-gradient(135deg,rgba(236,91,19,0.1)_0%,transparent_100%)] border border-primary/10 relative overflow-hidden">
-              <div className="relative z-10 flex flex-col justify-between items-center gap-6">
-                <div className="space-y-2 text-center">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Performance Trend</h3>
-                  <p className="text-slate-500 dark:text-slate-400">You've hit 95% of your volume goal for today.</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="size-16 rounded-full border-4 border-primary border-t-transparent flex items-center justify-center mb-2">
-                      <span className="text-sm font-black text-primary">95%</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Daily Target</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="size-16 rounded-full border-4 border-slate-300 dark:border-surface-dark border-r-primary flex items-center justify-center mb-2">
-                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">45 Min</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Streak</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
           </div>
 
