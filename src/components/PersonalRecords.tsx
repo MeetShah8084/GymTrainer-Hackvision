@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
 import type { PRRecord } from '../App';
 import { syncPersonalRecords } from '../lib/n8nApi';
@@ -23,7 +24,7 @@ interface PersonalRecordsProps {
   userName?: string;
   setUserName?: (name: string) => void;
   userId?: string;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   personalRecords?: PRRecord[];
@@ -42,8 +43,10 @@ const ALL_EXERCISES = [
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({
   userName = "Loading...",
   userId = '',
-  navigateTo, notificationsEnabled = true, toggleNotifications,
+  notificationsEnabled = true, toggleNotifications,
   personalRecords = [], setPersonalRecords }) => {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   // Fetch personal records via n8n on mount

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { getProgressAnalytics } from '../lib/n8nApi';
@@ -12,7 +13,7 @@ interface ProgressAnalysisProps {
   userName?: string;
   setUserName?: (name: string) => void;
   userId?: string;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
@@ -56,7 +57,9 @@ interface AnalyticsData {
   key_metrics: KeyMetrics;
 }
 
-export default function ProgressAnalysis({ userName = 'User', userId = '', navigateTo, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+export default function ProgressAnalysis({ userName = 'User', userId = '', notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);

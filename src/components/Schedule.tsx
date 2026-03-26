@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
 import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
@@ -10,7 +11,7 @@ interface ScheduleProps {
   userName?: string;
   setUserName?: (name: string) => void;
   userId?: string;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   completedExercises: Exercise[];
@@ -19,7 +20,9 @@ interface ScheduleProps {
 const Schedule: React.FC<ScheduleProps> = ({
   userName = "Loading...",
   userId = '',
-   navigateTo, notificationsEnabled = true, toggleNotifications, completedExercises }) => {
+   notificationsEnabled = true, toggleNotifications, completedExercises }) => {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [calendarData, setCalendarData] = useState<{day: string; value: number}[]>([]);

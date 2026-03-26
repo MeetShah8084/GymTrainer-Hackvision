@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Workouts from './components/Workouts'
 import ProgressAnalysis from './components/ProgressAnalysis'
@@ -7,6 +8,8 @@ import Schedule from './components/Schedule'
 import AIChat from './components/AIChat'
 import Settings from './components/Settings'
 import Login from './components/Login'
+import UserDetails from './components/UserDetails'
+import OAuthCompletion from './components/OAuthCompletion'
 import { supabase } from './lib/supabase'
 import { Dumbbell } from 'lucide-react'
 import { listDetailedSessions, syncPersonalRecords } from './lib/n8nApi'
@@ -23,10 +26,12 @@ export interface PRRecord {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat'>('login')
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState<string>("User");
   const [userId, setUserId] = useState<string>('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   // Lifted state for exercises — start empty, loaded from backend
@@ -41,8 +46,17 @@ function App() {
     const fetchUserData = async (user: any) => {
       if (user) {
         setUserId(user.id);
-        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
+        // Fetch name from profiles table for accuracy
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('name, avatar_url')
+          .eq('user_id', user.id)
+          .single();
+
+        const name = profileData?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
         setUserName(name);
+        setAvatarUrl(profileData?.avatar_url || null);
 
         try {
           const [sessionsRes, prsRes] = await Promise.all([
@@ -107,9 +121,12 @@ function App() {
         // Handle log out/no user
         setUserId('');
         setUserName('User');
+        setAvatarUrl(null);
         setCompletedExercises([]);
         setPersonalRecords([]);
-        setCurrentPage('login');
+        if (location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/oauth') {
+          navigate('/login');
+        }
       }
     };
 
@@ -118,14 +135,12 @@ function App() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setUserId(session.user.id);
-          setCurrentPage('dashboard');
           await fetchUserData(session.user);
         } else {
-          setCurrentPage('login');
+          setUserId('');
         }
       } catch (err) {
         console.error("Auth initialization error:", err);
-        setCurrentPage('login');
       } finally {
         setIsLoading(false);
       }
@@ -138,9 +153,6 @@ function App() {
       console.log("Auth Event:", event, session?.user?.id);
       if (session) {
         setUserId(session.user.id);
-        if (event === 'SIGNED_IN') {
-          setCurrentPage(prev => (prev === 'login' ? 'dashboard' : prev));
-        }
         fetchUserData(session.user);
       } else {
         fetchUserData(null);
@@ -148,12 +160,11 @@ function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, location.pathname]);
 
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
 
   const commonProps = {
-    navigateTo: setCurrentPage,
     notificationsEnabled,
     toggleNotifications,
     setNotificationsEnabled,
@@ -163,6 +174,8 @@ function App() {
     setCompletedExercises,
     userName,
     setUserName,
+    avatarUrl,
+    setAvatarUrl,
     userId,
     personalRecords,
     setPersonalRecords
@@ -180,16 +193,21 @@ function App() {
   }
 
   return (
-    <>
-      {currentPage === 'login' && <Login navigateTo={setCurrentPage} />}
-      {currentPage === 'dashboard' && userId && <Dashboard {...commonProps} />}
-      {currentPage === 'workouts' && userId && <Workouts {...commonProps} />}
-      {currentPage === 'analysis' && userId && <ProgressAnalysis {...commonProps} />}
-      {currentPage === 'records' && userId && <PersonalRecords {...commonProps} />}
-      {currentPage === 'schedule' && userId && <Schedule {...commonProps} />}
-      {currentPage === 'settings' && userId && <Settings {...commonProps} />}
-      {currentPage === 'aichat' && userId && <AIChat {...commonProps} />}
-    </>
+    <Routes>
+      <Route path="/login" element={<Login initialMode="login" />} />
+      <Route path="/signup" element={<Login initialMode="signup" />} />
+      <Route path="/oauth" element={<OAuthCompletion />} />
+      <Route path="/user-details" element={userId ? <UserDetails /> : <Navigate to="/login" replace />} />
+      <Route path="/dashboard" element={userId ? <Dashboard {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/workouts" element={userId ? <Workouts {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/analysis" element={userId ? <ProgressAnalysis {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/records" element={userId ? <PersonalRecords {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/schedule" element={userId ? <Schedule {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/settings" element={userId ? <Settings {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/aichat" element={userId ? <AIChat {...commonProps} /> : <Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to={userId ? "/dashboard" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={userId ? "/dashboard" : "/login"} replace />} />
+    </Routes>
   )
 }
 

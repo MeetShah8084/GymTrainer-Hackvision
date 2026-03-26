@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
 import { supabase } from '../lib/supabase';
 import {
@@ -143,7 +144,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     // Call n8n logWorkout API
     if (userId) {
       // PR Check
-      let prMessages: string[] = [];
+      const prMessages: string[] = [];
       for (const c of validCards) {
         const weightVal = parseFloat(c.weight) || 0;
         if (weightVal > 0) {
@@ -411,8 +412,10 @@ import { logWorkout, relogWorkout, getDashboardMetrics, type DashboardMetrics, t
 interface DashboardProps {
   userName?: string;
   setUserName?: (name: string) => void;
+  avatarUrl?: string | null;
+  setAvatarUrl?: (url: string | null) => void;
   userId?: string;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   incompleteExercises?: Exercise[];
@@ -425,9 +428,8 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({
   userName = "Loading...",
-  setUserName,
+  avatarUrl = null,
   userId = '',
-  navigateTo,
   notificationsEnabled = true,
   toggleNotifications,
   incompleteExercises = [],
@@ -437,6 +439,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   personalRecords = [],
   setPersonalRecords
 }) => {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -475,18 +479,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
-  useEffect(() => {
-    async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-        if (setUserName) setUserName(fullName);
-      } else {
-        if (setUserName) setUserName('Guest');
-      }
-    }
-    fetchUser();
-  }, []);
 
   useEffect(() => {
     async function loadMetrics() {
@@ -594,16 +586,24 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <Settings className="w-5 h-5" />
                   </button>
                 </div>
-                <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
-                  {userName.charAt(0).toUpperCase()}
+                <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm overflow-hidden relative">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <>{userName.charAt(0).toUpperCase()}</>
+                  )}
                 </div>
               </div>
             </header>
 
             {/* Mobile Header */}
             <div className="md:hidden flex shrink-0 z-20 items-center p-4 justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary font-bold text-lg shadow-sm">
-                {userName.charAt(0).toUpperCase()}
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary font-bold text-lg shadow-sm overflow-hidden relative">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <>{userName.charAt(0).toUpperCase()}</>
+                )}
               </div>
               <div className="flex flex-col ml-3 flex-1">
                 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Welcome back</span>
@@ -859,53 +859,53 @@ const Dashboard: React.FC<DashboardProps> = ({
                       </div>
                     ))}
                   </div>
-                           {/* Recent Activity */}
-                <div className="pb-8 mt-10 md:mt-12">
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {metrics?.recent_prs && metrics.recent_prs.length > 0 ? (
-                        metrics.recent_prs.map((pr, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
-                            <div className="flex items-center gap-4">
-                              <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                                <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                  {/* Recent Activity */}
+                  <div className="pb-8 mt-10 md:mt-12">
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-black dark:text-white">Recent PRs</h2>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {metrics?.recent_prs && metrics.recent_prs.length > 0 ? (
+                          metrics.recent_prs.map((pr, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-primary/5">
+                              <div className="flex items-center gap-4">
+                                <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                                  <TrendingUp className="w-6 h-6 stroke-[3px]" />
+                                </div>
+                                <div>
+                                  <p className="font-bold dark:text-white">{pr.exercise_name}</p>
+                                  <p className="text-sm text-slate-500">New {pr.reps}RM: {pr.new_weight}kg</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-bold dark:text-white">{pr.exercise_name}</p>
-                                <p className="text-sm text-slate-500">New {pr.reps}RM: {pr.new_weight}kg</p>
+                              <div className="text-right">
+                                <p className="font-bold text-primary">+{(Number(pr.new_weight) - Number(pr.prev_weight)).toFixed(1).replace(/\.0$/, '')}kg</p>
+                                <p className="text-xs text-slate-400">
+                                  {(() => {
+                                    const date = new Date(pr.achieved_at);
+                                    const now = new Date();
+                                    now.setHours(0, 0, 0, 0);
+                                    const d = new Date(date);
+                                    d.setHours(0, 0, 0, 0);
+                                    const diffTime = now.getTime() - d.getTime();
+                                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                    if (diffDays === 0) return 'Today';
+                                    if (diffDays === 1) return 'Yesterday';
+                                    if (diffDays < 0) return 'Just now';
+                                    return `${diffDays} days ago`;
+                                  })()}
+                                </p>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-bold text-primary">+{ (Number(pr.new_weight) - Number(pr.prev_weight)).toFixed(1).replace(/\.0$/, '') }kg</p>
-                              <p className="text-xs text-slate-400">
-                                {(() => {
-                                  const date = new Date(pr.achieved_at);
-                                  const now = new Date();
-                                  now.setHours(0, 0, 0, 0);
-                                  const d = new Date(date);
-                                  d.setHours(0, 0, 0, 0);
-                                  const diffTime = now.getTime() - d.getTime();
-                                  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                                  if (diffDays === 0) return 'Today';
-                                  if (diffDays === 1) return 'Yesterday';
-                                  if (diffDays < 0) return 'Just now';
-                                  return `${diffDays} days ago`;
-                                })()}
-                              </p>
-                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-dashed border-slate-700/50 col-span-full">
+                            <Trophy className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
+                            <p className="text-slate-500 font-medium font-['Poppins']">No recent PRs. Keep crushing it!</p>
                           </div>
-                        ))
-                      ) : (
-                        <div className="p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-dashed border-slate-700/50 col-span-full">
-                          <Trophy className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
-                          <p className="text-slate-500 font-medium font-['Poppins']">No recent PRs. Keep crushing it!</p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-      </div>
 
 
               </div>

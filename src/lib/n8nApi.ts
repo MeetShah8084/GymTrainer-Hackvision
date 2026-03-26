@@ -75,15 +75,35 @@ export interface DashboardMetrics {
 }
 
 export const getDashboardMetrics = async (userId: string): Promise<DashboardMetrics> => {
+  const fallbackMetrics: DashboardMetrics = {
+    consistency: 0, consistency_diff: 0,
+    workouts_total: 0, workouts_diff: 0,
+    volume_monthly: 0, volume_diff: 0,
+    streak: 0, volume_today: 0, volume_diff_yesterday: 0,
+    calories_today: 0, calories_diff_yesterday: 0,
+    avg_intensity: 0, target_minutes: 0, recent_prs: []
+  };
+  
   try {
     const data = await n8nFetch('get-dashboard-metrics', {
       user_id: userId
     });
     // n8n returns an array of items when respondWith="allIncomingItems"
-    return Array.isArray(data) ? data[0] : data;
+    let parsed = Array.isArray(data) ? data[0] : data;
+    if (parsed && Array.isArray(parsed.data)) {
+      parsed = parsed.data[0];
+    }
+    
+    // If the API returns nothing or an empty array representation, use fallbacks
+    if (!parsed || typeof parsed !== 'object') {
+      return fallbackMetrics;
+    }
+    
+    // Merge the API payload with our safe fallback to guarantee all properties exist
+    return { ...fallbackMetrics, ...parsed, recent_prs: parsed.recent_prs || [] };
   } catch (error) {
-    console.error('Error fetching dashboard metrics:', error);
-    throw error;
+    console.error('Error fetching dashboard metrics, using fallback defaults for new user:', error);
+    return fallbackMetrics;
   }
 };
 
@@ -148,14 +168,29 @@ export interface WorkoutCalendarMetrics {
 }
 
 export async function getWorkoutCalendarMetrics(userId: string): Promise<WorkoutCalendarMetrics> {
+  const fallbackCalendar: WorkoutCalendarMetrics = {
+    current_streak: 0,
+    completion_rate: 0,
+    total_workouts: 0
+  };
+  
   try {
     const data = await n8nFetch('workout-calendar-metrics', {
       user_id: userId
     });
-    return Array.isArray(data) ? data[0] : data;
+    let parsed = Array.isArray(data) ? data[0] : data;
+    if (parsed && Array.isArray(parsed.data)) {
+      parsed = parsed.data[0];
+    }
+    
+    if (!parsed || typeof parsed !== 'object') {
+      return fallbackCalendar;
+    }
+    
+    return { ...fallbackCalendar, ...parsed };
   } catch (error) {
-    console.error('Error fetching workout calendar metrics:', error);
-    throw error;
+    console.error('Error fetching workout calendar metrics, using fallback defaults for new user:', error);
+    return fallbackCalendar;
   }
 }
 

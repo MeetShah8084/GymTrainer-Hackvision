@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
 import { LayoutDashboard, Settings, Bell, BellOff, Edit, Trash2, AlertTriangle, CalendarDays, LineChart, ArrowLeft, Trophy, Menu, X, CircleAlert, Dumbbell, MessageSquare } from 'lucide-react';
 
@@ -10,7 +11,7 @@ import { updateSet, deleteExercise } from '../lib/n8nApi';
 interface WorkoutsProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   incompleteExercises: Exercise[];
@@ -23,7 +24,6 @@ interface WorkoutsProps {
 const Workouts: React.FC<WorkoutsProps> = ({
   userName = "Loading...",
   
-  navigateTo,
   notificationsEnabled = true,
   toggleNotifications,
   incompleteExercises,
@@ -32,6 +32,8 @@ const Workouts: React.FC<WorkoutsProps> = ({
   setCompletedExercises,
   personalRecords = []
 }) => {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const todayDate = formatDate(new Date());
   const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDate);

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import companyIcon from '../assets/company_icon.png';
 import { supabase } from '../lib/supabase';
@@ -12,12 +13,23 @@ import {
 interface SettingsProps {
   userName?: string;
   setUserName?: (name: string) => void;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  avatarUrl?: string | null;
+  setAvatarUrl?: (url: string | null) => void;
+  
   notificationsEnabled?: boolean;
   setNotificationsEnabled?: (value: boolean) => void;
 }
 
-export default function Settings({ userName = 'User', setUserName, navigateTo, notificationsEnabled = true, setNotificationsEnabled }: SettingsProps) {
+export default function Settings({ 
+  userName = 'User', 
+  setUserName, 
+  avatarUrl = null,
+  setAvatarUrl,
+  notificationsEnabled = true, 
+  setNotificationsEnabled 
+}: SettingsProps) {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('Loading...');
   const [memberSince, setMemberSince] = useState<string>('');
@@ -28,6 +40,7 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('+1 (555) 902-1234');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [localNotificationsEnabled, setLocalNotificationsEnabled] = useState(notificationsEnabled);
 
@@ -43,14 +56,23 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
       if (user && !error) {
         setUserEmail(user.email || 'No email');
 
-        // Use full_name from raw_user_meta_data if available, fallback to email prefix
-        const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+        // Fetch name from profiles table for accuracy
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('name, avatar_url, phone_number')
+          .eq('user_id', user.id)
+          .single();
+
+        const fullName = profileData?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
         if (setUserName) setUserName(fullName);
         setEditName(fullName);
         setEditEmail(user.email || '');
+        if (profileData?.avatar_url && setAvatarUrl) setAvatarUrl(profileData.avatar_url);
 
-        // Use phone from metadata if available
-        if (user.user_metadata?.phone) {
+        // Use phone from profiles table, fall back to metadata
+        if (profileData?.phone_number) {
+          setEditPhone(profileData.phone_number);
+        } else if (user.user_metadata?.phone) {
           setEditPhone(user.user_metadata.phone);
         }
 
@@ -94,6 +116,8 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
 
         const { data: { user } } = await supabase.auth.getUser();
 
+        await supabase.from('profiles').update({ name: editName, phone_number: editPhone }).eq('user_id', user?.id || '');
+
         updateProfile(
           user?.id || '',
           editName,
@@ -113,6 +137,35 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
 
     if (shouldNavigate) {
       navigateTo('dashboard');
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      setIsUploading(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('user_id', user.id);
+      if (updateError) throw updateError;
+      
+      if (setAvatarUrl) setAvatarUrl(publicUrl);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Failed to upload avatar. Please make sure the avatars storage bucket exists and is properly configured in Supabase.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -180,8 +233,12 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
-              {userName.charAt(0).toUpperCase()}
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm overflow-hidden relative">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <>{userName.charAt(0).toUpperCase()}</>
+              )}
             </div>
           </div>
         </header>
@@ -222,15 +279,20 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
                   </div>
                 )}
               </div>
-              
+
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                 <div className="relative shrink-0">
-                  <div className="size-24 rounded-full border-4 border-primary/20 bg-primary/10 shadow-inner flex items-center justify-center text-primary font-bold text-5xl">
-                    {userName.charAt(0).toUpperCase()}
+                  <div className="size-24 rounded-full border-4 border-primary/20 bg-primary/10 shadow-inner flex items-center justify-center text-primary font-bold text-5xl overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <>{userName.charAt(0).toUpperCase()}</>
+                    )}
                   </div>
-                  <button className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white hover:bg-orange-600 transition-colors">
-                    <Camera className="size-4" />
-                  </button>
+                  <label className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center text-white hover:bg-orange-600 transition-colors cursor-pointer disabled:opacity-50">
+                    {isUploading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Camera className="size-4" />}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isUploading} />
+                  </label>
                 </div>
                 <div className="text-center sm:text-left w-full sm:w-auto flex-1">
                   {!isEditingProfile ? (
@@ -240,10 +302,10 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
                     </>
                   ) : (
                     <div className="flex flex-col gap-2 max-w-sm">
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Name</label>
-                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} 
-                               className="w-full px-3 py-2 bg-slate-50 dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#333] rounded-lg text-sm focus:outline-none focus:border-primary transition-colors text-slate-900 dark:text-white" />
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{memberSince}</p>
+                      <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Name</label>
+                      <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#333] rounded-lg text-sm focus:outline-none focus:border-primary transition-colors text-slate-900 dark:text-white" />
+                      <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{memberSince}</p>
                     </div>
                   )}
                 </div>
@@ -301,11 +363,11 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
                     <p className="text-sm text-slate-500 dark:text-slate-400">Daily alerts to keep you on track</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only peer" 
-                      checked={localNotificationsEnabled} 
-                      onChange={() => setLocalNotificationsEnabled(prev => !prev)} 
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={localNotificationsEnabled}
+                      onChange={() => setLocalNotificationsEnabled(prev => !prev)}
                     />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-[#1a0e08] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary border border-slate-300 dark:border-[#333]"></div>
                   </label>
@@ -351,6 +413,7 @@ export default function Settings({ userName = 'User', setUserName, navigateTo, n
                   className="px-8 py-3 rounded-xl border border-slate-200 dark:border-primary/20 font-bold dark:text-white hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors"
                   onClick={() => {
                     setLocalNotificationsEnabled(notificationsEnabled);
+                    if (setAvatarUrl) setAvatarUrl(null);
                     navigateTo('dashboard');
                   }}
                 >

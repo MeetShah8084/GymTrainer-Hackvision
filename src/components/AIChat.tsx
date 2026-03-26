@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
 import chatIcon from '../assets/chat_icon (Edited).png';
 import { sendTrainerAIMessage } from '../lib/n8nApi';
@@ -12,10 +13,12 @@ import {
 interface AIChatProps {
   userName?: string;
   userId?: string;
-  navigateTo: (page: 'login' | 'dashboard' | 'workouts' | 'analysis' | 'records' | 'schedule' | 'settings' | 'aichat') => void;
+  
 }
 
-const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '', navigateTo }) => {
+const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '' }) => {
+  const navigate = useNavigate();
+  const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -49,7 +52,8 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '', n
 
     try {
       const response = await sendTrainerAIMessage(userMsg, sessionIdRef.current, userId);
-      const aiText = typeof response === 'string' ? response : (response?.output || response?.text || response?.message || JSON.stringify(response));
+      const r = response as Record<string, string>;
+      const aiText = typeof response === 'string' ? response : (r?.output || r?.text || r?.message || JSON.stringify(response));
       setMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
     } catch (err) {
       console.error('AI Chat error:', err);
