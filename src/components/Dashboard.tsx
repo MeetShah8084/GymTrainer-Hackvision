@@ -115,7 +115,23 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     // Validation & formatting for reps
     for (const c of validCards) {
       const numSets = parseInt(c.sets);
+      const weightVal = parseFloat(c.weight);
+
+      if (isNaN(numSets) || numSets < 1 || numSets > 4) {
+        alert(`${c.exerciseName}: Sets must be between 1 and 4.`);
+        return;
+      }
+      if (isNaN(weightVal) || weightVal < 1 || weightVal > 100) {
+        alert(`${c.exerciseName}: Weight must be between 1 and 100 kg.`);
+        return;
+      }
+
       const repsArr = c.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
+
+      if (repsArr.some(r => r < 1 || r > 100)) {
+        alert(`${c.exerciseName}: Reps must be between 1 and 100.`);
+        return;
+      }
 
       if (repsArr.length === 1) {
         c.reps = Array(numSets).fill(repsArr[0]).join(', ');

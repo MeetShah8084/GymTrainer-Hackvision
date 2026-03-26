@@ -415,6 +415,19 @@ const Workouts: React.FC<WorkoutsProps> = ({
                               return;
                             }
 
+                            if (sets < 1 || sets > 4) {
+                              alert("Sets must be between 1 and 4.");
+                              return;
+                            }
+                            if (weightVal < 1 || weightVal > 100) {
+                              alert("Weight must be between 1 and 100 kg.");
+                              return;
+                            }
+                            if (repsArr.some(r => isNaN(r) || r < 1 || r > 100)) {
+                              alert("Reps must be between 1 and 100.");
+                              return;
+                            }
+
                             setCompletedExercises(completedExercises.map(ex => ex.id === exercise.id ? { ...ex, sets, reps: repsStr, weight } : ex));
                             setEditingId(null);
 
