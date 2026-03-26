@@ -6,13 +6,13 @@ import { LayoutDashboard, Settings, Bell, BellOff, Edit, Trash2, AlertTriangle, 
 import { CheckCircle } from 'lucide-react';
 import type { PRRecord } from '../App';
 import { type Exercise, formatDate } from '../data/exercises';
-import { updateSet, deleteExercise } from '../lib/n8nApi';
+import { updateSet, deleteExercise, logWorkout, type LogWorkoutExercise } from '../lib/n8nApi';
 
 interface WorkoutsProps {
   userName?: string;
   setUserName?: (name: string) => void;
   avatarUrl?: string | null;
-  
+
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   incompleteExercises: Exercise[];
@@ -20,6 +20,7 @@ interface WorkoutsProps {
   completedExercises: Exercise[];
   setCompletedExercises: (exercises: Exercise[]) => void;
   personalRecords?: PRRecord[];
+  userId?: string;
 }
 
 const Workouts: React.FC<WorkoutsProps> = ({
@@ -31,7 +32,8 @@ const Workouts: React.FC<WorkoutsProps> = ({
   setIncompleteExercises,
   completedExercises,
   setCompletedExercises,
-  personalRecords = []
+  personalRecords = [],
+  userId = ''
 }) => {
   const navigate = useNavigate();
   const navigateTo = (path: string) => navigate('/' + path);
@@ -78,12 +80,28 @@ const Workouts: React.FC<WorkoutsProps> = ({
     const exercise = incompleteExercises.find(e => e.id === exerciseId);
     if (!exercise) return;
     setIncompleteExercises(incompleteExercises.filter(e => e.id !== exerciseId));
-    
+
     const now = new Date();
     const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const completedEx = { ...exercise, date: todayDateStr };
-    
+
     setCompletedExercises([...completedExercises, completedEx]);
+
+    // Call n8n logWorkout API to persist the completed exercise
+    if (userId) {
+      const repsArr = exercise.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
+      const numSets = exercise.sets || repsArr.length;
+      const weightVal = parseFloat(exercise.weight) || 0;
+      const sets = Array.from({ length: numSets }, (_, i) => ({
+        set_number: i + 1,
+        reps: repsArr[i] || repsArr[0] || 0,
+        weight: weightVal,
+      }));
+
+      const apiExercises: LogWorkoutExercise[] = [{ name: exercise.name, sets }];
+      logWorkout(userId, todayDateStr, "Planner", apiExercises)
+        .catch(err => console.error('Failed to log completed exercise:', err));
+    }
   };
 
   const handleDeleteIncomplete = (id: string) => {
@@ -403,7 +421,7 @@ const Workouts: React.FC<WorkoutsProps> = ({
                             if (weightVal > 0) {
                               const existingPR = personalRecords?.find(pr => pr.exerciseName === exercise.name);
                               if (!existingPR || weightVal > existingPR.weight) {
-                                alert(`🎉 New Personal Record for ${exercise.name}: ${weightVal} kg!`);
+                                alert(`🎉 Congrats you did better than before ${exercise.name}`);
                               }
                             }
 

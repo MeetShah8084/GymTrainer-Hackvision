@@ -175,21 +175,15 @@ export async function getWorkoutCalendarMetrics(userId: string): Promise<Workout
   };
   
   try {
-    const data = await n8nFetch('workout-calendar-metrics', {
-      user_id: userId
-    });
-    let parsed = Array.isArray(data) ? data[0] : data;
-    if (parsed && Array.isArray(parsed.data)) {
-      parsed = parsed.data[0];
-    }
-    
-    if (!parsed || typeof parsed !== 'object') {
-      return fallbackCalendar;
-    }
-    
-    return { ...fallbackCalendar, ...parsed };
+    // Reuse the working getDashboardMetrics which includes streak, workouts_total, consistency
+    const metrics = await getDashboardMetrics(userId);
+    return {
+      current_streak: metrics.streak ?? 0,
+      completion_rate: metrics.consistency ?? 0,
+      total_workouts: metrics.workouts_total ?? 0,
+    };
   } catch (error) {
-    console.error('Error fetching workout calendar metrics, using fallback defaults for new user:', error);
+    console.error('Error fetching workout calendar metrics:', error);
     return fallbackCalendar;
   }
 }

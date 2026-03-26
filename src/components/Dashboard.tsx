@@ -460,6 +460,22 @@ const Dashboard: React.FC<DashboardProps> = ({
     const completedEx = { ...exercise, date: todayDateStr };
 
     setCompletedExercises([...completedExercises, completedEx]);
+
+    // Call n8n logWorkout API to persist the completed exercise
+    // if (userId) {
+    //   const repsArr = exercise.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
+    //   const numSets = exercise.sets || repsArr.length;
+    //   const weightVal = parseFloat(exercise.weight) || 0;
+    //   const sets = Array.from({ length: numSets }, (_, i) => ({
+    //     set_number: i + 1,
+    //     reps: repsArr[i] || repsArr[0] || 0,
+    //     weight: weightVal,
+    //   }));
+
+    //   const apiExercises: LogWorkoutExercise[] = [{ name: exercise.name, sets }];
+    //   logWorkout(userId, todayDateStr, "", apiExercises)
+    //     .catch(err => console.error('Failed to log completed exercise:', err));
+    // }
   };
 
   const handleRelog = async () => {
