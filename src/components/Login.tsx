@@ -123,6 +123,21 @@ export default function Login({ initialMode = 'login' }: LoginProps) {
 
     setTimeout(async () => {
       try {
+        // Server-side check to see if the account already exists
+        const { data: emailExists, error: rpcError } = await supabase.rpc('check_email_exists', {
+          lookup_email: form.email
+        });
+
+        if (rpcError) {
+          console.error("RPC Error:", rpcError);
+        }
+
+        if (emailExists) {
+          setError("Account already created");
+          setStep(1);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password || 'dummy-password',
