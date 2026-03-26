@@ -150,7 +150,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
         if (weightVal > 0) {
           const existingPR = personalRecords?.find(pr => pr.exerciseName === c.exerciseName);
           if (!existingPR || weightVal > existingPR.weight) {
-            prMessages.push(`🎉 New Personal Record for ${c.exerciseName}: ${weightVal} kg!`);
+            prMessages.push(`🎉 Congrats you did better than before for the ${c.exerciseName}`);
           }
         }
       }
