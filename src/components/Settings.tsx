@@ -13,6 +13,7 @@ import {
 interface SettingsProps {
   userName?: string;
   setUserName?: (name: string) => void;
+  userId?: string;
   avatarUrl?: string | null;
   setAvatarUrl?: (url: string | null) => void;
   
@@ -23,6 +24,7 @@ interface SettingsProps {
 export default function Settings({ 
   userName = 'User', 
   setUserName, 
+  userId = '',
   avatarUrl = null,
   setAvatarUrl,
   notificationsEnabled = true, 
@@ -411,9 +413,18 @@ export default function Settings({
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <button
                   className="px-8 py-3 rounded-xl border border-slate-200 dark:border-primary/20 font-bold dark:text-white hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors"
-                  onClick={() => {
+                  onClick={async () => {
                     setLocalNotificationsEnabled(notificationsEnabled);
                     if (setAvatarUrl) setAvatarUrl(null);
+                    
+                    // Persist the reset to Supabase
+                    if (userId) {
+                      await supabase
+                        .from('profiles')
+                        .update({ avatar_url: null })
+                        .eq('user_id', userId);
+                    }
+                    
                     navigateTo('dashboard');
                   }}
                 >

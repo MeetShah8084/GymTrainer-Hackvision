@@ -24,7 +24,7 @@ interface PersonalRecordsProps {
   userName?: string;
   setUserName?: (name: string) => void;
   userId?: string;
-  
+  avatarUrl?: string | null;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
   personalRecords?: PRRecord[];
@@ -43,6 +43,7 @@ const ALL_EXERCISES = [
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({
   userName = "Loading...",
   userId = '',
+  avatarUrl = null,
   notificationsEnabled = true, toggleNotifications,
   personalRecords = [], setPersonalRecords }) => {
   const navigate = useNavigate();
@@ -160,8 +161,8 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
-              {userName.charAt(0).toUpperCase()}
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm overflow-hidden">
+              {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : userName.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

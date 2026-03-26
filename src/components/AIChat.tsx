@@ -13,10 +13,10 @@ import {
 interface AIChatProps {
   userName?: string;
   userId?: string;
-  
+  avatarUrl?: string | null;
 }
 
-const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '' }) => {
+const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '', avatarUrl = null }) => {
   const navigate = useNavigate();
   const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -129,8 +129,8 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '' })
               <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-dark text-slate-100 hover:bg-primary/20 transition-colors">
                 <Settings className="w-5 h-5" />
               </button>
-              <button onClick={() => handleNavigation('settings')} className="ml-2 h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 text-primary font-bold border-2 border-primary/30 uppercase cursor-pointer hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(236,91,19,0.3)]">
-                {userName.charAt(0)}
+              <button onClick={() => handleNavigation('settings')} className="ml-2 h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 text-primary font-bold border-2 border-primary/30 uppercase cursor-pointer hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(236,91,19,0.3)] overflow-hidden">
+                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : userName.charAt(0)}
               </button>
             </div>
           </div>
@@ -150,7 +150,7 @@ const AIChat: React.FC<AIChatProps> = ({ userName = "Loading...", userId = '' })
           </div>
           <div className="flex items-center justify-end size-10">
             <button onClick={() => handleNavigation('settings')} className="size-8 rounded-full flex items-center justify-center bg-primary/10 text-primary font-bold border border-primary/30 uppercase p-0.5 overflow-hidden text-xs shadow-[0_0_10px_rgba(236,91,19,0.3)] cursor-pointer">
-              {userName.charAt(0)}
+              {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : userName.charAt(0)}
             </button>
           </div>
         </header>

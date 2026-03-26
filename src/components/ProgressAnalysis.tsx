@@ -13,7 +13,7 @@ interface ProgressAnalysisProps {
   userName?: string;
   setUserName?: (name: string) => void;
   userId?: string;
-  
+  avatarUrl?: string | null;
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
 }
@@ -57,7 +57,7 @@ interface AnalyticsData {
   key_metrics: KeyMetrics;
 }
 
-export default function ProgressAnalysis({ userName = 'User', userId = '', notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
+export default function ProgressAnalysis({ userName = 'User', userId = '', avatarUrl = null, notificationsEnabled = true, toggleNotifications }: ProgressAnalysisProps) {
   const navigate = useNavigate();
   const navigateTo = (path: string) => navigate('/' + path);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -189,8 +189,8 @@ export default function ProgressAnalysis({ userName = 'User', userId = '', notif
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm">
-              {userName.charAt(0).toUpperCase()}
+            <div className="shrink-0 size-10 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shadow-sm overflow-hidden">
+              {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : userName.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
