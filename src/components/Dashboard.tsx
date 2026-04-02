@@ -30,7 +30,8 @@ const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
   Back: ['Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row'],
   Legs: ['Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions'],
   Arms: ['Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips'],
-  Abs: ['Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts']
+  Abs: ['Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts'],
+  Cardio: ['Running', 'Cycling', 'Swimming', 'Rowing', 'Jump Rope', 'Stair Climber']
 };
 
 interface ExerciseCard {
@@ -106,7 +107,9 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
   };
 
   const handleSaveSession = () => {
-    const validCards = cards.filter(c => !c.removing && c.exerciseName && c.sets && c.reps && c.weight);
+    const validCards = cards.filter(c => 
+      !c.removing && c.exerciseName && c.sets && c.reps && (muscleGroup === 'Cardio' || c.weight)
+    );
     if (validCards.length === 0) {
       alert("Please fill in at least one exercise completely.");
       return;
@@ -117,26 +120,26 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       const numSets = parseInt(c.sets);
       const weightVal = parseFloat(c.weight);
 
-      if (isNaN(numSets) || numSets < 1 || numSets > 4) {
-        alert(`${c.exerciseName}: Sets must be between 1 and 4.`);
+      if (isNaN(numSets) || numSets < 1 || numSets > (muscleGroup === 'Cardio' ? 10 : 4)) {
+        alert(muscleGroup === 'Cardio' ? `${c.exerciseName}: Sets must be between 1 and 10.` : `${c.exerciseName}: Sets must be between 1 and 4.`);
         return;
       }
-      if (isNaN(weightVal) || weightVal < 1 || weightVal > 100) {
+      if (muscleGroup !== 'Cardio' && (isNaN(weightVal) || weightVal < 1 || weightVal > 100)) {
         alert(`${c.exerciseName}: Weight must be between 1 and 100 kg.`);
         return;
       }
 
       const repsArr = c.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
 
-      if (repsArr.some(r => r < 1 || r > 100)) {
-        alert(`${c.exerciseName}: Reps must be between 1 and 100.`);
+      if (repsArr.some(r => r < 1 || r > (muscleGroup === 'Cardio' ? 500 : 100))) {
+        alert(muscleGroup === 'Cardio' ? `${c.exerciseName}: Minutes must be between 1 and 500.` : `${c.exerciseName}: Reps must be between 1 and 100.`);
         return;
       }
 
       if (repsArr.length === 1) {
         c.reps = Array(numSets).fill(repsArr[0]).join(', ');
       } else if (repsArr.length !== numSets) {
-        alert("enter reps for all the sets");
+        alert(muscleGroup === 'Cardio' ? "enter minutes for all the sets" : "enter reps for all the sets");
         return;
       }
     }
@@ -149,38 +152,40 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       timeInfo: `Current Session • ${muscleGroup}`,
       date: sessionDateStr,
       sets: parseInt(c.sets),
-      reps: c.reps,
-      weight: `${c.weight} kg`,
+      reps: muscleGroup === 'Cardio' ? c.reps + ' mins' : c.reps,
+      weight: muscleGroup === 'Cardio' ? 'Cardio' : `${c.weight} kg`,
       imageAlt: c.exerciseName,
       imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
-      icon: <Dumbbell className="hidden md:block w-7 h-7" />
+      icon: muscleGroup === 'Cardio' ? <Flame className="hidden md:block w-7 h-7 text-orange-500" /> : <Dumbbell className="hidden md:block w-7 h-7" />
     }));
     onSaveSession(exercises);
 
     // Call n8n logWorkout API
     if (userId) {
-      // PR Check
+      // PR Check (Only for non-cardio or weight-based exercises)
       const prMessages: string[] = [];
-      for (const c of validCards) {
-        const weightVal = parseFloat(c.weight) || 0;
-        if (weightVal > 0) {
-          const existingPR = personalRecords?.find(pr => pr.exerciseName === c.exerciseName);
-          if (!existingPR || weightVal > existingPR.weight) {
-            prMessages.push(`🎉 Congrats you did better than before for the ${c.exerciseName}`);
+      if (muscleGroup !== 'Cardio') {
+        for (const c of validCards) {
+          const weightVal = parseFloat(c.weight) || 0;
+          if (weightVal > 0) {
+            const existingPR = personalRecords?.find(pr => pr.exerciseName === c.exerciseName);
+            if (!existingPR || weightVal > existingPR.weight) {
+              prMessages.push(`🎉 Congrats you did better than before for the ${c.exerciseName}`);
+            }
           }
         }
-      }
-      if (prMessages.length > 0) {
-        alert(prMessages.join('\\n'));
+        if (prMessages.length > 0) {
+          alert(prMessages.join('\n'));
+        }
       }
 
       const apiExercises: LogWorkoutExercise[] = validCards.map(c => {
-        const repsArr = c.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
+        const repsArr = c.reps.split(',').map(r => parseFloat(r.trim())).filter(r => !isNaN(r));
         const numSets = parseInt(c.sets) || repsArr.length;
         const sets = Array.from({ length: numSets }, (_, i) => ({
           set_number: i + 1,
           reps: repsArr[i] || repsArr[0] || 0,
-          weight: parseFloat(c.weight) || 0,
+          weight: muscleGroup === 'Cardio' ? 0 : (parseFloat(c.weight) || 0),
         }));
         return { name: c.exerciseName, sets };
       });
@@ -190,7 +195,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
 
     // Push PR-flagged exercises
     const prCards = validCards.filter(c => c.isPR);
-    if (prCards.length > 0 && onAddPRs) {
+    if (prCards.length > 0 && onAddPRs && muscleGroup !== 'Cardio') {
       onAddPRs(prCards.map(c => ({ exerciseName: c.exerciseName, weight: parseFloat(c.weight) })));
     }
 
@@ -266,46 +271,95 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                       </div>
 
                       {/* Weight & Sets row */}
-                      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
-                        <div className="flex items-center gap-3">
-                          <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Weight:</label>
-                          <input type="number"
-                            min="0"
-                            value={card.weight}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '' || parseFloat(val) >= 0) updateCard(card.id, 'weight', val);
-                            }}
-                            className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
-                          <span className="text-primary font-bold">kg</span>
+                      {muscleGroup === 'Cardio' ? (
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
+                          <div className="flex items-center gap-3">
+                            <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Number of sets:</label>
+                            <input type="number"
+                              min="0"
+                              value={card.sets}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || parseInt(val) >= 0) {
+                                  updateCard(card.id, 'sets', val);
+                                  if (muscleGroup === 'Cardio' && val) {
+                                    const numSets = parseInt(val);
+                                    const splitReps = card.reps.split(',');
+                                    if (splitReps.length > numSets) {
+                                      updateCard(card.id, 'reps', splitReps.slice(0, numSets).join(','));
+                                    }
+                                  }
+                                }
+                              }}
+                              className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-2 md:mt-0">
-                          <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of sets:</label>
-                          <input type="number"
-                            min="0"
-                            value={card.sets}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '' || parseInt(val) >= 0) updateCard(card.id, 'sets', val);
-                            }}
-                            className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                      ) : (
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
+                          <div className="flex items-center gap-3">
+                            <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Weight:</label>
+                            <input type="number"
+                              min="0"
+                              value={card.weight}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || parseFloat(val) >= 0) updateCard(card.id, 'weight', val);
+                              }}
+                              className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                            <span className="text-primary font-bold">kg</span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-2 md:mt-0">
+                            <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of sets:</label>
+                            <input type="number"
+                              min="0"
+                              value={card.sets}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || parseInt(val) >= 0) updateCard(card.id, 'sets', val);
+                              }}
+                              className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      {/* Reps per set */}
+                      {/* Reps / Minutes per set */}
                       <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-6 relative">
                         <div className="flex flex-col">
-                          <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of reps per set:</label>
-                          <span className="text-slate-500 text-[11px] leading-tight mt-1 opacity-80">comma separated entries;<br />Eg: 10,2,2,4</span>
+                          <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">
+                            {muscleGroup === 'Cardio' ? "Number of minutes per set:" : "Number of reps per set:"}
+                          </label>
+                          <span className="text-slate-500 text-[11px] leading-tight mt-1 opacity-80">comma separated entries;<br />Eg: {muscleGroup === 'Cardio' ? "10,15,5" : "10,2,2,4"}</span>
                         </div>
                         <input type="text"
                           value={card.reps}
                           onChange={(e) => {
                             const val = e.target.value;
-                            // Only allow digits, commas, and spaces
-                            if (/^[0-9, ]*$/.test(val)) updateCard(card.id, 'reps', val);
+                            // Only allow digits, commas, dots, and spaces
+                            if (/^[0-9., ]*$/.test(val)) {
+                              if (muscleGroup === 'Cardio') {
+                                const numSets = parseInt(card.sets) || 1;
+                                if (val.split(',').length <= numSets) {
+                                  updateCard(card.id, 'reps', val);
+                                }
+                              } else {
+                                updateCard(card.id, 'reps', val);
+                              }
+                            }
                           }}
                           className="w-full md:w-40 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary" />
+                        
+                        {muscleGroup === 'Cardio' && (
+                          <div className="flex items-center gap-3 mt-2 md:mt-0 md:ml-4 text-white font-bold bg-primary/10 px-4 py-3 rounded-xl border border-primary/20">
+                            Total minutes: {card.reps ? (() => {
+                              const parts = card.reps.split(',').map(r => parseFloat(r.trim()) || 0);
+                              const sets = parseInt(card.sets) || 1;
+                              if (parts.length === 1 && sets > 1) {
+                                return parts[0] * sets;
+                              }
+                              return parts.reduce((sum, r) => sum + r, 0);
+                            })() : 0}
+                          </div>
+                        )}
 
                         <div className="absolute right-0 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2">
                           <button
@@ -333,49 +387,51 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                 {/* Add to PR & Favorite - shown only when three dots is clicked */}
                 <div className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${card.showPR ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
                   {/* Add to PR */}
-                  <div
-                    className={`border rounded-[20px] px-5 py-4 flex items-center gap-4 transition-colors cursor-pointer ${card.isPR ? 'border-primary/60 bg-primary/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
-                    onClick={() => {
-                      if (card.isPR) {
-                        updateCard(card.id, 'isPR', false);
-                        updateCard(card.id, 'prError', '');
-                        return;
-                      }
-                      const w = parseFloat(card.weight);
-                      if (!w || w <= 0) {
-                        updateCard(card.id, 'prError', 'Enter a valid weight first');
-                        setTimeout(() => updateCard(card.id, 'prError', ''), 2000);
-                        return;
-                      }
-                      // Start spinner
-                      updateCard(card.id, 'prChecking', true);
-                      updateCard(card.id, 'prError', '');
-                      setTimeout(() => {
-                        const existing = personalRecords.find(pr => pr.exerciseName === card.exerciseName);
-                        const currentPR = existing ? existing.weight : 0;
-                        if (w > currentPR) {
-                          updateCard(card.id, 'isPR', true);
-                          updateCard(card.id, 'prChecking', false);
-                        } else {
-                          updateCard(card.id, 'prChecking', false);
-                          updateCard(card.id, 'prError', `Weight must exceed current PR (${currentPR} kg)`);
-                          setTimeout(() => updateCard(card.id, 'prError', ''), 3000);
+                  {muscleGroup !== 'Cardio' && (
+                    <div
+                      className={`border rounded-[20px] px-5 py-4 flex items-center gap-4 transition-colors cursor-pointer ${card.isPR ? 'border-primary/60 bg-primary/5' : 'border-slate-700/60 bg-surface-dark/20 hover:bg-surface-dark/40'}`}
+                      onClick={() => {
+                        if (card.isPR) {
+                          updateCard(card.id, 'isPR', false);
+                          updateCard(card.id, 'prError', '');
+                          return;
                         }
-                      }, 1000);
-                    }}
-                  >
-                    <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.prChecking ? '' : card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
-                      {card.prChecking ? (
-                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      ) : card.isPR ? (
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      ) : null}
+                        const w = parseFloat(card.weight);
+                        if (!w || w <= 0) {
+                          updateCard(card.id, 'prError', 'Enter a valid weight first');
+                          setTimeout(() => updateCard(card.id, 'prError', ''), 2000);
+                          return;
+                        }
+                        // Start spinner
+                        updateCard(card.id, 'prChecking', true);
+                        updateCard(card.id, 'prError', '');
+                        setTimeout(() => {
+                          const existing = personalRecords.find(pr => pr.exerciseName === card.exerciseName);
+                          const currentPR = existing ? existing.weight : 0;
+                          if (w > currentPR) {
+                            updateCard(card.id, 'isPR', true);
+                            updateCard(card.id, 'prChecking', false);
+                          } else {
+                            updateCard(card.id, 'prChecking', false);
+                            updateCard(card.id, 'prError', `Weight must exceed current PR (${currentPR} kg)`);
+                            setTimeout(() => updateCard(card.id, 'prError', ''), 3000);
+                          }
+                        }, 1000);
+                      }}
+                    >
+                      <div className={`w-6 h-6 rounded flex flex-shrink-0 items-center justify-center transition-colors ${card.prChecking ? '' : card.isPR ? 'bg-primary border-primary' : 'border border-slate-600 bg-transparent'}`}>
+                        {card.prChecking ? (
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        ) : card.isPR ? (
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col">
+                        <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
+                        {card.prError && <span className="text-red-400 text-xs mt-0.5">{card.prError}</span>}
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <label className="text-slate-200 text-base font-semibold cursor-pointer select-none">Add to PR</label>
-                      {card.prError && <span className="text-red-400 text-xs mt-0.5">{card.prError}</span>}
-                    </div>
-                  </div>
+                  )}
 
                   {/* Add to Favorite */}
                   <div
@@ -877,6 +933,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                       { name: "Legs", count: "15 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCx2nKoTp9hIulqcJzftHscAPbTvJbtUWbR1d2huWsNSd8udVImqzEbU35zWy6u_01ZrVZPyc3Pq2eZWH0NT5-tcGNrBaBSbMWMf8jNfqRzOhm2-95jUAN9OeEvqt5FjZECkyzOmllQeE282Ws5S5MB-EPuXTp0HU2rVl9HSN20tvNECw19jP98eSne0VaWGCeFfUcR0lvwSP6Quj5LBzfSOZnm56eH0-w0IuDFXuv8NAEDMXgrJ4ZiJGQUYOiMTHt8qOgB4aFLKhFx" },
                       { name: "Arms", count: "10 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgRIsl9HlPIes_SV170T05M3aQb9Ej8T77LafGBpFXR8bXWQbF9MG6aXPgbpIhvWs5aC-ZmBAq9i__hEfgvJyAQS06hk1qYZKCkboLV9LLnwbGr3KyYUn6cHHj2Eq1TR3bHDWcECoHBzc_89VR_UIv5bnrflrgBVqqoIkIIIui3_HoAKFHWx9GeaSoBkVdeELSjem-UhmYFWXzBAmBt3c6Wec2QhVIp-qKufq6NM1WjsSGP6UvIAYcryGkTfMK_ySzFyD97rfymKqz" },
                       { name: "Abs", count: "6 Exercises", src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBSChcSfb4tpFewa91NXIHObWJ5S6macUZuG9U_0Ugx19S5YdMZS0B0td-EZOrtEAVHuROgAf04mURpen7VOp008cyhgetpK2CtayG4obpse_sTKICajSw5ZOka0vwREja_st_DiiMz4kgUy7DvrRWsA5-khs5fCf9kc9eFHRjbj01oHg1uW88ttabAca-02pLcZrSOtzf_pK4iQ3BOC0ygp99X054ThI4nHk6HkZg60sUStf3XTcB2gbyMdZI3ZVZ5b-3GqTc7KsVm" },
+                      { name: "Cardio", count: "6 Exercises", src: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=400&h=500&fit=crop" },
                     ].map((group) => (
                       <div key={group.name} className="group cursor-pointer relative aspect-[4/5] md:h-64 md:aspect-auto w-full rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm transition-all hover:shadow-md" onClick={() => setSelectedMuscleGroup(group.name)}>
                         <img alt={`${group.name} Muscle Group`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={group.src} />

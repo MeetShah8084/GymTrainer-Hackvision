@@ -411,20 +411,22 @@ const Workouts: React.FC<WorkoutsProps> = ({
 
                             const repsArr = repsStr.includes(',') ? repsStr.split(',').map(r => parseInt(r.trim(), 10)) : Array(sets).fill(parseInt(repsStr, 10));
                             if (repsArr.length !== sets) {
-                              alert(`Please enter exactly ${sets} rep values separated by commas, or a single number.`);
+                              alert(`Please enter exactly ${sets} values separated by commas, or a single number.`);
                               return;
                             }
 
-                            if (sets < 1 || sets > 4) {
-                              alert("Sets must be between 1 and 4.");
+                            const isCardio = (exercise as any).muscleGroup === 'Cardio' || weightVal === 0 || weightStr === 'Cardio';
+
+                            if (sets < 1 || sets > (isCardio ? 10 : 4)) {
+                              alert(isCardio ? "Sets must be between 1 and 10." : "Sets must be between 1 and 4.");
                               return;
                             }
-                            if (weightVal < 1 || weightVal > 100) {
+                            if (!isCardio && (weightVal < 1 || weightVal > 100)) {
                               alert("Weight must be between 1 and 100 kg.");
                               return;
                             }
-                            if (repsArr.some(r => isNaN(r) || r < 1 || r > 100)) {
-                              alert("Reps must be between 1 and 100.");
+                            if (repsArr.some(r => isNaN(r) || r < 1 || r > (isCardio ? 300 : 100))) {
+                              alert(isCardio ? "Minutes must be between 1 and 300." : "Reps must be between 1 and 100.");
                               return;
                             }
 
