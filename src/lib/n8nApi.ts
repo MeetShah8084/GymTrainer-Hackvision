@@ -208,12 +208,16 @@ export async function updateProfile(
   userId: string,
   name: string,
   email: string,
-  phone: string
+  phone: string,
+  weight?: number,
+  height?: number
 ) {
   return n8nFetch('update-profile', {
     user_id: userId,
     name,
     email,
     phone,
+    weight,
+    height
   });
 }

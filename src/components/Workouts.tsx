@@ -421,8 +421,8 @@ const Workouts: React.FC<WorkoutsProps> = ({
                               alert(isCardio ? "Sets must be between 1 and 10." : "Sets must be between 1 and 4.");
                               return;
                             }
-                            if (!isCardio && (weightVal < 1 || weightVal > 100)) {
-                              alert("Weight must be between 1 and 100 kg.");
+                            if (!isCardio && weightStr !== 'BodyWeight' && (weightVal < 1 || weightVal > 150)) {
+                              alert(`Weight must be between 1 and 150 kg.`);
                               return;
                             }
                             if (repsArr.some(r => isNaN(r) || r < 1 || r > (isCardio ? 300 : 100))) {

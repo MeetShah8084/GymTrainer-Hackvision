@@ -41,6 +41,8 @@ export default function Settings({
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('+1 (555) 902-1234');
+  const [editHeight, setEditHeight] = useState('');
+  const [editWeight, setEditWeight] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -61,7 +63,7 @@ export default function Settings({
         // Fetch name from profiles table for accuracy
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('name, avatar_url, phone_number')
+          .select('name, avatar_url, phone_number, height, weight')
           .eq('user_id', user.id)
           .single();
 
@@ -70,6 +72,9 @@ export default function Settings({
         setEditName(fullName);
         setEditEmail(user.email || '');
         if (profileData?.avatar_url && setAvatarUrl) setAvatarUrl(profileData.avatar_url);
+        
+        if (profileData?.height) setEditHeight(profileData.height.toString());
+        if (profileData?.weight) setEditWeight(profileData.weight.toString());
 
         // Use phone from profiles table, fall back to metadata
         if (profileData?.phone_number) {
@@ -117,14 +122,19 @@ export default function Settings({
         });
 
         const { data: { user } } = await supabase.auth.getUser();
+        
+        const hVal = editHeight ? parseInt(editHeight) : null;
+        const wVal = editWeight ? parseFloat(editWeight) : null;
 
-        await supabase.from('profiles').update({ name: editName, phone_number: editPhone }).eq('user_id', user?.id || '');
+        await supabase.from('profiles').update({ name: editName, phone_number: editPhone, height: hVal, weight: wVal }).eq('user_id', user?.id || '');
 
         updateProfile(
           user?.id || '',
           editName,
           editEmail,
-          editPhone
+          editPhone,
+          wVal || undefined,
+          hVal || undefined
         ).catch(err => console.warn("Failed to ping n8n webhook", err));
 
         if (setUserName) setUserName(editName);
@@ -333,6 +343,26 @@ export default function Settings({
                       <span className="text-sm dark:text-slate-200">{editPhone}</span>
                     ) : (
                       <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Weight (kg)</label>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                    {!isEditingProfile ? (
+                      <span className="text-sm dark:text-slate-200">{editWeight ? `${editWeight} kg` : '-'}</span>
+                    ) : (
+                      <input type="number" step="0.1" value={editWeight} onChange={e => setEditWeight(e.target.value)} placeholder="e.g. 75.5" className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Height (cm)</label>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                    {!isEditingProfile ? (
+                      <span className="text-sm dark:text-slate-200">{editHeight ? `${editHeight} cm` : '-'}</span>
+                    ) : (
+                      <input type="number" value={editHeight} onChange={e => setEditHeight(e.target.value)} placeholder="e.g. 180" className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
                     )}
                   </div>
                 </div>

@@ -34,6 +34,69 @@ const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
   Cardio: ['Running', 'Cycling', 'Swimming', 'Rowing', 'Jump Rope', 'Stair Climber']
 };
 
+const BODYWEIGHT_EXERCISES = ['Push-ups', 'Pull-ups', 'Crunches', 'Planks', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts', 'Tricep Dips'];
+
+const ExerciseAutocomplete: React.FC<{
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+}> = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
+
+  return (
+    <div className="relative flex-1" ref={wrapperRef}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => {
+          let val = e.target.value.replace(/[^a-zA-Z\s\-]/g, '');
+          onChange(val);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
+        placeholder="Type or select..."
+      />
+      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ec5b13" className="w-5 h-5">
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      {isOpen && filteredOptions.length > 0 && (
+        <ul className="absolute z-50 w-full mt-2 bg-[#1e1511] border border-primary/40 rounded-xl overflow-hidden shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
+          {filteredOptions.map((opt) => (
+            <li
+              key={opt}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevents input onBlur from firing before this
+                onChange(opt);
+                setIsOpen(false);
+              }}
+              className="px-4 py-3 text-slate-200 hover:bg-primary/20 hover:text-white cursor-pointer transition-colors"
+            >
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 interface ExerciseCard {
   id: string;
   exerciseName: string;
@@ -55,21 +118,25 @@ interface TargetMuscleLoggerProps {
   onAddPRs?: (prs: { exerciseName: string; weight: number }[]) => void;
   personalRecords?: PRRecord[];
   userId?: string;
+  profileWeight?: number | null;
 }
 
-const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession, onAddPRs, personalRecords = [], userId = '' }) => {
+const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession, onAddPRs, personalRecords = [], userId = '', profileWeight = null }) => {
   const exerciseOptions = EXERCISES_BY_MUSCLE[muscleGroup] || ['Custom Exercise'];
 
-  const createCard = (): ExerciseCard => ({
-    id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    exerciseName: exerciseOptions[0],
-    weight: '',
-    sets: '',
-    reps: '',
-    isPR: false,
-    isFavorite: false,
-    showPR: false,
-  });
+  const createCard = (): ExerciseCard => {
+    const defaultEx = exerciseOptions[0];
+    return {
+      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      exerciseName: defaultEx,
+      weight: BODYWEIGHT_EXERCISES.includes(defaultEx) ? 'BodyWeight' : '',
+      sets: '',
+      reps: '',
+      isPR: false,
+      isFavorite: false,
+      showPR: false,
+    };
+  };
 
   const [cards, setCards] = useState<ExerciseCard[]>([createCard()]);
   const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
@@ -81,7 +148,16 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
   }, [muscleGroup]);
 
   const updateCard = (id: string, field: keyof ExerciseCard, value: any) => {
-    setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    setCards(prev => prev.map(c => {
+      if (c.id === id) {
+        const updated = { ...c, [field]: value };
+        if (field === 'exerciseName') {
+          updated.weight = BODYWEIGHT_EXERCISES.includes(value) ? 'BodyWeight' : '';
+        }
+        return updated;
+      }
+      return c;
+    }));
   };
 
   const addCard = () => {
@@ -124,8 +200,8 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
         alert(muscleGroup === 'Cardio' ? `${c.exerciseName}: Sets must be between 1 and 10.` : `${c.exerciseName}: Sets must be between 1 and 4.`);
         return;
       }
-      if (muscleGroup !== 'Cardio' && (isNaN(weightVal) || weightVal < 1 || weightVal > 100)) {
-        alert(`${c.exerciseName}: Weight must be between 1 and 100 kg.`);
+      if (muscleGroup !== 'Cardio' && c.weight !== 'BodyWeight' && (isNaN(weightVal) || weightVal < 1 || weightVal > 150)) {
+        alert(`${c.exerciseName}: Weight must be between 1 and 150 kg.`);
         return;
       }
 
@@ -182,11 +258,17 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       const apiExercises: LogWorkoutExercise[] = validCards.map(c => {
         const repsArr = c.reps.split(',').map(r => parseFloat(r.trim())).filter(r => !isNaN(r));
         const numSets = parseInt(c.sets) || repsArr.length;
-        const sets = Array.from({ length: numSets }, (_, i) => ({
-          set_number: i + 1,
-          reps: repsArr[i] || repsArr[0] || 0,
-          weight: muscleGroup === 'Cardio' ? 0 : (parseFloat(c.weight) || 0),
-        }));
+        const sets = Array.from({ length: numSets }, (_, i) => {
+          let resolvedWeight = parseFloat(c.weight) || 0;
+          if (c.weight === 'BodyWeight' && profileWeight) {
+            resolvedWeight = profileWeight;
+          }
+          return {
+            set_number: i + 1,
+            reps: repsArr[i] || repsArr[0] || 0,
+            weight: muscleGroup === 'Cardio' ? 0 : resolvedWeight,
+          };
+        });
         return { name: c.exerciseName, sets };
       });
       logWorkout(userId, sessionDateStr, muscleGroup, apiExercises)
@@ -258,16 +340,11 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                       {/* Exercise name */}
                       <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                         <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider w-36 shrink-0">Exercise name:</label>
-                        <select
+                        <ExerciseAutocomplete
                           value={card.exerciseName}
-                          onChange={(e) => updateCard(card.id, 'exerciseName', e.target.value)}
-                          className="flex-1 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none"
-                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ec5b13'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: `right 16px center`, backgroundRepeat: `no-repeat`, backgroundSize: `20px` }}
-                        >
-                          {exerciseOptions.map(ex => (
-                            <option key={ex} value={ex} className="bg-[#1e1511]">{ex}</option>
-                          ))}
-                        </select>
+                          onChange={(val) => updateCard(card.id, 'exerciseName', val)}
+                          options={exerciseOptions}
+                        />
                       </div>
 
                       {/* Weight & Sets row */}
@@ -298,15 +375,16 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 justify-between">
                           <div className="flex items-center gap-3">
                             <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider shrink-0">Weight:</label>
-                            <input type="number"
+                            <input type={card.weight === 'BodyWeight' ? "text" : "number"}
                               min="0"
                               value={card.weight}
+                              readOnly={card.weight === 'BodyWeight'}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 if (val === '' || parseFloat(val) >= 0) updateCard(card.id, 'weight', val);
                               }}
-                              className="w-24 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center" />
-                            <span className="text-primary font-bold">kg</span>
+                              className={`w-28 bg-transparent border border-primary/40 rounded-xl px-3 py-2 text-white outline-none focus:border-primary text-center ${card.weight === 'BodyWeight' ? 'opacity-[0.6] cursor-not-allowed text-[14px]' : ''}`} />
+                            {card.weight !== 'BodyWeight' && <span className="text-primary font-bold">kg</span>}
                           </div>
                           <div className="flex items-center gap-3 mt-2 md:mt-0">
                             <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Number of sets:</label>
@@ -487,6 +565,7 @@ interface DashboardProps {
   avatarUrl?: string | null;
   setAvatarUrl?: (url: string | null) => void;
   userId?: string;
+  profileWeight?: number | null;
 
   notificationsEnabled?: boolean;
   toggleNotifications?: () => void;
@@ -502,6 +581,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   userName = "Loading...",
   avatarUrl = null,
   userId = '',
+  profileWeight = null,
   notificationsEnabled = true,
   toggleNotifications,
   incompleteExercises = [],
@@ -1009,6 +1089,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 onBack={() => setSelectedMuscleGroup(null)}
                 personalRecords={personalRecords}
                 userId={userId}
+                profileWeight={profileWeight}
                 onSaveSession={(exercises) => {
                   if (setIncompleteExercises) {
                     setIncompleteExercises([...incompleteExercises, ...exercises]);

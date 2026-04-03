@@ -41,6 +41,8 @@ function App() {
   // Lifted state for personal records — start empty, loaded from backend
   const [personalRecords, setPersonalRecords] = useState<PRRecord[]>([]);
 
+  const [profileWeight, setProfileWeight] = useState<number | null>(null);
+
   // Fetch user on mount
   useEffect(() => {
     const fetchUserData = async (user: any) => {
@@ -50,13 +52,14 @@ function App() {
         // Fetch name from profiles table for accuracy
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('name, avatar_url')
+          .select('name, avatar_url, weight')
           .eq('user_id', user.id)
           .single();
 
         const name = profileData?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
         setUserName(name);
         setAvatarUrl(profileData?.avatar_url || null);
+        if (profileData?.weight) setProfileWeight(parseFloat(profileData.weight));
 
         try {
           const [sessionsRes, prsRes] = await Promise.all([
@@ -177,6 +180,8 @@ function App() {
     avatarUrl,
     setAvatarUrl,
     userId,
+    profileWeight,
+    setProfileWeight,
     personalRecords,
     setPersonalRecords
   };
