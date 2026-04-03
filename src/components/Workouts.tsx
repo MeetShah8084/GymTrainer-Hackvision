@@ -7,6 +7,7 @@ import { CheckCircle } from 'lucide-react';
 import type { PRRecord } from '../App';
 import { type Exercise, formatDate } from '../data/exercises';
 import { updateSet, deleteExercise, logWorkout, type LogWorkoutExercise } from '../lib/n8nApi';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface WorkoutsProps {
   userName?: string;
@@ -37,6 +38,7 @@ const Workouts: React.FC<WorkoutsProps> = ({
 }) => {
   const navigate = useNavigate();
   const navigateTo = (path: string) => navigate('/' + path);
+  const { showNotification } = useNotification();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const todayDate = formatDate(new Date());
   const todayCompletedExercises = completedExercises.filter(ex => ex.date === todayDate);
@@ -411,22 +413,22 @@ const Workouts: React.FC<WorkoutsProps> = ({
 
                             const repsArr = repsStr.includes(',') ? repsStr.split(',').map(r => parseInt(r.trim(), 10)) : Array(sets).fill(parseInt(repsStr, 10));
                             if (repsArr.length !== sets) {
-                              alert(`Please enter exactly ${sets} values separated by commas, or a single number.`);
+                              showNotification(`Please enter exactly ${sets} values separated by commas, or a single number.`);
                               return;
                             }
 
                             const isCardio = (exercise as any).muscleGroup === 'Cardio' || weightVal === 0 || weightStr === 'Cardio';
 
                             if (sets < 1 || sets > (isCardio ? 10 : 4)) {
-                              alert(isCardio ? "Sets must be between 1 and 10." : "Sets must be between 1 and 4.");
+                              showNotification(isCardio ? "Sets must be between 1 and 10." : "Sets must be between 1 and 4.");
                               return;
                             }
                             if (!isCardio && weightStr !== 'BodyWeight' && (weightVal < 1 || weightVal > 150)) {
-                              alert(`Weight must be between 1 and 150 kg.`);
+                              showNotification(`Weight must be between 1 and 150 kg.`);
                               return;
                             }
                             if (repsArr.some(r => isNaN(r) || r < 1 || r > (isCardio ? 300 : 100))) {
-                              alert(isCardio ? "Minutes must be between 1 and 300." : "Reps must be between 1 and 100.");
+                              showNotification(isCardio ? "Minutes must be between 1 and 300." : "Reps must be between 1 and 100.");
                               return;
                             }
 
@@ -436,7 +438,7 @@ const Workouts: React.FC<WorkoutsProps> = ({
                             if (weightVal > 0) {
                               const existingPR = personalRecords?.find(pr => pr.exerciseName === exercise.name);
                               if (!existingPR || weightVal > existingPR.weight) {
-                                alert(`🎉 Congrats you did better than before ${exercise.name}`);
+                                showNotification(`🎉 Congrats you did better than before ${exercise.name}`);
                               }
                             }
 

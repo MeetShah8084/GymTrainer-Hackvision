@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../contexts/NotificationContext';
 import companyIcon from '../assets/company_icon.png';
 import { supabase } from '../lib/supabase';
 import {
@@ -43,7 +44,7 @@ const WGER_STRING_CATEGORY_MAP: Record<string, string> = {
   "Calves": "Legs",
   "Chest": "Chest",
   "Legs": "Legs",
-  "Shoulders": "Shoulders"
+  "Shoulders": "Arms" // Mapped to Arms as there is no specific Shoulders card
 };
 
 const ExerciseAutocomplete: React.FC<{
@@ -143,6 +144,7 @@ interface TargetMuscleLoggerProps {
 }
 
 const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, onBack, onSaveSession, onAddPRs, personalRecords = [], userId = '', profileWeight = null }) => {
+  const { showNotification } = useNotification();
   const exerciseOptions = EXERCISES_BY_MUSCLE[muscleGroup] || ['Custom Exercise'];
 
   const createCard = (): ExerciseCard => {
@@ -198,14 +200,14 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       const data = await res.json();
       
       if (!data.suggestions || data.suggestions.length === 0) {
-        alert(`"${exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
+        showNotification(`"${exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
         updateCard(cardId, 'exerciseName', '');
       } else {
         const exerciseCategory = data.suggestions[0].data.category;
         const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
         
         if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
-          alert(`This exercise belongs in the ${actualMuscleGroup} category, but you are currently logging ${muscleGroup}.`);
+          showNotification(`This exercise is categorized under ${actualMuscleGroup}, but you are currently logging ${muscleGroup}. Please log it in the ${actualMuscleGroup} section.`);
           setTimeout(() => updateCard(cardId, 'exerciseName', ''), 0);
           return;
         }
@@ -244,7 +246,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       !c.removing && c.exerciseName && c.sets && c.reps && (muscleGroup === 'Cardio' || c.weight)
     );
     if (validCards.length === 0) {
-      alert("Please fill in at least one exercise completely.");
+      showNotification("Please fill in at least one exercise completely.");
       return;
     }
 
@@ -256,14 +258,14 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
           const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(c.exerciseName)}&language=2`);
           const data = await res.json();
           if (!data.suggestions || data.suggestions.length === 0) {
-            alert(`"${c.exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
+            showNotification(`"${c.exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
             return;
           }
           
           const exerciseCategory = data.suggestions[0].data.category;
           const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
           if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
-            alert(`"${c.exerciseName}" belongs in the ${actualMuscleGroup} category. Please add it from that page.`);
+            showNotification(`"${c.exerciseName}" is categorized under ${actualMuscleGroup}. Please add it from the ${actualMuscleGroup} page.`);
             return;
           }
         } catch (err) {
@@ -278,25 +280,25 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       const weightVal = parseFloat(c.weight);
 
       if (isNaN(numSets) || numSets < 1 || numSets > (muscleGroup === 'Cardio' ? 10 : 4)) {
-        alert(muscleGroup === 'Cardio' ? `${c.exerciseName}: Sets must be between 1 and 10.` : `${c.exerciseName}: Sets must be between 1 and 4.`);
+        showNotification(muscleGroup === 'Cardio' ? `${c.exerciseName}: Sets must be between 1 and 10.` : `${c.exerciseName}: Sets must be between 1 and 4.`);
         return;
       }
       if (muscleGroup !== 'Cardio' && c.weight !== 'BodyWeight' && (isNaN(weightVal) || weightVal < 1 || weightVal > 150)) {
-        alert(`${c.exerciseName}: Weight must be between 1 and 150 kg.`);
+        showNotification(`${c.exerciseName}: Weight must be between 1 and 150 kg.`);
         return;
       }
 
       const repsArr = c.reps.split(',').map(r => parseInt(r.trim())).filter(r => !isNaN(r));
 
       if (repsArr.some(r => r < 1 || r > (muscleGroup === 'Cardio' ? 500 : 100))) {
-        alert(muscleGroup === 'Cardio' ? `${c.exerciseName}: Minutes must be between 1 and 500.` : `${c.exerciseName}: Reps must be between 1 and 100.`);
+        showNotification(muscleGroup === 'Cardio' ? `${c.exerciseName}: Minutes must be between 1 and 500.` : `${c.exerciseName}: Reps must be between 1 and 100.`);
         return;
       }
 
       if (repsArr.length === 1) {
         c.reps = Array(numSets).fill(repsArr[0]).join(', ');
       } else if (repsArr.length !== numSets) {
-        alert(muscleGroup === 'Cardio' ? "enter minutes for all the sets" : "enter reps for all the sets");
+        showNotification(muscleGroup === 'Cardio' ? "enter minutes for all the sets" : "enter reps for all the sets");
         return;
       }
     }
@@ -332,7 +334,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
           }
         }
         if (prMessages.length > 0) {
-          alert(prMessages.join('\n'));
+          showNotification(prMessages.join('\n'));
         }
       }
 

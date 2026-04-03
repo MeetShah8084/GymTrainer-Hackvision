@@ -9,6 +9,7 @@ import {
   Camera, Shield, Edit3, X, Dumbbell, LineChart,
   LayoutDashboard, CalendarDays, Trophy, DoorOpen, MessageSquare
 } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface SettingsProps {
   userName?: string;
@@ -32,6 +33,7 @@ export default function Settings({
 }: SettingsProps) {
   const navigate = useNavigate();
   const navigateTo = (path: string) => navigate('/' + path);
+  const { showNotification } = useNotification();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('Loading...');
   const [memberSince, setMemberSince] = useState<string>('');
@@ -175,7 +177,7 @@ export default function Settings({
       if (setAvatarUrl) setAvatarUrl(publicUrl);
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      alert('Failed to upload avatar. Please make sure the avatars storage bucket exists and is properly configured in Supabase.');
+      showNotification('Failed to upload avatar. Please make sure the avatars storage bucket exists and is properly configured in Supabase.');
     } finally {
       setIsUploading(false);
     }
