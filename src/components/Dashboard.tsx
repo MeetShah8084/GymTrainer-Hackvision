@@ -36,11 +36,22 @@ const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
 
 const BODYWEIGHT_EXERCISES = ['Push-ups', 'Pull-ups', 'Crunches', 'Planks', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts', 'Tricep Dips'];
 
+const WGER_STRING_CATEGORY_MAP: Record<string, string> = {
+  "Abs": "Abs",
+  "Arms": "Arms",
+  "Back": "Back",
+  "Calves": "Legs",
+  "Chest": "Chest",
+  "Legs": "Legs",
+  "Shoulders": "Shoulders"
+};
+
 const ExerciseAutocomplete: React.FC<{
   value: string;
   onChange: (val: string) => void;
+  onBlur?: () => void;
   options: string[];
-}> = ({ value, onChange, options }) => {
+}> = ({ value, onChange, onBlur, options }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
@@ -48,11 +59,12 @@ const ExerciseAutocomplete: React.FC<{
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        if (onBlur) onBlur();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [onBlur]);
 
   const filteredOptions = options.filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
 
@@ -67,6 +79,12 @@ const ExerciseAutocomplete: React.FC<{
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            setIsOpen(false);
+            if (onBlur) onBlur();
+          }
+        }}
         className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
         placeholder="Type or select..."
       />
@@ -155,12 +173,48 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       if (c.id === id) {
         const updated = { ...c, [field]: value };
         if (field === 'exerciseName') {
-          updated.weight = BODYWEIGHT_EXERCISES.includes(value) ? 'BodyWeight' : '';
+          const isBw = BODYWEIGHT_EXERCISES.some(bw => 
+            bw.toLowerCase().replace(/[- ]/g, '') === value.toLowerCase().replace(/[- ]/g, '') ||
+            value.toLowerCase().includes('pull-up') || value.toLowerCase().includes('pull up') || 
+            value.toLowerCase().includes('push-up') || value.toLowerCase().includes('push up')
+          );
+          updated.weight = isBw ? 'BodyWeight' : '';
         }
         return updated;
       }
       return c;
     }));
+  };
+
+  const checkCustomExercise = async (cardId: string, exerciseName: string) => {
+    if (!exerciseName) return;
+    
+    // Check if it's already in the predefined main list
+    const isPredefined = Object.values(EXERCISES_BY_MUSCLE).flat().includes(exerciseName);
+    if (isPredefined) return;
+
+    try {
+      const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(exerciseName)}&language=2`);
+      const data = await res.json();
+      
+      if (!data.suggestions || data.suggestions.length === 0) {
+        alert(`"${exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
+        updateCard(cardId, 'exerciseName', '');
+      } else {
+        const exerciseCategory = data.suggestions[0].data.category;
+        const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
+        
+        if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
+          alert(`This exercise belongs in the ${actualMuscleGroup} category, but you are currently logging ${muscleGroup}.`);
+          setTimeout(() => updateCard(cardId, 'exerciseName', ''), 0);
+          return;
+        }
+
+        // Just rely on local fuzzy matching for bodyweight (already done in updateCard)
+      }
+    } catch (err) {
+      console.error("Failed to validate exercise with Wger API:", err);
+    }
   };
 
   const addCard = () => {
@@ -185,13 +239,37 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     }, 400);
   };
 
-  const handleSaveSession = () => {
-    const validCards = cards.filter(c => 
+  const handleSaveSession = async () => {
+    let validCards = cards.filter(c => 
       !c.removing && c.exerciseName && c.sets && c.reps && (muscleGroup === 'Cardio' || c.weight)
     );
     if (validCards.length === 0) {
       alert("Please fill in at least one exercise completely.");
       return;
+    }
+
+    // Await API check for all custom exercises
+    for (let c of validCards) {
+      const isPredefined = Object.values(EXERCISES_BY_MUSCLE).flat().includes(c.exerciseName);
+      if (!isPredefined) {
+        try {
+          const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(c.exerciseName)}&language=2`);
+          const data = await res.json();
+          if (!data.suggestions || data.suggestions.length === 0) {
+            alert(`"${c.exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
+            return;
+          }
+          
+          const exerciseCategory = data.suggestions[0].data.category;
+          const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
+          if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
+            alert(`"${c.exerciseName}" belongs in the ${actualMuscleGroup} category. Please add it from that page.`);
+            return;
+          }
+        } catch (err) {
+          console.error("Validation failed:", err);
+        }
+      }
     }
 
     // Validation & formatting for reps
@@ -346,6 +424,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                         <ExerciseAutocomplete
                           value={card.exerciseName}
                           onChange={(val) => updateCard(card.id, 'exerciseName', val)}
+                          onBlur={() => checkCustomExercise(card.id, card.exerciseName)}
                           options={exerciseOptions}
                         />
                       </div>
