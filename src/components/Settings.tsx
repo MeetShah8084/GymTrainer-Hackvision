@@ -328,23 +328,23 @@ export default function Settings({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
-                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] opacity-60 cursor-not-allowed" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
                     <Mail className="size-5 text-slate-400 shrink-0" />
                     {!isEditingProfile ? (
                       <span className="text-sm dark:text-slate-200 truncate">{userEmail}</span>
                     ) : (
-                      <input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                      <input type="email" value={editEmail} disabled className="w-full bg-transparent border-none outline-none text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" />
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
-                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] focus-within:border-primary" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
+                  <div className={"flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors " + (isEditingProfile ? "bg-slate-50 dark:bg-[#1A1A1A] border-slate-200 dark:border-[#333] opacity-60 cursor-not-allowed" : "bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-primary/10")}>
                     <Phone className="size-5 text-slate-400 shrink-0" />
                     {!isEditingProfile ? (
                       <span className="text-sm dark:text-slate-200">{editPhone}</span>
                     ) : (
-                      <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white" />
+                      <input type="tel" value={editPhone} disabled className="w-full bg-transparent border-none outline-none text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" />
                     )}
                   </div>
                 </div>
