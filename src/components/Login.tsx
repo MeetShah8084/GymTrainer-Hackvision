@@ -252,10 +252,15 @@ export default function Login({ initialMode = 'login' }: LoginProps) {
                   </button>
                 </form>
 
-                <p className="text-center mt-6 text-sm text-[#A3A3A3]">
-                  New here?{' '}
-                  <Link to="/signup" className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
-                    Create account
+                <p className="text-center mt-6 text-sm text-[#A3A3A3] flex flex-col gap-2">
+                  <span>
+                    New here?{' '}
+                    <Link to="/signup" className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
+                      Create account
+                    </Link>
+                  </span>
+                  <Link to="/forgot-password" className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
+                    Forgot Password?
                   </Link>
                 </p>
               </motion.div>

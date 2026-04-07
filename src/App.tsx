@@ -8,6 +8,8 @@ import Schedule from './components/Schedule'
 import AIChat from './components/AIChat'
 import Settings from './components/Settings'
 import Login from './components/Login'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
 import UserDetails from './components/UserDetails'
 import OAuthCompletion from './components/OAuthCompletion'
 import { supabase } from './lib/supabase'
@@ -127,7 +129,7 @@ function App() {
         setAvatarUrl(null);
         setCompletedExercises([]);
         setPersonalRecords([]);
-        if (location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/oauth') {
+        if (location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/oauth' && location.pathname !== '/forgot-password' && location.pathname !== '/reset-password') {
           navigate('/login');
         }
       }
@@ -201,6 +203,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login initialMode="login" />} />
       <Route path="/signup" element={<Login initialMode="signup" />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/oauth" element={<OAuthCompletion />} />
       <Route path="/user-details" element={userId ? <UserDetails /> : <Navigate to="/login" replace />} />
       <Route path="/dashboard" element={userId ? <Dashboard {...commonProps} /> : <Navigate to="/login" replace />} />
