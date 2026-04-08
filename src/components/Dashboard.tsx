@@ -25,17 +25,7 @@ import {
   Trash2,
   Star
 } from 'lucide-react';
-
-const EXERCISES_BY_MUSCLE: Record<string, string[]> = {
-  Chest: ['Barbell Bench Press', 'Incline Dumbbell Press', 'Chest Flyes', 'Push-ups', 'Cable Crossovers', 'Decline Press'],
-  Back: ['Pull-ups', 'Barbell Row', 'Lat Pulldown', 'Deadlift', 'T-Bar Row', 'Seated Cable Row'],
-  Legs: ['Squats', 'Leg Press', 'Lunges', 'Romanian Deadlift', 'Calf Raises', 'Leg Extensions'],
-  Arms: ['Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skullcrushers', 'Preacher Curls', 'Tricep Dips'],
-  Abs: ['Crunches', 'Planks', 'Cable Crunches', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts'],
-  Cardio: ['Running', 'Cycling', 'Swimming', 'Rowing', 'Jump Rope', 'Stair Climber']
-};
-
-const BODYWEIGHT_EXERCISES = ['Push-ups', 'Pull-ups', 'Crunches', 'Planks', 'Leg Raises', 'Russian Twists', 'Ab Wheel Rollouts', 'Tricep Dips'];
+import { EXERCISES_BY_MUSCLE, BODYWEIGHT_EXERCISES } from '../data/exercises';
 
 const WGER_STRING_CATEGORY_MAP: Record<string, string> = {
   "Abs": "Abs",
@@ -75,7 +65,7 @@ const ExerciseAutocomplete: React.FC<{
         type="text"
         value={value}
         onChange={(e) => {
-          let val = e.target.value.replace(/[^a-zA-Z\s\-]/g, '');
+          const val = e.target.value.replace(/[^a-zA-Z\s-]/g, '');
           onChange(val);
           setIsOpen(true);
         }}
@@ -242,7 +232,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
   };
 
   const handleSaveSession = async () => {
-    let validCards = cards.filter(c => 
+    const validCards = cards.filter(c => 
       !c.removing && c.exerciseName && c.sets && c.reps && (muscleGroup === 'Cardio' || c.weight)
     );
     if (validCards.length === 0) {
@@ -251,7 +241,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     }
 
     // Await API check for all custom exercises
-    for (let c of validCards) {
+    for (const c of validCards) {
       const isPredefined = Object.values(EXERCISES_BY_MUSCLE).flat().includes(c.exerciseName);
       if (!isPredefined) {
         try {

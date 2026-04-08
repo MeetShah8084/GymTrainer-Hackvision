@@ -143,6 +143,39 @@ export async function relogWorkout(userId: string, date: string) {
   return n8nFetch('relog-workout', { user_id: userId, date });
 }
 
+// ─── Planned Workouts ──────────────────────────────────────────
+
+export interface PlannedWorkout {
+  id?: string;
+  user_id?: string;
+  planned_date: string;
+  muscle_group: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  weight: number;
+}
+
+export async function getPlannedWorkouts(userId: string): Promise<PlannedWorkout[]> {
+  try {
+    const data = await n8nFetch('get-planned-workouts', { user_id: userId });
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.data)) {
+        return data.data;
+    }
+    return [];
+  } catch (err) {
+    console.error('Failed to get planned workouts:', err);
+    return [];
+  }
+}
+
+export async function savePlannedWorkout(plannedWorkout: PlannedWorkout) {
+  return n8nFetch('save-planned-workout', plannedWorkout);
+}
+
 // ─── Progress Analytics ────────────────────────────────────────
 
 export async function getProgressAnalytics(userId: string) {

@@ -14,7 +14,8 @@ import UserDetails from './components/UserDetails'
 import OAuthCompletion from './components/OAuthCompletion'
 import { supabase } from './lib/supabase'
 import { Dumbbell } from 'lucide-react'
-import { listDetailedSessions, syncPersonalRecords } from './lib/n8nApi'
+import { listDetailedSessions, syncPersonalRecords, getPlannedWorkouts, type PlannedWorkout } from './lib/n8nApi'
+import type { User } from '@supabase/supabase-js'
 import './index.css'
 
 import type { Exercise } from './data/exercises'
@@ -35,10 +36,12 @@ function App() {
   const [userId, setUserId] = useState<string>('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notification, setNotification] = useState<string | null>(null);
 
   // Lifted state for exercises — start empty, loaded from backend
   const [incompleteExercises, setIncompleteExercises] = useState<Exercise[]>([]);
   const [completedExercises, setCompletedExercises] = useState<Exercise[]>([]);
+  const [plannedExercises, setPlannedExercises] = useState<PlannedWorkout[]>([]);
 
   // Lifted state for personal records — start empty, loaded from backend
   const [personalRecords, setPersonalRecords] = useState<PRRecord[]>([]);
@@ -47,7 +50,7 @@ function App() {
 
   // Fetch user on mount
   useEffect(() => {
-    const fetchUserData = async (user: any) => {
+    const fetchUserData = async (user: User | null) => {
       if (user) {
         setUserId(user.id);
 
@@ -64,9 +67,10 @@ function App() {
         if (profileData?.weight) setProfileWeight(parseFloat(profileData.weight));
 
         try {
-          const [sessionsRes, prsRes] = await Promise.all([
+          const [sessionsRes, prsRes, plannedRes] = await Promise.all([
             listDetailedSessions(user.id),
-            syncPersonalRecords(user.id)
+            syncPersonalRecords(user.id),
+            getPlannedWorkouts(user.id)
           ]);
 
           // Handle PRs mapping
@@ -119,6 +123,32 @@ function App() {
             }
           }
           setCompletedExercises(loadedExercises);
+
+          // Handle Planned Workouts mapping
+          const todayStr = new Date().toISOString().split('T')[0];
+          let todayIncomplete: Exercise[] = [];
+          if (plannedRes && Array.isArray(plannedRes)) {
+            setPlannedExercises(plannedRes);
+            todayIncomplete = (plannedRes as PlannedWorkout[])
+              .filter(p => p.planned_date.split('T')[0] === todayStr)
+              .map(p => ({
+                id: p.id || String(Date.now() + Math.random()),
+                name: p.exercise_name,
+                timeInfo: `Planned • ${p.muscle_group}`,
+                sets: p.sets || 0,
+                reps: p.reps || '0',
+                weight: String(p.weight || 0) + ' kg',
+                imageAlt: p.exercise_name,
+                imageSrc: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=200&h=200&fit=crop',
+                icon: <Dumbbell className="hidden md:block w-7 h-7" />,
+                isCustom: true // marked custom so we don't necessarily enforce strict lookup
+              }));
+            setIncompleteExercises(todayIncomplete);
+          } else {
+            setPlannedExercises([]);
+            setIncompleteExercises([]);
+          }
+
         } catch (err) {
           console.error("Failed to load historical sessions:", err);
         }
@@ -128,7 +158,9 @@ function App() {
         setUserName('User');
         setAvatarUrl(null);
         setCompletedExercises([]);
+        setPlannedExercises([]);
         setPersonalRecords([]);
+        setIncompleteExercises([]);
         if (location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/oauth' && location.pathname !== '/forgot-password' && location.pathname !== '/reset-password') {
           navigate('/login');
         }
@@ -169,14 +201,23 @@ function App() {
 
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
 
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   const commonProps = {
     notificationsEnabled,
     toggleNotifications,
     setNotificationsEnabled,
+    notification,
+    showNotification,
     incompleteExercises,
     setIncompleteExercises,
     completedExercises,
     setCompletedExercises,
+    plannedExercises,
+    setPlannedExercises,
     userName,
     setUserName,
     avatarUrl,

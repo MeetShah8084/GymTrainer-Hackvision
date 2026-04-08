@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import companyIcon from '../assets/company_icon.png';
-import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, LineChart, Trophy, CalendarDays, Menu, X, Bell, BellOff, Settings, ArrowLeft, Plus, Flame, ChevronLeft, ChevronRight, MessageSquare, Trash2 } from 'lucide-react';
 import { ResponsiveTimeRange } from '@nivo/calendar';
-import type { Exercise } from '../data/exercises';
+import { EXERCISES_BY_MUSCLE, type Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
-import { getCalendarData, getWorkoutCalendarMetrics, type WorkoutCalendarMetrics } from '../lib/n8nApi';
+import { getCalendarData, getWorkoutCalendarMetrics, getPlannedWorkouts, savePlannedWorkout, type WorkoutCalendarMetrics, type PlannedWorkout } from '../lib/n8nApi';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface ScheduleProps {
   userName?: string;
@@ -30,6 +31,26 @@ const Schedule: React.FC<ScheduleProps> = ({
   const [metrics, setMetrics] = useState<WorkoutCalendarMetrics | null>(null);
   const currentYear = new Date().getFullYear();
 
+  const { showNotification } = useNotification();
+  const [planningMuscleGroup, setPlanningMuscleGroup] = useState<string>('Chest');
+  const [planningExerciseName, setPlanningExerciseName] = useState<string>('');
+  const [planningSets, setPlanningSets] = useState<string>('');
+  const [planningReps, setPlanningReps] = useState<string>('');
+  const [planningWeight, setPlanningWeight] = useState<string>('');
+  const [plannedExercises, setPlannedExercises] = useState<PlannedWorkout[]>([]);
+
+  useEffect(() => {
+    if (userId) {
+      getPlannedWorkouts(userId)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setPlannedExercises(data);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [userId]);
+
   // Merge API calendar data with locally completed exercises for the heatmap
   // Only add local exercises for dates NOT already covered by API data
   const mergedCalendarData = React.useMemo(() => {
@@ -46,6 +67,46 @@ const Schedule: React.FC<ScheduleProps> = ({
     });
     return Array.from(map.entries()).map(([day, value]) => ({ day, value }));
   }, [calendarData, completedExercises]);
+
+  const localStreak = React.useMemo(() => {
+    if (!mergedCalendarData.length) return 0;
+    
+    const dates = mergedCalendarData.map(d => {
+      const [y, m, dNum] = d.day.split('-').map(Number);
+      return new Date(y, m - 1, dNum).getTime();
+    }).sort((a, b) => b - a);
+    
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayTime = today.getTime();
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayTime = yesterday.getTime();
+    
+    const pastDates = dates.filter(t => t <= todayTime);
+    
+    if (!pastDates.length) return 0;
+    
+    let currentStreak = 0;
+    if (pastDates[0] === todayTime || pastDates[0] === yesterdayTime) {
+      currentStreak = 1;
+      let expectedTime = pastDates[0] - 86400000;
+      
+      for (let i = 1; i < pastDates.length; i++) {
+        if (pastDates[i] === expectedTime) {
+          currentStreak++;
+          expectedTime -= 86400000;
+        } else if (pastDates[i] > expectedTime) {
+          continue; // skip duplicates
+        } else {
+          break; // found gap
+        }
+      }
+    }
+    
+    return currentStreak;
+  }, [mergedCalendarData]);
 
   const [monthOffset, setMonthOffset] = useState(0);
   const [signupDate, setSignupDate] = useState<Date>(() => {
@@ -150,6 +211,8 @@ const Schedule: React.FC<ScheduleProps> = ({
     ].join('-');
     const dayExercises = completedExercises.filter(ex => ex.date === dateStr);
     const hasWorkout = dayExercises.length > 0;
+    const dayPlanned = plannedExercises.filter(ex => ex.planned_date === dateStr);
+    const hasPlanned = dayPlanned.length > 0;
 
     const isToday = currentYearCalendar === currentYearToday && currentMonthCalendar === currentMonthToday && d === currentDateCalendar;
     const isBeforeSignup = thisDate < signupDate;
@@ -158,10 +221,12 @@ const Schedule: React.FC<ScheduleProps> = ({
     let content = null;
 
     if (!isBeforeSignup) {
-      if (isToday && !hasWorkout) {
+      if (isToday && !hasWorkout && !hasPlanned) {
         content = <div className="w-full h-8 mt-auto border border-primary border-dashed rounded-md flex items-center justify-center text-[10px] font-bold text-primary">PLANNING...</div>;
       } else if (hasWorkout) {
         content = <div className="w-full h-8 mt-auto bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
+      } else if (hasPlanned) {
+        content = <div className="w-full h-8 mt-auto rounded-md flex items-center justify-center text-[10px] font-bold text-neutral-900" style={{ backgroundColor: '#fbe52b' }}>PLANNED</div>;
       } else if (!isFuture && !isToday) {
         content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
       }
@@ -298,7 +363,7 @@ const Schedule: React.FC<ScheduleProps> = ({
               <div className="flex min-w-[140px] md:min-w-0 flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/10 shadow-sm md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider md:mb-1">Current Streak</p>
-                  <p className="text-primary tracking-tight text-xl md:text-3xl font-black">{metrics?.current_streak || 0} Days</p>
+                  <p className="text-primary tracking-tight text-xl md:text-3xl font-black">{localStreak} Days</p>
                   <div className="flex items-center gap-1 md:hidden mt-1">
                     <span className="text-emerald-500 font-bold">+2%</span>
                   </div>
@@ -372,6 +437,8 @@ const Schedule: React.FC<ScheduleProps> = ({
                     ].join('-');
                     const dayExercises = completedExercises.filter(ex => ex.date === dateStr);
                     const hasWorkout = dayExercises.length > 0;
+                    const dayPlanned = plannedExercises.filter(ex => ex.planned_date === dateStr);
+                    const hasPlanned = dayPlanned.length > 0;
 
                     const isToday = currentYearCalendar === currentYearToday && currentMonthCalendar === currentMonthToday && d === currentDateCalendar;
                     const isBeforeSignup = thisDate < signupDate;
@@ -380,13 +447,17 @@ const Schedule: React.FC<ScheduleProps> = ({
                     let bgClass = '';
                     let textClass = '';
                     let blurClass = '';
+                    let customStyle: React.CSSProperties | undefined = undefined;
 
-                    if (isToday && !hasWorkout) {
+                    if (isToday && !hasWorkout && !hasPlanned) {
                       bgClass = 'border-2 border-primary border-dashed';
                       textClass = 'text-primary';
                     } else if (hasWorkout) {
                       bgClass = 'bg-primary opacity-60';
                       textClass = 'text-white';
+                    } else if (hasPlanned) {
+                      customStyle = { backgroundColor: '#fbe52b' };
+                      textClass = 'text-neutral-900';
                     } else if (isBeforeSignup) {
                       textClass = 'text-slate-300 dark:text-slate-600';
                       blurClass = 'grayscale opacity-40 cursor-not-allowed';
@@ -406,7 +477,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                       >
                         <span className={`z-10 text-sm font-semibold ${textClass}`}>{d}</span>
                         {!isBeforeSignup && (
-                          <div className={`absolute inset-1 rounded-full ${bgClass} ${selectedDate === dateStr ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background-dark' : ''}`}></div>
+                          <div className={`absolute inset-1 rounded-full ${bgClass} ${selectedDate === dateStr ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background-dark' : ''}`} style={customStyle}></div>
                         )}
                       </div>
                     );
@@ -636,62 +707,235 @@ const Schedule: React.FC<ScheduleProps> = ({
 
       {/* Exercise Details Sidebar */}
       <aside className={`fixed inset-y-0 right-0 z-[70] flex flex-col w-full max-w-md bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-2xl transform transition-transform duration-300 ease-in-out ${selectedDate ? 'translate-x-0' : 'translate-x-full'}`}>
-        {/* Sidebar Header */}
-        <div className="p-6 flex items-center gap-4 border-b border-primary/30">
-          <div className="flex items-center justify-center border border-primary/50 bg-primary/10 px-3 py-1 font-mono text-xl text-primary rounded shadow-sm">
-            {selectedDate ? selectedDate.split('-')[2] : '00'}
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight">Workout summary</h2>
-          <button className="ml-auto text-slate-400 hover:text-primary transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+        {selectedDate && (() => {
+          const [y, m, d] = selectedDate.split('-').map(Number);
+          const sd = new Date(y, m - 1, d);
+          const td = new Date(); td.setHours(0,0,0,0);
+          const isFuture = sd > td;
 
-        {/* Sidebar Middle Header */}
-        <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
-          <p className="text-lg font-medium text-slate-700 dark:text-slate-200">List of exercises done:</p>
-        </div>
-        
-        {/* Sidebar Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-6">
-          <div className="flex flex-col">
-            {selectedDate && (() => {
-              const dayExercises = completedExercises.filter(ex => ex.date === selectedDate);
-              if (dayExercises.length === 0) {
-                // Determine if future or past
-                const [y, m, d] = selectedDate.split('-').map(Number);
-                const sd = new Date(y, m - 1, d);
-                const td = new Date(); td.setHours(0,0,0,0);
-                
-                if (sd > td) {
-                  return (
-                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
-                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
-                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Scheduled</p>
-                      <p className="text-sm text-slate-400">Wait and complete current workout than just planning.</p>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
-                      <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
-                      <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Rest Day</p>
-                      <p className="text-sm text-slate-400">No workouts recorded for this date.</p>
-                    </div>
-                  );
-                }
-              }
-              return dayExercises.map(ex => (
-                <div key={ex.id} className="p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
-                  <h3 className="text-xl md:text-2xl font-bold text-center tracking-tight">{ex.name}</h3>
-                  <p className="text-primary font-medium tracking-wide text-center text-sm md:text-base">
-                    number of sets: {ex.sets}, reps per set: {ex.reps.split(',')[0].trim()}, weight: {ex.weight}
-                  </p>
+          if (isFuture) {
+            const dayPlanned = plannedExercises.filter(ex => ex.planned_date === selectedDate);
+            return (
+              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-[Caveat] text-slate-800 dark:text-slate-200">
+                {/* Sidebar Header */}
+                <div className="p-4 md:p-6 flex items-center justify-center relative">
+                  <button className="absolute left-4 md:left-6 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
+                    <X className="w-6 h-6" />
+                  </button>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">{selectedDate?.split('-')[2]} Workout Planning</h2>
                 </div>
-              ));
-            })()}
-          </div>
-        </div>
+                <div className="border-b-2 border-primary/20 w-full" />
+
+                <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
+                  <p className="text-xl font-medium text-slate-700 dark:text-slate-200">Planned exercises:</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-6">
+                  <div className="flex flex-col">
+                    {dayPlanned.length === 0 ? (
+                      <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                        <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                        <p className="text-xl font-semibold text-slate-500 dark:text-slate-400">No exercises planned yet.</p>
+                      </div>
+                    ) : (
+                      dayPlanned.map(ex => (
+                        <div key={ex.id} className="relative p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+                          <h3 className="text-xl md:text-2xl font-bold text-center tracking-tight">{ex.exercise_name}</h3>
+                          <p className="text-primary font-medium tracking-wide text-center text-lg">
+                            number of sets: {ex.sets}, reps per set: {ex.reps}, weight: {ex.weight}
+                          </p>
+                          <button
+                            onClick={async () => {
+                              setPlannedExercises(prev => prev.filter(p => p.id !== ex.id));
+                              if (ex.id) {
+                                try {
+                                  await supabase.from('planned_workouts').delete().eq('id', ex.id);
+                                } catch(e) {
+                                  console.error(e);
+                                }
+                              }
+                            }}
+                            className="absolute right-4 top-4 p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="p-4 text-center border-t border-b border-primary/30 bg-slate-50 dark:bg-transparent mt-4">
+                    <p className="text-xl font-medium text-slate-700 dark:text-slate-200">Add exercise:</p>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Muscle Group</label>
+                      <select
+                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                        value={planningMuscleGroup}
+                        onChange={(e) => {
+                          setPlanningMuscleGroup(e.target.value);
+                          setPlanningExerciseName('');
+                        }}
+                      >
+                        {Object.keys(EXERCISES_BY_MUSCLE).map(mg => (
+                          <option key={mg} value={mg}>{mg}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Exercise Name</label>
+                      <select
+                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                        value={planningExerciseName}
+                        onChange={(e) => setPlanningExerciseName(e.target.value)}
+                      >
+                        <option value="" disabled>Select an exercise</option>
+                        {(EXERCISES_BY_MUSCLE[planningMuscleGroup] || []).map(exName => (
+                          <option key={exName} value={exName}>{exName}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Sets</label>
+                        <input
+                          type="number" min="1"
+                          className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                          value={planningSets}
+                          onChange={(e) => setPlanningSets(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Weight (kg)</label>
+                        <input
+                          type="number" min="0" step="1"
+                          className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                          value={planningWeight}
+                          onChange={(e) => setPlanningWeight(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Reps per set</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 10, 8, 8"
+                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans placeholder:text-slate-400"
+                        value={planningReps}
+                        onChange={(e) => setPlanningReps(e.target.value)}
+                      />
+                      <span className="text-sm text-slate-500 italic mt-1">* Use commas for different reps each set</span>
+                    </div>
+
+                    <div className="pt-4">
+                      <button 
+                        onClick={() => {
+                          if (!planningExerciseName) return;
+
+                          // Validation
+                          const numSets = Number(planningSets) || 0;
+                          if (numSets <= 0) {
+                            showNotification("Please enter a valid number of sets.");
+                            return;
+                          }
+                          
+                          const repValues = planningReps.split(',').map(v => v.trim()).filter(v => v !== '');
+                          if (repValues.length === 0) {
+                            showNotification("Please enter reps per set.");
+                            return;
+                          }
+                          if (repValues.length !== 1 && repValues.length !== numSets) {
+                            showNotification(`Error: You entered ${numSets} sets, but provided ${repValues.length} rep values.`);
+                            return;
+                          }
+
+                          const plan: PlannedWorkout = {
+                            user_id: userId,
+                            planned_date: selectedDate || '',
+                            muscle_group: planningMuscleGroup,
+                            exercise_name: planningExerciseName,
+                            sets: numSets,
+                            reps: planningReps,
+                            weight: Number(planningWeight) || 0
+                          };
+                          
+                          const tempId = Math.random().toString(36).substring(7);
+                          setPlannedExercises(prev => [...prev, { ...plan, id: tempId }]);
+                          setPlanningExerciseName('');
+                          setPlanningSets('');
+                          setPlanningReps('');
+                          setPlanningWeight('');
+
+                          savePlannedWorkout(plan).catch(err => {
+                            console.error('Failed to save planned workout', err);
+                          });
+                        }}
+                        className="w-full py-3 bg-transparent border-2 border-dashed border-primary/60 text-primary font-bold text-xl rounded-2xl transition-all cursor-pointer hover:bg-primary/10 hover:border-primary"
+                      >
+                        + Add exercise to plan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 border-t border-primary/20 bg-white dark:bg-[#111111]">
+                  <button
+                    onClick={() => {
+                      setSelectedDate(null);
+                      showNotification("Workout plan saved.");
+                    }}
+                    className="w-full py-4 bg-primary text-white font-bold text-2xl tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:bg-[#c54a0d] transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    SAVE PLAN
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            const dayExercises = completedExercises.filter(ex => ex.date === selectedDate);
+            return (
+              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-[Caveat] text-slate-800 dark:text-slate-200">
+                <div className="p-4 md:p-6 flex items-center justify-center relative">
+                  <button className="absolute left-4 md:left-6 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
+                    <X className="w-6 h-6" />
+                  </button>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">{selectedDate?.split('-')[2]} Workout summary</h2>
+                </div>
+                <div className="border-b-2 border-primary/20 w-full" />
+
+                <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
+                  <p className="text-lg font-medium text-slate-700 dark:text-slate-200">List of exercises done:</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-6">
+                  <div className="flex flex-col">
+                    {dayExercises.length === 0 ? (
+                      <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">
+                        <CalendarDays className="w-12 h-12 text-slate-400 mb-2" />
+                        <p className="text-lg font-semibold text-slate-500 dark:text-slate-400">Rest Day</p>
+                        <p className="text-sm text-slate-400">No workouts recorded for this date.</p>
+                      </div>
+                    ) : (
+                      dayExercises.map(ex => (
+                        <div key={ex.id} className="p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+                          <h3 className="text-xl md:text-2xl font-bold text-center tracking-tight">{ex.name}</h3>
+                          <p className="text-primary font-medium tracking-wide text-center text-sm md:text-base">
+                            number of sets: {ex.sets}, reps per set: {ex.reps}, weight: {ex.weight}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        })()}
       </aside>
 
     </div>
