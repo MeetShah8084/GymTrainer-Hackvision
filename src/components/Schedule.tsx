@@ -7,6 +7,7 @@ import { EXERCISES_BY_MUSCLE, type Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
 import { getCalendarData, getWorkoutCalendarMetrics, getPlannedWorkouts, savePlannedWorkout, type WorkoutCalendarMetrics, type PlannedWorkout } from '../lib/n8nApi';
 import { useNotification } from '../contexts/NotificationContext';
+import { ExerciseSearchInput } from './ExerciseSearchInput';
 
 interface ScheduleProps {
   userName?: string;
@@ -802,16 +803,15 @@ const Schedule: React.FC<ScheduleProps> = ({
 
                     <div className="flex flex-col gap-1">
                       <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Exercise Name</label>
-                      <select
-                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                      <ExerciseSearchInput
                         value={planningExerciseName}
-                        onChange={(e) => setPlanningExerciseName(e.target.value)}
-                      >
-                        <option value="" disabled>Select an exercise</option>
-                        {(EXERCISES_BY_MUSCLE[planningMuscleGroup] || []).map(exName => (
-                          <option key={exName} value={exName}>{exName}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setPlanningExerciseName(val)}
+                        onSelectExercise={(_name, isBw) => {
+                          if (isBw) setPlanningWeight('BodyWeight');
+                        }}
+                        muscleGroupFilter={planningMuscleGroup}
+                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -827,8 +827,9 @@ const Schedule: React.FC<ScheduleProps> = ({
                       <div className="flex flex-col gap-1">
                         <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Weight (kg)</label>
                         <input
-                          type="number" min="0" step="1"
-                          className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                          type={planningWeight === 'BodyWeight' ? "text" : "number"} min="0" step="1"
+                          readOnly={planningWeight === 'BodyWeight'}
+                          className={`w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans ${planningWeight === 'BodyWeight' ? 'opacity-60 cursor-not-allowed text-sm' : ''}`}
                           value={planningWeight}
                           onChange={(e) => setPlanningWeight(e.target.value)}
                         />
@@ -876,7 +877,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                             exercise_name: planningExerciseName,
                             sets: numSets,
                             reps: planningReps,
-                            weight: Number(planningWeight) || 0
+                            weight: planningWeight === 'BodyWeight' ? 0 : (Number(planningWeight) || 0)
                           };
                           
                           const tempId = Math.random().toString(36).substring(7);

@@ -27,87 +27,7 @@ import {
 } from 'lucide-react';
 import { EXERCISES_BY_MUSCLE, BODYWEIGHT_EXERCISES } from '../data/exercises';
 
-const WGER_STRING_CATEGORY_MAP: Record<string, string> = {
-  "Abs": "Abs",
-  "Arms": "Arms",
-  "Back": "Back",
-  "Calves": "Legs",
-  "Chest": "Chest",
-  "Legs": "Legs",
-  "Shoulders": "Arms" // Mapped to Arms as there is no specific Shoulders card
-};
-
-const ExerciseAutocomplete: React.FC<{
-  value: string;
-  onChange: (val: string) => void;
-  onBlur?: () => void;
-  options: string[];
-}> = ({ value, onChange, onBlur, options }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        if (onBlur) onBlur();
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onBlur]);
-
-  const filteredOptions = options.filter(opt => opt.toLowerCase().includes(value.toLowerCase()));
-
-  return (
-    <div className="relative flex-1" ref={wrapperRef}>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          const val = e.target.value.replace(/[^a-zA-Z\s-]/g, '');
-          onChange(val);
-          setIsOpen(true);
-        }}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            setIsOpen(false);
-            if (onBlur) onBlur();
-          }
-        }}
-        className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
-        placeholder="Type or select..."
-      />
-      <div 
-        className="absolute inset-y-0 right-4 flex items-center cursor-pointer"
-        onClick={() => setIsOpen(prev => !prev)}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ec5b13" className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </div>
-
-      {isOpen && filteredOptions.length > 0 && (
-        <ul className="absolute z-50 w-full mt-2 bg-[#1e1511] border border-primary/40 rounded-xl overflow-hidden shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
-          {filteredOptions.map((opt) => (
-            <li
-              key={opt}
-              onMouseDown={(e) => {
-                e.preventDefault(); // Prevents input onBlur from firing before this
-                onChange(opt);
-                setIsOpen(false);
-              }}
-              className="px-4 py-3 text-slate-200 hover:bg-primary/20 hover:text-white cursor-pointer transition-colors"
-            >
-              {opt}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
+import { ExerciseSearchInput } from './ExerciseSearchInput';
 
 interface ExerciseCard {
   id: string;
@@ -165,12 +85,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       if (c.id === id) {
         const updated = { ...c, [field]: value };
         if (field === 'exerciseName') {
-          const isBw = BODYWEIGHT_EXERCISES.some(bw => 
-            bw.toLowerCase().replace(/[- ]/g, '') === value.toLowerCase().replace(/[- ]/g, '') ||
-            value.toLowerCase().includes('pull-up') || value.toLowerCase().includes('pull up') || 
-            value.toLowerCase().includes('push-up') || value.toLowerCase().includes('push up')
-          );
-          updated.weight = isBw ? 'BodyWeight' : '';
+          updated.weight = '';
         }
         return updated;
       }
@@ -178,36 +93,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     }));
   };
 
-  const checkCustomExercise = async (cardId: string, exerciseName: string) => {
-    if (!exerciseName) return;
-    
-    // Check if it's already in the predefined main list
-    const isPredefined = Object.values(EXERCISES_BY_MUSCLE).flat().includes(exerciseName);
-    if (isPredefined) return;
 
-    try {
-      const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(exerciseName)}&language=2`);
-      const data = await res.json();
-      
-      if (!data.suggestions || data.suggestions.length === 0) {
-        showNotification(`"${exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
-        updateCard(cardId, 'exerciseName', '');
-      } else {
-        const exerciseCategory = data.suggestions[0].data.category;
-        const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
-        
-        if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
-          showNotification(`This exercise is categorized under ${actualMuscleGroup}, but you are currently logging ${muscleGroup}. Please log it in the ${actualMuscleGroup} section.`);
-          setTimeout(() => updateCard(cardId, 'exerciseName', ''), 0);
-          return;
-        }
-
-        // Just rely on local fuzzy matching for bodyweight (already done in updateCard)
-      }
-    } catch (err) {
-      console.error("Failed to validate exercise with Wger API:", err);
-    }
-  };
 
   const addCard = () => {
     const newCard = createCard();
@@ -240,29 +126,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
       return;
     }
 
-    // Await API check for all custom exercises
-    for (const c of validCards) {
-      const isPredefined = Object.values(EXERCISES_BY_MUSCLE).flat().includes(c.exerciseName);
-      if (!isPredefined) {
-        try {
-          const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(c.exerciseName)}&language=2`);
-          const data = await res.json();
-          if (!data.suggestions || data.suggestions.length === 0) {
-            showNotification(`"${c.exerciseName}" is not a recognized exercise. Please enter a valid exercise.`);
-            return;
-          }
-          
-          const exerciseCategory = data.suggestions[0].data.category;
-          const actualMuscleGroup = WGER_STRING_CATEGORY_MAP[exerciseCategory];
-          if (actualMuscleGroup && actualMuscleGroup !== muscleGroup) {
-            showNotification(`"${c.exerciseName}" is categorized under ${actualMuscleGroup}. Please add it from the ${actualMuscleGroup} page.`);
-            return;
-          }
-        } catch (err) {
-          console.error("Validation failed:", err);
-        }
-      }
-    }
+
 
     // Validation & formatting for reps
     for (const c of validCards) {
@@ -413,12 +277,17 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                       {/* Exercise name */}
                       <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                         <label className="text-slate-400 text-sm font-semibold uppercase tracking-wider w-36 shrink-0">Exercise name:</label>
-                        <ExerciseAutocomplete
-                          value={card.exerciseName}
-                          onChange={(val) => updateCard(card.id, 'exerciseName', val)}
-                          onBlur={() => checkCustomExercise(card.id, card.exerciseName)}
-                          options={exerciseOptions}
-                        />
+                        <div className="relative flex-1">
+                          <ExerciseSearchInput
+                            value={card.exerciseName}
+                            onChange={(val) => updateCard(card.id, 'exerciseName', val)}
+                            onSelectExercise={(_name, isBw) => {
+                              if (isBw) updateCard(card.id, 'weight', 'BodyWeight');
+                            }}
+                            muscleGroupFilter={muscleGroup !== 'Cardio' && muscleGroup !== 'PR' ? muscleGroup : undefined}
+                            className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
+                          />
+                        </div>
                       </div>
 
                       {/* Weight & Sets row */}
