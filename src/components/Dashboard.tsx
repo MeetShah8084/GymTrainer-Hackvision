@@ -71,10 +71,20 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
     };
   };
 
+  const getBannerImage = (muscle: string) => {
+    const norm = muscle.toLowerCase();
+    switch (norm) {
+      case 'arms': return '/banner_arms.png';
+      case 'cardio': return '/banner_cardio.png';
+      case 'core': return '/banner_core.png';
+      case 'back': return '/banner_deadlift.png';
+      case 'legs': return '/banner_legs4.png';
+      default: return '/banner_chest.png';
+    }
+  };
+
   const [cards, setCards] = useState<ExerciseCard[]>([createCard()]);
   const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
-  const [headerImage, setHeaderImage] = useState<string>('/Progressive Gym Trainer.png');
-  const [imageKey, setImageKey] = useState<number>(0);
 
   // Reset when muscle group changes
   useEffect(() => {
@@ -247,19 +257,14 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
 
       {/* Logger Main Content */}
       <main className="flex-1 overflow-y-auto custom-gradient p-4 md:p-8 flex flex-col items-center pb-24 md:pb-8">
-        {/* Header Image replacing 3D Model Placeholder */}
-        <div
-          className="w-full max-w-[1000px] rounded-[32px] border border-slate-700/50 bg-black/20 flex flex-col items-center justify-center mb-10 shadow-inner relative overflow-hidden group transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ height: headerImage === '/Progressive Gym Trainer.png' ? 'clamp(192px, 30vw, 320px)' : 'clamp(392px, 60vw, 600px)' }}
-        >
+        {/* Header Image */}
+        <div className="w-full mb-10 shadow-inner relative overflow-hidden rounded-[32px] border border-slate-700/50 bg-black/20">
           <img
-            key={imageKey}
-            src={headerImage}
-            alt="Exercise Preview"
-            className="w-full h-full object-cover animate-fade-in"
+            src={getBannerImage(muscleGroup)}
+            alt={`${muscleGroup} Workout Banner`}
+            className="w-full object-cover max-h-[400px] min-h-[192px]"
           />
         </div>
-
         {/* Log your Progress */}
         <div className="w-full max-w-[1000px]">
           <h2 className="text-2xl md:text-3xl font-black text-slate-200 tracking-tight">Log your Progress</h2>
@@ -293,12 +298,6 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                             onChange={(val) => updateCard(card.id, 'exerciseName', val)}
                             onSelectExercise={(_name, isBw, imagePath) => {
                               if (isBw) updateCard(card.id, 'weight', 'BodyWeight');
-                              if (imagePath) {
-                                setHeaderImage(`https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${imagePath}`);
-                              } else {
-                                setHeaderImage('/Progressive Gym Trainer.png');
-                              }
-                              setImageKey(prev => prev + 1);
                             }}
                             muscleGroupFilter={muscleGroup !== 'Cardio' && muscleGroup !== 'PR' ? muscleGroup : undefined}
                             className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
