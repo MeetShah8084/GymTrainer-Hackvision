@@ -11,20 +11,58 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isVerifyingLink, setIsVerifyingLink] = useState(true);
 
+  const [remoteVerified, setRemoteVerified] = useState(false);
+
   useEffect(() => {
-    // Check if user is authenticated from the magic link
-    // The session might take a moment to be established after redirect
     const checkSession = async () => {
+      // Find reqId in search or hash
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const reqId = urlParams.get('reqId') || hashParams.get('reqId');
+      
+      const localReqId = localStorage.getItem('forgot_req_id');
+
+      const processSession = async (activeSession: any) => {
+        if (reqId && reqId !== localReqId) {
+          // This is Device B
+          const channel = supabase.channel(`reset-${reqId}`);
+          channel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await channel.send({
+                type: 'broadcast',
+                event: 'verified',
+                payload: {
+                  access_token: activeSession.access_token,
+                  refresh_token: activeSession.refresh_token
+                }
+              });
+              
+              // Clear the session on Device B since Device A will use it
+              await supabase.auth.signOut();
+              
+              setIsVerifyingLink(false);
+              setRemoteVerified(true);
+            }
+          });
+        } else {
+          // This is Device A
+          localStorage.removeItem('forgot_req_id');
+          setIsVerifyingLink(false);
+        }
+      };
+
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session) {
-        setIsVerifyingLink(false);
+        await processSession(session);
       } else {
         // Fallback: wait briefly to see if auth state updates
         setTimeout(async () => {
           const { data: { session: delayedSession } } = await supabase.auth.getSession();
           if (delayedSession) {
-            setIsVerifyingLink(false);
+            await processSession(delayedSession);
           } else {
+            // Also accept if they land directly here and somehow already have a valid token logic handled
             showNotification('Invalid or expired reset link. Please request a new one.');
             navigate('/forgot-password');
           }
@@ -33,7 +71,7 @@ export default function ResetPassword() {
     };
     
     checkSession();
-  }, [navigate, showNotification]);
+  }, [navigate]); // Intentionally omitting showNotification from deps so it doesn't re-run
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +105,26 @@ export default function ResetPassword() {
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 rounded-full border-4 border-[#F97316]/20 border-t-[#F97316] animate-spin" />
           <p className="text-[#A3A3A3] font-medium animate-pulse">Verifying secure link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (remoteVerified) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#0C0C0C]">
+        <div className="flex flex-col items-center gap-6 text-center max-w-md p-6">
+          <div className="size-20 rounded-full bg-[#F97316]/10 flex items-center justify-center text-[#F97316]">
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+             <h2 className="text-3xl font-bold text-[#F8F8F8] font-['Barlow_Condensed'] mb-2">SUCCESSFULLY VERIFIED</h2>
+             <p className="text-[#A3A3A3] text-[15px] leading-relaxed">
+               Your email has been verified. You can now close this window and continue setting your new password on the device where you originally requested the reset link.
+             </p>
+          </div>
         </div>
       </div>
     );
