@@ -6,12 +6,13 @@ export interface ExerciseOption {
   category: string;
   equipment: string;
   primaryMuscles: string[];
+  images?: string[];
 }
 
 export interface ExerciseSearchInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSelectExercise: (name: string, isBodyweight: boolean) => void;
+  onSelectExercise: (name: string, isBodyweight: boolean, imagePath?: string) => void;
   muscleGroupFilter?: string; // Optional filter from logger (e.g. "Chest", "Arms")
   placeholder?: string;
   className?: string;
@@ -172,8 +173,8 @@ export const ExerciseSearchInput: React.FC<ExerciseSearchInputProps> = ({
     setIsOpen(false);
 
     // Precise offline bodyweight detection via equipment flag
-    const isBw = opt.equipment === "body only" || opt.equipment === "body weight";
-    onSelectExercise(opt.name, isBw);
+    const isBodyweight = opt.equipment === "body only" || opt.equipment === "body weight";
+    onSelectExercise(opt.name, isBodyweight, opt.images?.[0]);
   };
 
   return (

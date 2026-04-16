@@ -73,6 +73,8 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
 
   const [cards, setCards] = useState<ExerciseCard[]>([createCard()]);
   const [animatingIds, setAnimatingIds] = useState<Set<string>>(new Set());
+  const [headerImage, setHeaderImage] = useState<string>('/Progressive Gym Trainer.png');
+  const [imageKey, setImageKey] = useState<number>(0);
 
   // Reset when muscle group changes
   useEffect(() => {
@@ -118,7 +120,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
   };
 
   const handleSaveSession = async () => {
-    const validCards = cards.filter(c => 
+    const validCards = cards.filter(c =>
       !c.removing && c.exerciseName && c.sets && c.reps && (muscleGroup === 'Cardio' || c.weight)
     );
     if (validCards.length === 0) {
@@ -245,9 +247,17 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
 
       {/* Logger Main Content */}
       <main className="flex-1 overflow-y-auto custom-gradient p-4 md:p-8 flex flex-col items-center pb-24 md:pb-8">
-        {/* 3D Model Placeholder */}
-        <div className="w-full max-w-[1000px] aspect-square rounded-[32px] border border-slate-700/50 bg-black/20 flex flex-col items-center justify-center mb-10 shadow-inner relative overflow-hidden">
-          <span className="text-slate-500 font-medium z-10">3d model</span>
+        {/* Header Image replacing 3D Model Placeholder */}
+        <div
+          className="w-full max-w-[1000px] rounded-[32px] border border-slate-700/50 bg-black/20 flex flex-col items-center justify-center mb-10 shadow-inner relative overflow-hidden group transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{ height: headerImage === '/Progressive Gym Trainer.png' ? 'clamp(192px, 30vw, 320px)' : 'clamp(392px, 60vw, 600px)' }}
+        >
+          <img
+            key={imageKey}
+            src={headerImage}
+            alt="Exercise Preview"
+            className="w-full h-full object-cover animate-fade-in"
+          />
         </div>
 
         {/* Log your Progress */}
@@ -281,8 +291,14 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                           <ExerciseSearchInput
                             value={card.exerciseName}
                             onChange={(val) => updateCard(card.id, 'exerciseName', val)}
-                            onSelectExercise={(_name, isBw) => {
+                            onSelectExercise={(_name, isBw, imagePath) => {
                               if (isBw) updateCard(card.id, 'weight', 'BodyWeight');
+                              if (imagePath) {
+                                setHeaderImage(`https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${imagePath}`);
+                              } else {
+                                setHeaderImage('/Progressive Gym Trainer.png');
+                              }
+                              setImageKey(prev => prev + 1);
                             }}
                             muscleGroupFilter={muscleGroup !== 'Cardio' && muscleGroup !== 'PR' ? muscleGroup : undefined}
                             className="w-full bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary appearance-none placeholder-slate-500"
@@ -368,7 +384,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                             }
                           }}
                           className="w-full md:w-40 bg-transparent border border-primary/40 rounded-xl px-4 py-3 text-white outline-none focus:border-primary" />
-                        
+
                         {muscleGroup === 'Cardio' && (
                           <div className="flex items-center gap-3 mt-2 md:mt-0 md:ml-4 text-white font-bold bg-primary/10 px-4 py-3 rounded-xl border border-primary/20">
                             Total minutes: {card.reps ? (() => {
