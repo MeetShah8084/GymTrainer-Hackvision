@@ -66,3 +66,12 @@
     background: #c54a0d;
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}

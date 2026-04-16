@@ -7,6 +7,7 @@ import { EXERCISES_BY_MUSCLE, type Exercise } from '../data/exercises';
 import { supabase } from '../lib/supabase';
 import { getCalendarData, getWorkoutCalendarMetrics, getPlannedWorkouts, savePlannedWorkout, type WorkoutCalendarMetrics, type PlannedWorkout } from '../lib/n8nApi';
 import { useNotification } from '../contexts/NotificationContext';
+import { ExerciseSearchInput } from './ExerciseSearchInput';
 
 interface ScheduleProps {
   userName?: string;
@@ -226,7 +227,11 @@ const Schedule: React.FC<ScheduleProps> = ({
       } else if (hasWorkout) {
         content = <div className="w-full h-8 mt-auto bg-primary text-white rounded-md flex items-center justify-center text-[10px] font-bold">WORKOUT</div>;
       } else if (hasPlanned) {
-        content = <div className="w-full h-8 mt-auto rounded-md flex items-center justify-center text-[10px] font-bold text-neutral-900" style={{ backgroundColor: '#fbe52b' }}>PLANNED</div>;
+        if (!isFuture && !isToday) {
+          content = <div className="w-full h-8 mt-auto rounded-md flex items-center justify-center text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: '#950606' }}>PLANNED</div>;
+        } else {
+          content = <div className="w-full h-8 mt-auto rounded-md flex items-center justify-center text-[10px] font-bold text-neutral-900" style={{ backgroundColor: '#fbe52b' }}>PLANNED</div>;
+        }
       } else if (!isFuture && !isToday) {
         content = <span className="text-[10px] text-slate-400 font-bold uppercase mt-auto">Rest Day</span>;
       }
@@ -456,8 +461,13 @@ const Schedule: React.FC<ScheduleProps> = ({
                       bgClass = 'bg-primary opacity-60';
                       textClass = 'text-white';
                     } else if (hasPlanned) {
-                      customStyle = { backgroundColor: '#fbe52b' };
-                      textClass = 'text-neutral-900';
+                      if (!isFuture && !isToday) {
+                        customStyle = { backgroundColor: '#950606' };
+                        textClass = 'text-white';
+                      } else {
+                        customStyle = { backgroundColor: '#fbe52b' };
+                        textClass = 'text-neutral-900';
+                      }
                     } else if (isBeforeSignup) {
                       textClass = 'text-slate-300 dark:text-slate-600';
                       blurClass = 'grayscale opacity-40 cursor-not-allowed';
@@ -706,7 +716,7 @@ const Schedule: React.FC<ScheduleProps> = ({
       )}
 
       {/* Exercise Details Sidebar */}
-      <aside className={`fixed inset-y-0 right-0 z-[70] flex flex-col w-full max-w-md bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-2xl transform transition-transform duration-300 ease-in-out ${selectedDate ? 'translate-x-0' : 'translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 right-0 z-[70] flex flex-col w-full max-w-lg bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-2xl transform transition-transform duration-300 ease-in-out ${selectedDate ? 'translate-x-0' : 'translate-x-full'}`}>
         {selectedDate && (() => {
           const [y, m, d] = selectedDate.split('-').map(Number);
           const sd = new Date(y, m - 1, d);
@@ -716,13 +726,19 @@ const Schedule: React.FC<ScheduleProps> = ({
           if (isFuture) {
             const dayPlanned = plannedExercises.filter(ex => ex.planned_date === selectedDate);
             return (
-              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-[Caveat] text-slate-800 dark:text-slate-200">
+              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-['Poppins'] text-slate-800 dark:text-slate-200">
                 {/* Sidebar Header */}
                 <div className="p-4 md:p-6 flex items-center justify-center relative">
                   <button className="absolute left-4 md:left-6 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
                     <X className="w-6 h-6" />
                   </button>
-                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">{selectedDate?.split('-')[2]} Workout Planning</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-center flex items-center justify-center gap-4">
+                    <div className="relative flex items-center justify-center text-primary shrink-0">
+                      <CalendarDays className="w-10 h-10 md:w-12 md:h-12 stroke-[1.5]" />
+                      <span className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-[#111111] px-1 text-sm md:text-base font-black leading-none pt-0.5 rounded-sm">{selectedDate?.split('-')[2]}</span>
+                    </div>
+                    <span>Workout Planning</span>
+                  </h2>
                 </div>
                 <div className="border-b-2 border-primary/20 w-full" />
 
@@ -787,16 +803,15 @@ const Schedule: React.FC<ScheduleProps> = ({
 
                     <div className="flex flex-col gap-1">
                       <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Exercise Name</label>
-                      <select
-                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                      <ExerciseSearchInput
                         value={planningExerciseName}
-                        onChange={(e) => setPlanningExerciseName(e.target.value)}
-                      >
-                        <option value="" disabled>Select an exercise</option>
-                        {(EXERCISES_BY_MUSCLE[planningMuscleGroup] || []).map(exName => (
-                          <option key={exName} value={exName}>{exName}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setPlanningExerciseName(val)}
+                        onSelectExercise={(_name, isBw) => {
+                          if (isBw) setPlanningWeight('BodyWeight');
+                        }}
+                        muscleGroupFilter={planningMuscleGroup}
+                        className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -812,8 +827,9 @@ const Schedule: React.FC<ScheduleProps> = ({
                       <div className="flex flex-col gap-1">
                         <label className="text-lg font-medium text-slate-600 dark:text-slate-400">Weight (kg)</label>
                         <input
-                          type="number" min="0" step="1"
-                          className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans"
+                          type={planningWeight === 'BodyWeight' ? "text" : "number"} min="0" step="1"
+                          readOnly={planningWeight === 'BodyWeight'}
+                          className={`w-full bg-slate-50 dark:bg-[#1a1a1a] border border-primary/30 rounded-xl p-3 text-slate-800 dark:text-white outline-none focus:border-primary transition-colors font-sans ${planningWeight === 'BodyWeight' ? 'opacity-60 cursor-not-allowed text-sm' : ''}`}
                           value={planningWeight}
                           onChange={(e) => setPlanningWeight(e.target.value)}
                         />
@@ -861,7 +877,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                             exercise_name: planningExerciseName,
                             sets: numSets,
                             reps: planningReps,
-                            weight: Number(planningWeight) || 0
+                            weight: planningWeight === 'BodyWeight' ? 0 : (Number(planningWeight) || 0)
                           };
                           
                           const tempId = Math.random().toString(36).substring(7);
@@ -898,21 +914,54 @@ const Schedule: React.FC<ScheduleProps> = ({
             );
           } else {
             const dayExercises = completedExercises.filter(ex => ex.date === selectedDate);
+            const dayPlanned = plannedExercises.filter(ex => ex.planned_date === selectedDate);
             return (
-              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-[Caveat] text-slate-800 dark:text-slate-200">
+              <div className="flex flex-col h-full bg-white dark:bg-[#111111] font-['Poppins'] text-slate-800 dark:text-slate-200">
                 <div className="p-4 md:p-6 flex items-center justify-center relative">
                   <button className="absolute left-4 md:left-6 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer" onClick={() => setSelectedDate(null)}>
                     <X className="w-6 h-6" />
                   </button>
-                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">{selectedDate?.split('-')[2]} Workout summary</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-center flex items-center justify-center gap-4">
+                    <div className="relative flex items-center justify-center text-primary shrink-0">
+                      <CalendarDays className="w-10 h-10 md:w-12 md:h-12 stroke-[1.5]" />
+                      <span className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-[#111111] px-1 text-sm md:text-base font-black leading-none pt-0.5 rounded-sm">{selectedDate?.split('-')[2]}</span>
+                    </div>
+                    <span>Workout summary</span>
+                  </h2>
                 </div>
                 <div className="border-b-2 border-primary/20 w-full" />
 
-                <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
-                  <p className="text-lg font-medium text-slate-700 dark:text-slate-200">List of exercises done:</p>
-                </div>
-
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-6">
+                  {dayPlanned.length > 0 && (
+                    <div className="flex flex-col">
+                      <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent">
+                        <p className="text-lg font-medium text-slate-700 dark:text-slate-200">Planned exercises:</p>
+                      </div>
+                      {dayPlanned.map((ex, index) => {
+                        const isCompleted = dayExercises.some(done => done.name === ex.exercise_name);
+                        return (
+                          <div key={ex.id || `planned-${index}`} className={`relative p-6 border-b border-primary/20 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors ${isCompleted ? 'opacity-50 grayscale' : ''}`}>
+                            <h3 className={`text-xl md:text-2xl font-bold text-center tracking-tight flex items-center justify-center gap-2 ${isCompleted ? 'text-slate-500' : 'text-red-500/80 dark:text-red-400/80'}`} style={!isCompleted ? { color: 'color-mix(in srgb, currentColor 90%, red 10%)' } : {}}>
+                              {ex.exercise_name}
+                              {isCompleted && (
+                                <div className="bg-emerald-500 rounded-full flex items-center justify-center text-white" style={{ width: '24px', height: '24px' }}>
+                                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                              )}
+                            </h3>
+                            <p className={`font-medium tracking-wide text-center text-sm md:text-base ${isCompleted ? 'text-slate-500' : 'text-primary'}`}>
+                              number of sets: {ex.sets}, reps per set: {ex.reps}, weight: {ex.weight}kg
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  <div className="p-4 text-center border-b border-primary/30 bg-slate-50 dark:bg-transparent mt-2">
+                    <p className="text-lg font-medium text-slate-700 dark:text-slate-200">List of exercises done:</p>
+                  </div>
+
                   <div className="flex flex-col">
                     {dayExercises.length === 0 ? (
                       <div className="p-12 text-center flex flex-col items-center gap-3 opacity-60">

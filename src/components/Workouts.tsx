@@ -8,6 +8,8 @@ import type { PRRecord } from '../App';
 import { type Exercise, formatDate } from '../data/exercises';
 import { updateSet, deleteExercise, logWorkout, type LogWorkoutExercise } from '../lib/n8nApi';
 import { useNotification } from '../contexts/NotificationContext';
+import { fetchLocalExercises, type ExerciseOption } from './ExerciseSearchInput';
+import { BODYWEIGHT_EXERCISES } from '../data/exercises';
 
 interface WorkoutsProps {
   userName?: string;
@@ -55,6 +57,29 @@ const Workouts: React.FC<WorkoutsProps> = ({
 
   // HTML5 Drag and Drop State
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  
+  const [exerciseDataset, setExerciseDataset] = useState<ExerciseOption[]>([]);
+
+  React.useEffect(() => {
+    fetchLocalExercises().then(data => setExerciseDataset(data)).catch(console.error);
+  }, []);
+
+  const checkIsBodyweight = (exerciseName: string, explicitWeight: string) => {
+    if (explicitWeight === 'BodyWeight') return true;
+    
+    // Check old hardcoded list with normalization (e.g. "Pushups" vs "Push-ups")
+    const normalizedName = exerciseName.toLowerCase().replace(/[^a-z]/g, '');
+    const isLegacyBw = BODYWEIGHT_EXERCISES.some(bw => bw.toLowerCase().replace(/[^a-z]/g, '') === normalizedName) || normalizedName === 'pushups' || normalizedName === 'pullups';
+    if (isLegacyBw) return true;
+
+    // Check new dataset
+    const matchedOpt = exerciseDataset.find(o => o.name.toLowerCase() === exerciseName.toLowerCase());
+    if (matchedOpt && (matchedOpt.equipment === "body only" || matchedOpt.equipment === "body weight")) {
+      return true;
+    }
+
+    return false;
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedItemIndex(index);
@@ -464,9 +489,32 @@ const Workouts: React.FC<WorkoutsProps> = ({
                                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1 md:hidden">Reps</span>
                                 <input name="reps" className="w-full bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/30 rounded-lg text-sm px-2 py-1.5 md:py-2 focus:ring-1 focus:ring-primary focus:border-primary transition-all text-slate-900 dark:text-white" type="text" defaultValue={exercise.reps} />
                               </div>
-                              <div className="flex flex-col flex-1">
+                              <div className="flex flex-col flex-1 relative">
                                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1 md:hidden">Weight</span>
-                                <input name="weight" className="w-full text-primary font-bold bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/30 rounded-lg text-sm px-2 py-1.5 md:py-2 focus:ring-1 focus:ring-primary focus:border-primary transition-all" type="text" defaultValue={parseInt(exercise.weight)} />
+                                {(() => {
+                                  const isBw = checkIsBodyweight(exercise.name, exercise.weight);
+                                  return (
+                                    <input 
+                                      name="weight" 
+                                      className={`w-full text-primary font-bold bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/30 rounded-lg text-sm px-2 py-1.5 md:py-2 focus:ring-1 focus:ring-primary focus:border-primary transition-all ${isBw ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      type="text" 
+                                      defaultValue={isBw ? 'BodyWeight' : parseInt(exercise.weight) || ''} 
+                                      readOnly={isBw}
+                                      onClick={(e) => {
+                                        if (isBw) {
+                                          e.preventDefault();
+                                          showNotification("Cannot edit weight it is a bodyweight exercise");
+                                        }
+                                      }}
+                                      onFocus={(e) => {
+                                        if (isBw) {
+                                          e.currentTarget.blur();
+                                          showNotification("Cannot edit weight it is a bodyweight exercise");
+                                        }
+                                      }}
+                                    />
+                                  );
+                                })()}
                               </div>
                             </div>
                             <div className="mt-4 flex justify-end gap-2">

@@ -1,30 +1,50 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import companyIcon from '../assets/company_icon.png';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
 
 export default function ForgotPassword() {
   const { showNotification } = useNotification();
 
   const [email, setEmail] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
+  const navigate = useNavigate();
+
   const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       showNotification('Please enter your email first.');
       return;
     }
-    
+
+    const newReqId = crypto.randomUUID();
+    localStorage.setItem('forgot_req_id', newReqId);
+
+    const channel = supabase.channel(`reset-${newReqId}`);
+    channel
+      .on('broadcast', { event: 'verified' }, async (payload) => {
+        const { access_token, refresh_token } = payload.payload;
+        if (access_token && refresh_token) {
+          await supabase.auth.setSession({ access_token, refresh_token });
+          await channel.unsubscribe();
+          showNotification('Verification successful! You can now reset your password.');
+          navigate('/reset-password');
+        }
+      })
+      .subscribe();
+
     // Send password recovery link via Supabase
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}/reset-password?reqId=${newReqId}`
     });
-    
+
     if (error) {
       showNotification(`Error: ${error.message}`);
       return;
     }
 
+    setIsWaiting(true);
     showNotification('Recovery link sent to ' + email);
   };
 
@@ -85,30 +105,41 @@ export default function ForgotPassword() {
           <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 36, marginBottom: 4 }}>RESET PASSWORD</h2>
           <p className="text-[#A3A3A3] text-sm mb-8">Enter your details to create a new password</p>
 
-          <form onSubmit={handleSendLink} className="flex flex-col gap-4">
-            
-            {/* Email Field with Send Link Button*/}
-            <div>
-              <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">EMAIL ADDRESS</label>
-              <input
-                className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
-                type="email" placeholder="you@example.com" required
-                value={email} onChange={e => setEmail(e.target.value)}
-              />
+          {isWaiting ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center text-[#F8F8F8]">
+              <div className="size-12 rounded-full border-4 border-[#F97316]/20 border-t-[#F97316] animate-spin mb-6" />
+              <h3 className="text-2xl font-bold font-['Poppins'] mb-2">WAITING FOR VERIFICATION</h3>
+              <p className="text-[#A3A3A3] text-sm max-w-xs">
+                We've sent a secure link to <strong className="text-white">{email}</strong>.
+                Keep this window open and click the link on any device.
+              </p>
             </div>
+          ) : (
+            <form onSubmit={handleSendLink} className="flex flex-col gap-4">
 
-            <button type="submit"
-              className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
-              <span>Send Recovery Link</span>
-            </button>
+              {/* Email Field with Send Link Button*/}
+              <div>
+                <label className="text-xs font-semibold text-[#A3A3A3] tracking-wider block mb-1">EMAIL ADDRESS</label>
+                <input
+                  className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                  type="email" placeholder="you@example.com" required
+                  value={email} onChange={e => setEmail(e.target.value)}
+                />
+              </div>
 
-          </form>
+              <button type="submit"
+                className="w-full py-3 rounded-lg flex items-center justify-center gap-2 mt-2 bg-[#F97316] hover:bg-[#EA580C] text-white font-medium transition-colors">
+                <span>Send Recovery Link</span>
+              </button>
+
+            </form>
+          )}
 
           <p className="text-center mt-6 text-sm text-[#A3A3A3]">
-             Back to{' '}
-             <Link to="/login" className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
-               Sign in
-             </Link>
+            Back to{' '}
+            <Link to="/login" className="font-semibold text-[#F97316] hover:text-[#EA580C] transition-colors">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
