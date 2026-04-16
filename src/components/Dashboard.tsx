@@ -296,7 +296,7 @@ const TargetMuscleLogger: React.FC<TargetMuscleLoggerProps> = ({ muscleGroup, on
                           <ExerciseSearchInput
                             value={card.exerciseName}
                             onChange={(val) => updateCard(card.id, 'exerciseName', val)}
-                            onSelectExercise={(_name, isBw, imagePath) => {
+                            onSelectExercise={(_name, isBw) => {
                               if (isBw) updateCard(card.id, 'weight', 'BodyWeight');
                             }}
                             muscleGroupFilter={muscleGroup !== 'Cardio' && muscleGroup !== 'PR' ? muscleGroup : undefined}
